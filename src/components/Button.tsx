@@ -8,9 +8,10 @@ import {
   View,
   ViewStyle,
 } from 'react-native'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 interface Props {
-  children: ReactNode
+  children?: ReactNode
   type?: 'primary'
   icon?: string
   onPress?: (e: GestureResponderEvent) => void
@@ -53,19 +54,36 @@ const Button = forwardRef<View, Props>(
         }}
         onPress={onPress}
         onLongPress={onLongPress}
-        style={[styles.root, focus && styles.rootFocus, style]}
+        style={[
+          styles.root,
+          focus && styles.rootFocus,
+          children && styles.rootWithLabel,
+          style,
+        ]}
         hasTVPreferredFocus={hasTVPreferredFocus}
         nextFocusUp={nextFocusUp}
         nextFocusDown={nextFocusDown}
         nextFocusLeft={nextFocusLeft}
         nextFocusRight={nextFocusRight}
       >
-        <Text
-          numberOfLines={1}
-          style={[styles.label, focus && styles.labelFocus]}
-        >
-          {children}
-        </Text>
+        {icon && (
+          <Icon
+            name={icon}
+            style={[
+              styles.icon,
+              focus && styles.iconFocus,
+              children && styles.iconWithLabel,
+            ]}
+          />
+        )}
+        {children && (
+          <Text
+            numberOfLines={1}
+            style={[styles.label, focus && styles.labelFocus]}
+          >
+            {children}
+          </Text>
+        )}
       </Pressable>
     )
   },
@@ -73,23 +91,33 @@ const Button = forwardRef<View, Props>(
 
 const styles = StyleSheet.create({
   root: {
-    minWidth: 96,
+    minWidth: 36,
     overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
-    backgroundColor: '#000080',
+    backgroundColor: '#222',
   },
   rootFocus: {
     backgroundColor: '#eee',
   },
+  rootWithLabel: {
+    minWidth: 96,
+  },
   icon: {
+    fontSize: 14,
+    color: '#eee',
+  },
+  iconFocus: {
+    color: '#222',
+  },
+  iconWithLabel: {
     marginLeft: 16,
     marginRight: -16,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
     marginVertical: 8,

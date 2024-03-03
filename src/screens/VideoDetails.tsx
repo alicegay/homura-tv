@@ -47,12 +47,30 @@ const VideoDetails = () => {
           <View
             style={{
               flexDirection: 'row',
+              columnGap: 16,
+              marginTop: 12,
+            }}
+          >
+            <Text style={{ fontSize: 14 }}>2016</Text>
+            <Text style={{ fontSize: 14 }}>119 min</Text>
+            <Text style={{ fontSize: 14 }}>4K</Text>
+            <Text style={{ fontSize: 14 }}>Japanese DTS-HD 3.1</Text>
+            <Text style={{ fontSize: 14 }}>English SSA/ASS</Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
               columnGap: 8,
               marginTop: 16,
             }}
           >
-            {/* <Button>Resume</Button> */}
-            <Button>Play</Button>
+            {/* <Button icon="reload">Resume</Button> */}
+            <Button icon="play">Play</Button>
+            {/* <Button icon="movie" /> */}
+            <Button icon="information" />
+            <Button icon="volume-high" />
+            <Button icon="subtitles" />
           </View>
         </LinearGradient>
       </View>
