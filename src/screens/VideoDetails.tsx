@@ -1,16 +1,17 @@
 import { useState } from 'react'
-import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native'
+import { Image, ImageBackground, StyleSheet, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { ParamListBase } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
 import useThemeStore from 'hooks/useThemeStore'
 import Button from 'components/Button'
+import Text from 'components/Text'
 
 const VideoDetails = ({
   navigation,
   route,
 }: NativeStackScreenProps<ParamListBase>) => {
-  const [posterImage, setPosterImage] = useState(
+  const [primaryImage, setPrimaryImage] = useState(
     'http://192.168.8.8:8096/Items/4b607808f3e5c9bf26bb82da1208fc8a/Images/Primary',
   )
   const [backdropImage, setBackdropImage] = useState(
@@ -44,12 +45,8 @@ const VideoDetails = ({
           colors={['#00000000', '#00000040']}
           style={styles.detailsGradient}
         >
-          <Text numberOfLines={1} style={{ fontSize: 32, fontWeight: '600' }}>
-            Shin Godzilla
-          </Text>
-          <Text numberOfLines={1} style={{ fontSize: 20, fontWeight: '600' }}>
-            シン・ゴジラ
-          </Text>
+          <Text style={styles.title}>Shin Godzilla</Text>
+          <Text style={styles.subtitle}>シン・ゴジラ</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -57,12 +54,12 @@ const VideoDetails = ({
               marginTop: 12,
             }}
           >
-            <Text style={{ fontSize: 14 }}>2016</Text>
-            <Text style={{ fontSize: 14 }}>119 min</Text>
-            <Text style={{ fontSize: 14 }}>M</Text>
-            <Text style={{ fontSize: 14 }}>4K HDR</Text>
-            <Text style={{ fontSize: 14 }}>Japanese DTS-HD MA 3.1</Text>
-            <Text style={{ fontSize: 14 }}>English SSA/ASS</Text>
+            <Text>2016</Text>
+            <Text>119 min</Text>
+            <Text>M</Text>
+            <Text>4K HDR</Text>
+            <Text>Japanese DTS-HD MA 3.1</Text>
+            <Text>English SSA/ASS</Text>
           </View>
 
           <View
@@ -114,6 +111,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 64,
     paddingBottom: 24,
     paddingTop: 32,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '600',
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: '600',
   },
 })
 
