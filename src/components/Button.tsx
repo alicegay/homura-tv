@@ -9,6 +9,7 @@ import {
   ViewStyle,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import useThemeStore from 'hooks/useThemeStore'
 
 interface Props {
   children?: ReactNode
@@ -97,20 +98,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
-    backgroundColor: '#222',
+    backgroundColor: useThemeStore.getState().background,
   },
   rootFocus: {
-    backgroundColor: '#eee',
+    backgroundColor: useThemeStore.getState().foreground,
   },
   rootWithLabel: {
     minWidth: 96,
   },
   icon: {
     fontSize: 14,
-    color: '#eee',
+    color: useThemeStore.getState().foreground,
   },
   iconFocus: {
-    color: '#222',
+    color: useThemeStore.getState().background,
   },
   iconWithLabel: {
     marginLeft: 16,
@@ -122,10 +123,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 8,
     marginHorizontal: 24,
-    color: '#eee',
+    color: useThemeStore.getState().foreground,
   },
   labelFocus: {
-    color: '#222',
+    color: useThemeStore.getState().background,
   },
 })
 

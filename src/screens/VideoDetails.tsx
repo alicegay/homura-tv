@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { ParamListBase } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
+import useThemeStore from 'hooks/useThemeStore'
 import Button from 'components/Button'
 
-const VideoDetails = () => {
+const VideoDetails = ({
+  navigation,
+  route,
+}: NativeStackScreenProps<ParamListBase>) => {
   const [posterImage, setPosterImage] = useState(
     'http://192.168.8.8:8096/Items/4b607808f3e5c9bf26bb82da1208fc8a/Images/Primary',
   )
@@ -53,8 +59,9 @@ const VideoDetails = () => {
           >
             <Text style={{ fontSize: 14 }}>2016</Text>
             <Text style={{ fontSize: 14 }}>119 min</Text>
-            <Text style={{ fontSize: 14 }}>4K</Text>
-            <Text style={{ fontSize: 14 }}>Japanese DTS-HD 3.1</Text>
+            <Text style={{ fontSize: 14 }}>M</Text>
+            <Text style={{ fontSize: 14 }}>4K HDR</Text>
+            <Text style={{ fontSize: 14 }}>Japanese DTS-HD MA 3.1</Text>
             <Text style={{ fontSize: 14 }}>English SSA/ASS</Text>
           </View>
 
@@ -66,9 +73,12 @@ const VideoDetails = () => {
             }}
           >
             {/* <Button icon="reload">Resume</Button> */}
-            <Button icon="play">Play</Button>
+            <Button icon="play" hasTVPreferredFocus={true}>
+              Play
+            </Button>
             {/* <Button icon="movie" /> */}
             <Button icon="information" />
+            <Button icon="check" />
             <Button icon="volume-high" />
             <Button icon="subtitles" />
           </View>
@@ -81,7 +91,7 @@ const VideoDetails = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: useThemeStore.getState().background,
   },
   backdrop: {
     flex: 1,

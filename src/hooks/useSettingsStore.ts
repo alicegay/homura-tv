@@ -10,3 +10,5 @@ const useSettingsStore = create<SettingsStore>()(
     storage: createJSONStorage(() => AsyncStorage),
   }),
 )
+
+export default useSettingsStore
