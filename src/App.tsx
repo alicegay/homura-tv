@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import DeviceInfo from 'react-native-device-info'
 import VideoDetails from 'screens/VideoDetails'
 import useThemeStore from 'hooks/useThemeStore'
+import Initial from 'screens/Initial'
 
 const Stack = createNativeStackNavigator()
 
@@ -30,9 +31,10 @@ const App = () => {
   return (
     <NavigationContainer theme={navTheme}>
       <Stack.Navigator
-        initialRouteName="VideoDetails"
+        initialRouteName="Initial"
         screenOptions={{ headerShown: false }}
       >
+        <Stack.Screen name="Initial" component={Initial} />
         <Stack.Screen name="VideoDetails" component={VideoDetails} />
       </Stack.Navigator>
     </NavigationContainer>
