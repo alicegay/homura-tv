@@ -3,7 +3,7 @@ import { Image, ImageBackground, StyleSheet, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { ParamListBase } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
-import useThemeStore from 'hooks/useThemeStore'
+import useTheme from 'hooks/useTheme'
 import Button from 'components/Button'
 import Text from 'components/Text'
 
@@ -45,8 +45,12 @@ const VideoDetails = ({
           colors={['#00000000', '#00000040']}
           style={styles.detailsGradient}
         >
-          <Text style={styles.title}>Shin Godzilla</Text>
-          <Text style={styles.subtitle}>シン・ゴジラ</Text>
+          <Text style={styles.title} fontWeight={700}>
+            Shin Godzilla
+          </Text>
+          <Text style={styles.subtitle} fontWeight={500}>
+            シン・ゴジラ
+          </Text>
           <View
             style={{
               flexDirection: 'row',
@@ -88,7 +92,7 @@ const VideoDetails = ({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: useThemeStore.getState().background,
+    backgroundColor: useTheme.getState().background,
   },
   backdrop: {
     flex: 1,

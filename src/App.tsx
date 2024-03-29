@@ -1,21 +1,40 @@
 import { useEffect } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import DeviceInfo from 'react-native-device-info'
-import VideoDetails from 'screens/VideoDetails'
-import useThemeStore from 'hooks/useThemeStore'
+import useClient from 'hooks/useClient'
+import useTheme from 'hooks/useTheme'
+
 import Initial from 'screens/Initial'
+import Home from 'screens/Home'
+import VideoDetails from 'screens/VideoDetails'
 
 const Stack = createNativeStackNavigator()
+const queryClient = new QueryClient()
 
 const App = () => {
-  useEffect(() => {
-    console.log(DeviceInfo.getSupportedMediaTypeListSync())
+  const client = useClient()
 
+  useEffect(() => {
+    //console.log(DeviceInfo.getSupportedMediaTypeListSync())
     // ["audio/mp4a-latm", "audio/mp4a-latm", "audio/mp4a-latm", "audio/mp4a-latm", "audio/3gpp", "audio/3gpp", "audio/3gpp", "audio/3gpp", "audio/amr-wb", "audio/amr-wb", "audio/amr-wb", "audio/amr-wb", "audio/flac", "audio/flac", "audio/flac", "audio/flac", "audio/g711-alaw", "audio/g711-alaw", "audio/g711-mlaw", "audio/g711-mlaw", "audio/mpeg", "audio/mpeg", "audio/opus", "audio/opus", "audio/opus", "audio/raw", "audio/raw", "audio/vorbis", "audio/vorbis", "video/avc", "video/x-vnd.on2.vp8", "video/x-vnd.on2.vp9", "video/av01", "video/av01", "video/avc", "video/avc", "video/avc", "video/avc", "video/3gpp", "video/3gpp", "video/3gpp", "video/3gpp", "video/hevc", "video/hevc", "video/hevc", "video/mpeg2", "video/mpeg2", "video/mp4v-es", "video/mp4v-es", "video/mp4v-es", "video/mp4v-es", "video/x-vnd.on2.vp8", "video/x-vnd.on2.vp8", "video/x-vnd.on2.vp8", "video/x-vnd.on2.vp8", "video/x-vnd.on2.vp9", "video/x-vnd.on2.vp9", "video/x-vnd.on2.vp9", "video/x-vnd.on2.vp9"]
+
+    if (!client.client && client.server && client.user && client.token) {
+      client.setClient({
+        server: client.server,
+        clientName: 'Homura',
+        deviceName: 'Android',
+        deviceID: 'deviceID',
+        version: '1.0.0',
+        user: client.user,
+        token: client.token,
+      })
+      console.log('CLIENT RESET')
+    }
   }, [])
 
-  const theme = useThemeStore()
+  const theme = useTheme()
   const navTheme = {
     dark: true,
     colors: {
@@ -29,15 +48,18 @@ const App = () => {
   }
 
   return (
-    <NavigationContainer theme={navTheme}>
-      <Stack.Navigator
-        initialRouteName="Initial"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="Initial" component={Initial} />
-        <Stack.Screen name="VideoDetails" component={VideoDetails} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <QueryClientProvider client={queryClient}>
+      <NavigationContainer theme={navTheme}>
+        <Stack.Navigator
+          initialRouteName="Initial"
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen name="Initial" component={Initial} />
+          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="VideoDetails" component={VideoDetails} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </QueryClientProvider>
   )
 }
 

@@ -1,4 +1,4 @@
-import useThemeStore from 'hooks/useThemeStore'
+import useTheme from 'hooks/useTheme'
 import { ReactNode } from 'react'
 import { Text as TextRN, StyleProp, TextStyle } from 'react-native'
 
@@ -15,7 +15,7 @@ const Text = ({
   fontWeight = 400,
   style,
 }: Props) => {
-  const theme = useThemeStore()
+  const theme = useTheme()
 
   return (
     <TextRN

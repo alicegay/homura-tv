@@ -12,21 +12,6 @@ const Initial = ({
 }: NativeStackScreenProps<ParamListBase>) => {
   const client = useClient()
 
-  useEffect(() => {
-    if (!client.client && client.server && client.user && client.token) {
-      client.setClient({
-        server: client.server,
-        clientName: 'Homura',
-        deviceName: 'Android',
-        deviceID: 'deviceID',
-        version: '1.0.0',
-        user: client.user,
-        token: client.token,
-      })
-      console.log('CLIENT RESET')
-    }
-  }, [])
-
   return (
     <View>
       <Button
@@ -80,6 +65,20 @@ const Initial = ({
         }}
       >
         Sign out
+      </Button>
+      <Button
+        onPress={() => {
+          navigation.push('Home')
+        }}
+      >
+        SCREEN: Home
+      </Button>
+      <Button
+        onPress={() => {
+          navigation.push('VideoDetails')
+        }}
+      >
+        SCREEN: VideoDetails
       </Button>
     </View>
   )

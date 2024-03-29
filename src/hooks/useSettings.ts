@@ -4,11 +4,11 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface SettingsStore {}
 
-const useSettingsStore = create<SettingsStore>()(
+const useSettings = create<SettingsStore>()(
   persist((set) => ({}), {
     name: 'settings',
     storage: createJSONStorage(() => AsyncStorage),
   }),
 )
 
-export default useSettingsStore
+export default useSettings

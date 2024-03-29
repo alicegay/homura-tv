@@ -9,8 +9,8 @@ interface ThemeStore {
   font700: string
 }
 
-const useThemeStore = create<ThemeStore>()(() => ({
-  background: '#222',
+const useTheme = create<ThemeStore>()(() => ({
+  background: '#1a1a1a',
   foreground: '#eee',
   tint: '#A00000',
   font400: 'NunitoRoundedMplus-Regular',
@@ -18,4 +18,4 @@ const useThemeStore = create<ThemeStore>()(() => ({
   font700: 'NunitoRoundedMplus-Bold',
 }))
 
-export default useThemeStore
+export default useTheme
