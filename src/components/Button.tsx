@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 24,
     color: useThemeStore.getState().foreground,
+    fontFamily: useThemeStore.getState().font500,
   },
   labelFocus: {
     color: useThemeStore.getState().background,
