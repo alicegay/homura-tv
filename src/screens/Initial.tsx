@@ -34,7 +34,7 @@ const Initial = ({
       <Button
         onPress={() => {
           users
-            .AuthenticateByName(
+            .authenticateByName(
               process.env.SERVER,
               process.env.USERNAME,
               process.env.PASSWORD,

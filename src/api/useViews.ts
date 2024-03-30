@@ -6,7 +6,7 @@ const useViews = () => {
   return useQuery({
     queryKey: ['views'],
     queryFn: async () => {
-      const res = await users.Views(useClient.getState().api)
+      const res = await users.views(useClient.getState().api)
       return res.Items.filter(
         (item) =>
           item.CollectionType !== 'playlists' &&
