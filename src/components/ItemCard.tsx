@@ -83,7 +83,7 @@ const ItemCard = ({
     >
       <View style={[styles.view]}>
         <Shadow
-          distance={48}
+          distance={40}
           startColor={tinycolor(color + '40')
             .lighten((1.0 - tinycolor(color).getLuminance()) * 30)
             .toHex8String()}
