@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { FlatList, ScrollView, View } from 'react-native'
+import { useRef, useState } from 'react'
+import { FlatList, ScrollView, View, useWindowDimensions } from 'react-native'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
 import useViews from 'api/useViews'
@@ -13,17 +13,21 @@ import cardSubtitle from 'lib/cardSubtitle'
 const Home = () => {
   const client = useClient()
   const theme = useTheme()
+  const { height } = useWindowDimensions()
+  const [resumeY, setReusmeY] = useState(0)
+
   const views = useViews()
   const resume = useItemsResume()
   const nextup = useShowsNextup()
 
+  const scrollView = useRef<ScrollView>()
   const viewsList = useRef<FlatList>()
   const resumeList = useRef<FlatList>()
   const nextupList = useRef<FlatList>()
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
         <View>
           {!views.isLoading && (
             <FlatList
@@ -45,6 +49,7 @@ const Home = () => {
                       index: index,
                       viewPosition: 0.5,
                     })
+                    scrollView.current.scrollTo({ x: 0, y: 0, animated: true })
                   }}
                   hasTVPreferredFocus={index === 0}
                 />
@@ -66,7 +71,7 @@ const Home = () => {
             Libraries
           </Text>
         </View>
-        <View>
+        <View onLayout={(event) => setReusmeY(event.nativeEvent.layout.y)}>
           {!resume.isLoading && (
             <FlatList
               ref={resumeList}
@@ -87,6 +92,11 @@ const Home = () => {
                     resumeList.current.scrollToIndex({
                       index: index,
                       viewPosition: 0.5,
+                    })
+                    scrollView.current.scrollTo({
+                      x: 0,
+                      y: resumeY - height / 4,
+                      animated: true,
                     })
                   }}
                 />
@@ -130,6 +140,7 @@ const Home = () => {
                       index: index,
                       viewPosition: 0.5,
                     })
+                    scrollView.current.scrollToEnd({ animated: true })
                   }}
                 />
               )}
