@@ -1,24 +1,29 @@
 import { useRef, useState } from 'react'
 import { FlatList, ScrollView, View, useWindowDimensions } from 'react-native'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import RootStackParamList from 'types/RootStackParamList'
+import Item from 'jellyfin-api/lib/types/media/Item'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
 import useViews from 'api/useViews'
-import ItemCard from 'components/ItemCard'
-import Text from 'components/Text'
 import useItemsResume from 'api/useItemsResume'
 import useShowsNextup from 'api/useShowsNextup'
-import Item from 'jellyfin-api/lib/types/media/Item'
+import ItemCard from 'components/ItemCard'
+import Text from 'components/Text'
 import cardSubtitle from 'lib/cardSubtitle'
 
-const Home = () => {
+const Home = ({
+  navigation,
+  route,
+}: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
   const client = useClient()
   const theme = useTheme()
   const { height } = useWindowDimensions()
   const [resumeY, setReusmeY] = useState(0)
 
   const views = useViews()
-  const resume = useItemsResume()
-  const nextup = useShowsNextup()
+  const resume = useItemsResume({ EnableImageTypes: 'Primary,Backdrop,Logo' })
+  const nextup = useShowsNextup({ EnableImageTypes: 'Primary,Backdrop,Logo' })
 
   const scrollView = useRef<ScrollView>()
   const viewsList = useRef<FlatList>()
@@ -44,6 +49,9 @@ const Home = () => {
                       ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
                       : undefined
                   }
+                  onPress={() => {
+                    navigation.push('Folder', { item: item })
+                  }}
                   onFocus={() => {
                     viewsList.current.scrollToIndex({
                       index: index,
@@ -99,6 +107,7 @@ const Home = () => {
                       animated: true,
                     })
                   }}
+                  onPress={() => navigation.push('VideoDetails', { item })}
                 />
               )}
               horizontal={true}
@@ -142,6 +151,7 @@ const Home = () => {
                     })
                     scrollView.current.scrollToEnd({ animated: true })
                   }}
+                  onPress={() => navigation.push('VideoDetails', { item })}
                 />
               )}
               horizontal={true}

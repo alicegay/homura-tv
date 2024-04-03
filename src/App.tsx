@@ -6,11 +6,13 @@ import DeviceInfo from 'react-native-device-info'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
 
+import RootStackParamList from 'types/RootStackParamList'
 import Initial from 'screens/Initial'
 import Home from 'screens/Home'
+import Folder from 'screens/Folder'
 import VideoDetails from 'screens/VideoDetails'
 
-const Stack = createNativeStackNavigator()
+const Stack = createNativeStackNavigator<RootStackParamList>()
 const queryClient = new QueryClient()
 
 const App = () => {
@@ -56,6 +58,7 @@ const App = () => {
         >
           <Stack.Screen name="Initial" component={Initial} />
           <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="Folder" component={Folder} />
           <Stack.Screen name="VideoDetails" component={VideoDetails} />
         </Stack.Navigator>
       </NavigationContainer>

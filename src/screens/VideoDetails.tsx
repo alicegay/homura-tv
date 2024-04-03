@@ -1,56 +1,93 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Image, ImageBackground, StyleSheet, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { ParamListBase } from '@react-navigation/native'
-import LinearGradient from 'react-native-linear-gradient'
+import RootStackParamList from 'types/RootStackParamList'
+import useClient from 'hooks/useClient'
+import useItem from 'api/useItem'
 import useTheme from 'hooks/useTheme'
+import LinearGradient from 'react-native-linear-gradient'
 import Button from 'components/Button'
 import Text from 'components/Text'
+import ticksToTime from 'lib/ticksToTime'
 
 const VideoDetails = ({
   navigation,
   route,
-}: NativeStackScreenProps<ParamListBase>) => {
+}: NativeStackScreenProps<RootStackParamList, 'VideoDetails'>) => {
+  const { item } = route.params
+
+  const client = useClient()
+  const theme = useTheme()
+  const { data, isLoading } = useItem(item.Id)
+
   const [primaryImage, setPrimaryImage] = useState(
-    'http://192.168.8.8:8096/Items/4b607808f3e5c9bf26bb82da1208fc8a/Images/Primary',
+    client.server + '/Items/' + item.Id + '/Images/Primary',
   )
   const [backdropImage, setBackdropImage] = useState(
-    'http://192.168.8.8:8096/Items/4b607808f3e5c9bf26bb82da1208fc8a/Images/Backdrop/0',
+    client.server + '/Items/' + item.Id + '/Images/Backdrop/0',
   )
   const [logoImage, setLogoImage] = useState(
-    'http://192.168.8.8:8096/Items/4b607808f3e5c9bf26bb82da1208fc8a/Images/Logo',
+    client.server + '/Items/' + item.Id + '/Images/Logo',
   )
 
+  useEffect(() => {
+    console.log(item.ImageTags)
+  }, [])
+
   return (
-    <View style={styles.root}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <ImageBackground
         source={{
-          uri: backdropImage,
+          uri: item.ImageBlurHashes.hasOwnProperty('Backdrop')
+            ? backdropImage
+            : primaryImage,
         }}
         resizeMode="cover"
         style={styles.backdrop}
       >
-        <View style={styles.backdropView}>
-          <Image
-            source={{ uri: logoImage }}
-            width={600}
-            height={200}
-            resizeMode="contain"
-            style={styles.backdropImage}
-          />
+        <View
+          style={[
+            styles.backdropView,
+            item.ImageTags.hasOwnProperty('Logo') && {
+              backgroundColor: '#00000040',
+            },
+          ]}
+        >
+          <View style={styles.backdropImage}>
+            <Image
+              source={{ uri: logoImage }}
+              width={600}
+              height={200}
+              resizeMode="contain"
+            />
+          </View>
         </View>
       </ImageBackground>
       <View style={styles.details}>
         <LinearGradient
-          colors={['#00000000', '#00000040']}
+          colors={[
+            '#00000000',
+            item.ImageTags.hasOwnProperty('Logo') ? '#00000040' : '#00000080',
+          ]}
           style={styles.detailsGradient}
         >
           <Text style={styles.title} fontWeight={700}>
-            Shin Godzilla
+            {item.Name}
           </Text>
-          <Text style={styles.subtitle} fontWeight={500}>
-            シン・ゴジラ
-          </Text>
+          {!!item.OriginalTitle && item.OriginalTitle != item.Name && (
+            <Text style={styles.subtitle} fontWeight={500}>
+              {item.OriginalTitle}
+            </Text>
+          )}
+          {item.Type === 'Episode' && (
+            <Text style={styles.subtitle} fontWeight={500}>
+              {item.SeriesName +
+                ' ' +
+                (item.ParentIndexNumber === 0
+                  ? 'Special'
+                  : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)}
+            </Text>
+          )}
           <View
             style={{
               flexDirection: 'row',
@@ -58,12 +95,12 @@ const VideoDetails = ({
               marginTop: 12,
             }}
           >
-            <Text>2016</Text>
-            <Text>119 min</Text>
-            <Text>M</Text>
-            <Text>4K HDR</Text>
+            {!!item.ProductionYear && <Text>{item.ProductionYear}</Text>}
+            <Text>{ticksToTime(item.RunTimeTicks, true)}</Text>
+            {!!item.OfficialRating && <Text>{item.OfficialRating}</Text>}
+            {/* <Text>4K HDR</Text>
             <Text>Japanese DTS-HD MA 3.1</Text>
-            <Text>English SSA/ASS</Text>
+            <Text>English SSA/ASS</Text> */}
           </View>
 
           <View
@@ -73,8 +110,17 @@ const VideoDetails = ({
               marginTop: 16,
             }}
           >
-            {/* <Button icon="reload">Resume</Button> */}
-            <Button icon="play" hasTVPreferredFocus={true}>
+            {item.UserData.PlaybackPositionTicks > 0 && (
+              <Button icon="play" hasTVPreferredFocus={true}>
+                Resume from {ticksToTime(item.UserData.PlaybackPositionTicks)}
+              </Button>
+            )}
+            <Button
+              icon={item.UserData.PlaybackPositionTicks > 0 ? 'reload' : 'play'}
+              hasTVPreferredFocus={
+                item.UserData.PlaybackPositionTicks > 0 ? false : true
+              }
+            >
               Play
             </Button>
             {/* <Button icon="movie" /> */}
@@ -90,19 +136,16 @@ const VideoDetails = ({
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: useTheme.getState().background,
-  },
   backdrop: {
     flex: 1,
   },
   backdropView: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: '#00000040',
   },
   backdropImage: {
+    flex: 1,
+    paddingTop: 100,
     height: 400,
   },
   details: {
@@ -114,7 +157,7 @@ const styles = StyleSheet.create({
   detailsGradient: {
     paddingHorizontal: 64,
     paddingBottom: 24,
-    paddingTop: 32,
+    paddingTop: 64,
   },
   title: {
     fontSize: 32,

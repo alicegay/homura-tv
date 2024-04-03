@@ -17,6 +17,7 @@ import useTheme from 'hooks/useTheme'
 
 interface Props {
   title: string
+  numberOfLines?: number
   subtitle?: string
   image: string
   blurhash?: string
@@ -34,6 +35,7 @@ interface Props {
 const ItemCard = ({
   title,
   subtitle,
+  numberOfLines = 1,
   image,
   blurhash,
   width = 256,
@@ -56,7 +58,8 @@ const ItemCard = ({
   const styles = StyleSheet.create({
     view: {
       flex: 1,
-      padding: 16,
+      paddingHorizontal: 16,
+      paddingVertical: numberOfLines > 1 ? 8 : 16,
     },
     image: {
       width: width,
@@ -102,7 +105,11 @@ const ItemCard = ({
             />
           </View>
         </Shadow>
-        <Text style={{ fontSize: 16, width: width }} fontWeight={500}>
+        <Text
+          style={{ fontSize: 16, width: width }}
+          fontWeight={500}
+          numberOfLines={numberOfLines}
+        >
           {title}
         </Text>
         {!!subtitle && (

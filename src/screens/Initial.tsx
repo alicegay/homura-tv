@@ -29,7 +29,7 @@ const Initial = ({
           console.log('TOKEN:', !!client.token)
         }}
       >
-        CLIENT CHECK
+        {'CLIENT CHECK: ' + !!client.client}
       </Button>
       <Button
         onPress={() => {

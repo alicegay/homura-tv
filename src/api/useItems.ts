@@ -3,13 +3,16 @@ import { users } from 'jellyfin-api'
 import useClient from 'hooks/useClient'
 import ItemsQuery from 'jellyfin-api/lib/types/users/ItemsQuery'
 
-const useItemsResume = (params?: ItemsQuery) => {
+const useItems = (itemId: string, params?: ItemsQuery) => {
   return useQuery({
-    queryKey: ['itemsResume'],
+    queryKey: ['items', itemId],
     queryFn: () => {
-      return users.itemsResume(useClient.getState().api, params)
+      return users.items(useClient.getState().api, {
+        ...params,
+        ParentId: itemId,
+      })
     },
   })
 }
 
-export default useItemsResume
+export default useItems
