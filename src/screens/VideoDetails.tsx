@@ -8,6 +8,7 @@ import useTheme from 'hooks/useTheme'
 import LinearGradient from 'react-native-linear-gradient'
 import Button from 'components/Button'
 import Text from 'components/Text'
+import Classification from 'components/Classification'
 import ticksToTime from 'lib/ticksToTime'
 
 const VideoDetails = ({
@@ -30,9 +31,9 @@ const VideoDetails = ({
     client.server + '/Items/' + item.Id + '/Images/Logo',
   )
 
-  useEffect(() => {
-    console.log(item.ImageTags)
-  }, [])
+  // useEffect(() => {
+  //   console.log(item.ImageTags)
+  // }, [])
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -97,7 +98,9 @@ const VideoDetails = ({
           >
             {!!item.ProductionYear && <Text>{item.ProductionYear}</Text>}
             <Text>{ticksToTime(item.RunTimeTicks, true)}</Text>
-            {!!item.OfficialRating && <Text>{item.OfficialRating}</Text>}
+            {!!item.OfficialRating && (
+              <Classification rating={item.OfficialRating} />
+            )}
             {/* <Text>4K HDR</Text>
             <Text>Japanese DTS-HD MA 3.1</Text>
             <Text>English SSA/ASS</Text> */}

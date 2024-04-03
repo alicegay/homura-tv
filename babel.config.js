@@ -28,7 +28,14 @@ module.exports = {
           '.android.js',
           '.js',
           '.json',
+          '.svg',
         ],
+      },
+    ],
+    [
+      'babel-plugin-inline-import',
+      {
+        extensions: ['.svg'],
       },
     ],
     'module:react-native-dotenv',
