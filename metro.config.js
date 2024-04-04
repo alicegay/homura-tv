@@ -14,6 +14,7 @@ const config = {
         inlineRequires: true,
       },
     }),
+    unstable_allowRequireContext: true,
   },
 }
 

@@ -38,6 +38,7 @@ module.exports = {
         extensions: ['.svg'],
       },
     ],
+    ['wildcard', { exts: ['svg'], noModifyCase: true }],
     'module:react-native-dotenv',
     'react-native-reanimated/plugin',
   ],

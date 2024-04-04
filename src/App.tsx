@@ -34,7 +34,7 @@ const App = () => {
       })
       console.log('CLIENT RESET')
     }
-  }, [])
+  }, [client.token])
 
   const theme = useTheme()
   const navTheme = {

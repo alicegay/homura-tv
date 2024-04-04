@@ -1,35 +1,57 @@
+// @ts-nocheck
+
 import Text from 'components/Text'
+import { useEffect, useState } from 'react'
 import { SvgXml } from 'react-native-svg'
 
-import AU_G from 'assets/classification/au/G.svg'
-import AU_PG from 'assets/classification/au/PG.svg'
-import AU_M from 'assets/classification/au/M.svg'
-import AU_MA from 'assets/classification/au/MA15+.svg'
-import AU_R from 'assets/classification/au/R18+.svg'
-import AU_X from 'assets/classification/au/X18+.svg'
-import { View } from 'react-native'
+import au from 'classification/au'
+import jp from 'classification/jp'
+import uk from 'classification/uk'
+import us from 'classification/us'
+
+import * as auIcons from 'assets/classification/au'
+import * as jpIcons from 'assets/classification/jp'
+import * as ukIcons from 'assets/classification/uk'
+import * as usIcons from 'assets/classification/us'
 
 interface Props {
   rating: string
 }
 
 const Classification = ({ rating }: Props) => {
-  if (rating.startsWith('AU-')) {
-    const r = rating.split('AU-', 2)[1]
-    if (r === 'G') return <Icon icon={AU_G} />
-    if (r === 'PG') return <Icon icon={AU_PG} />
-    if (r === 'M') return <Icon icon={AU_M} />
-    if (r === 'MA15+' || r === 'MA 15+') return <Icon icon={AU_MA} />
-    if (r === 'R18+' || r === 'R 18+') return <Icon icon={AU_R} />
-    if (r === 'X18+' || r === 'X 18+') return <Icon icon={AU_X} />
-    return <Text>{rating}</Text>
+  const split = rating.substring(rating.indexOf('-') + 1)
+
+  const width = 30
+  const height = 20
+
+  // Australia
+  if (rating.startsWith('AU-') && split in au) {
+    return <SvgXml xml={auIcons[au[split]]} width={width} height={height} />
   }
 
-  return <Text>{rating}</Text>
-}
+  // Japan
+  if (rating.startsWith('JP-') && split in jp) {
+    return <SvgXml xml={jpIcons[jp[split]]} width={width} height={height} />
+  }
 
-const Icon = ({ icon }: { icon: string }) => {
-  return <SvgXml xml={icon} width={30} height={20} />
+  // United Kingdom
+  if (
+    (rating.startsWith('UK-') && split in uk) ||
+    (rating.startsWith('GB-') && split in uk)
+  ) {
+    return <SvgXml xml={ukIcons[uk[split]]} width={width} height={height} />
+  }
+
+  // United States
+  if (rating.startsWith('US-') && split in us) {
+    return <SvgXml xml={usIcons[us[split]]} width={width} height={height} />
+  }
+  if (rating in us) {
+    return <SvgXml xml={usIcons[us[rating]]} width={width} height={height} />
+  }
+
+  // Fallback
+  return <Text>{rating}</Text>
 }
 
 export default Classification
