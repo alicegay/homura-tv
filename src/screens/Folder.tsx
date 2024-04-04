@@ -56,8 +56,7 @@ const Folder = ({
               onPress={() => {
                 item.Type === 'Folder'
                   ? navigation.push('Folder', { item })
-                  : (item.Type === 'Movie' || item.Type === 'MusicVideo') &&
-                    navigation.push('VideoDetails', { item })
+                  : navigation.push('VideoDetails', { item })
               }}
               hasTVPreferredFocus={index === 0}
               width={width / columns - 32}

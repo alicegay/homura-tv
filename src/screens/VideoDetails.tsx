@@ -72,7 +72,7 @@ const VideoDetails = ({
           ]}
           style={styles.detailsGradient}
         >
-          <Text style={styles.title} fontWeight={700}>
+          <Text style={styles.title} fontWeight={700} numberOfLines={2}>
             {item.Name}
           </Text>
           {!!item.OriginalTitle && item.OriginalTitle != item.Name && (
@@ -97,7 +97,9 @@ const VideoDetails = ({
             }}
           >
             {!!item.ProductionYear && <Text>{item.ProductionYear}</Text>}
-            <Text>{ticksToTime(item.RunTimeTicks, true)}</Text>
+            {!!item.RunTimeTicks && item.RunTimeTicks > 0 && (
+              <Text>{ticksToTime(item.RunTimeTicks, true)}</Text>
+            )}
             {!!item.OfficialRating && (
               <Classification rating={item.OfficialRating} />
             )}
@@ -106,32 +108,52 @@ const VideoDetails = ({
             <Text>English SSA/ASS</Text> */}
           </View>
 
-          <View
-            style={{
-              flexDirection: 'row',
-              columnGap: 8,
-              marginTop: 16,
-            }}
-          >
-            {item.UserData.PlaybackPositionTicks > 0 && (
-              <Button icon="play" hasTVPreferredFocus={true}>
-                Resume from {ticksToTime(item.UserData.PlaybackPositionTicks)}
-              </Button>
-            )}
-            <Button
-              icon={item.UserData.PlaybackPositionTicks > 0 ? 'reload' : 'play'}
-              hasTVPreferredFocus={
-                item.UserData.PlaybackPositionTicks > 0 ? false : true
-              }
+          {item.Type === 'Movie' ||
+          item.Type === 'Episode' ||
+          item.Type === 'MusicVideo' ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                columnGap: 8,
+                marginTop: 16,
+              }}
             >
-              Play
-            </Button>
-            {/* <Button icon="movie" /> */}
-            <Button icon="information" />
-            <Button icon="check" />
-            <Button icon="volume-high" />
-            <Button icon="subtitles" />
-          </View>
+              {item.UserData.PlaybackPositionTicks > 0 && (
+                <Button icon="play" hasTVPreferredFocus={true}>
+                  Resume from {ticksToTime(item.UserData.PlaybackPositionTicks)}
+                </Button>
+              )}
+              <Button
+                icon={
+                  item.UserData.PlaybackPositionTicks > 0 ? 'reload' : 'play'
+                }
+                hasTVPreferredFocus={
+                  item.UserData.PlaybackPositionTicks > 0 ? false : true
+                }
+              >
+                Play
+              </Button>
+              {/* <Button icon="movie" /> */}
+              <Button icon="information" />
+              <Button icon="check" />
+              <Button icon="volume-high" />
+              <Button icon="subtitles" />
+            </View>
+          ) : (
+            <View
+              style={{
+                flexDirection: 'row',
+                columnGap: 8,
+                marginTop: 16,
+              }}
+            >
+              <Button icon="television" hasTVPreferredFocus={true}>
+                Seasons
+              </Button>
+              <Button icon="star">Special Features</Button>
+              <Button icon="information" />
+            </View>
+          )}
         </LinearGradient>
       </View>
     </View>

@@ -46,11 +46,22 @@ const Classification = ({ rating }: Props) => {
   if (rating.startsWith('US-') && split in us) {
     return <SvgXml xml={usIcons[us[split]]} width={width} height={height} />
   }
+
+  // Fallback
   if (rating in us) {
     return <SvgXml xml={usIcons[us[rating]]} width={width} height={height} />
   }
+  if (rating in au) {
+    return <SvgXml xml={auIcons[au[rating]]} width={width} height={height} />
+  }
+  if (rating in jp) {
+    return <SvgXml xml={jpIcons[us[rating]]} width={width} height={height} />
+  }
+  if (rating in uk) {
+    return <SvgXml xml={ukIcons[us[rating]]} width={width} height={height} />
+  }
 
-  // Fallback
+  // Fallback Fallback
   return <Text>{rating}</Text>
 }
 

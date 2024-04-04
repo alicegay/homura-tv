@@ -9,7 +9,7 @@ const ticksToTime = (ticks: number, formatted?: boolean) => {
   return (
     (hh > 0 ? hh + 'h ' : '') +
     (mm > 0 ? mm + 'm ' : '') +
-    (hh === 0 ? ss + 's' : '')
+    (hh === 0 && ss > 0 ? ss + 's' : '')
   )
 }
 
