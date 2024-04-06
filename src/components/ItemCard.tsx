@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  DimensionValue,
   GestureResponderEvent,
   Image,
   Pressable,
@@ -68,6 +69,25 @@ const ItemCard = ({
       marginBottom: 2,
       overflow: 'hidden',
     },
+    length: {
+      flex: 0,
+      position: 'absolute',
+      bottom: 3,
+      right: 6,
+      paddingHorizontal: 6,
+      borderRadius: 6,
+      backgroundColor: theme.background,
+    },
+    progress: {
+      position: 'absolute',
+      bottom: 0,
+      width: !!progressPercentage
+        ? ((progressPercentage.toString() + '%') as DimensionValue)
+        : 0,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: theme.tint,
+    },
   })
 
   return (
@@ -93,16 +113,23 @@ const ItemCard = ({
           disabled={!focus}
         >
           <View style={styles.image}>
-            {!!blurhash && !imageLoaded && (
+            {/* {!!blurhash && !imageLoaded && (
               <Blurhash blurhash={blurhash} style={styles.image} />
-            )}
+            )} */}
             <Image
               source={{ uri: image }}
-              style={[styles.image, !imageLoaded && { width: 0, height: 0 }]}
+              // style={[styles.image, !imageLoaded && { width: 0, height: 0 }]}
+              style={[styles.image]}
               onLoad={() => {
                 setImageLoaded(true)
               }}
             />
+            {!!length && (
+              <View style={styles.length}>
+                <Text style={[styles.length]}>{length}</Text>
+              </View>
+            )}
+            {!!progressPercentage && <View style={styles.progress} />}
           </View>
         </Shadow>
         <Text

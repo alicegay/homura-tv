@@ -32,16 +32,18 @@ const VideoDetails = ({
   )
 
   // useEffect(() => {
-  //   console.log(item.ImageTags)
+  //   console.log(item)
   // }, [])
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <ImageBackground
         source={{
-          uri: item.ImageBlurHashes.hasOwnProperty('Backdrop')
-            ? backdropImage
-            : primaryImage,
+          uri:
+            item.ImageBlurHashes.hasOwnProperty('Backdrop') &&
+            item.Type !== 'Episode'
+              ? backdropImage
+              : primaryImage,
         }}
         resizeMode="cover"
         style={styles.backdrop}

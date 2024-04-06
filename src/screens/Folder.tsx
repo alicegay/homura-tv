@@ -9,6 +9,7 @@ import Item from 'jellyfin-api/lib/types/media/Item'
 import findAspectRatio from 'lib/findAspectRatio'
 import Text from 'components/Text'
 import { useRef } from 'react'
+import ticksToTime from 'lib/ticksToTime'
 
 const Folder = ({
   navigation,
@@ -46,6 +47,10 @@ const Folder = ({
                 !!item.ImageBlurHashes.Primary
                   ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
                   : undefined
+              }
+              length={!item.IsFolder && ticksToTime(item.RunTimeTicks)}
+              progressPercentage={
+                !item.IsFolder && item.UserData.PlayedPercentage
               }
               onFocus={() =>
                 list.current.scrollToIndex({

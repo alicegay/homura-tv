@@ -11,6 +11,7 @@ import useShowsNextup from 'api/useShowsNextup'
 import ItemCard from 'components/ItemCard'
 import Text from 'components/Text'
 import cardSubtitle from 'lib/cardSubtitle'
+import ticksToTime from 'lib/ticksToTime'
 
 const Home = ({
   navigation,
@@ -96,6 +97,8 @@ const Home = ({
                       ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
                       : undefined
                   }
+                  length={ticksToTime(item.RunTimeTicks)}
+                  progressPercentage={80}
                   onFocus={() => {
                     resumeList.current.scrollToIndex({
                       index: index,
@@ -144,6 +147,7 @@ const Home = ({
                       ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
                       : undefined
                   }
+                  length={ticksToTime(item.RunTimeTicks)}
                   onFocus={() => {
                     nextupList.current.scrollToIndex({
                       index: index,
