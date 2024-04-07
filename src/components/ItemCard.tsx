@@ -111,27 +111,35 @@ const ItemCard = ({
             .lighten((1.0 - tinycolor(color).getLuminance()) * 30)
             .toHex8String()}
           disabled={!focus}
+          style={styles.image}
+        />
+        <View
+          style={[
+            styles.image,
+            {
+              position: 'absolute',
+              top: numberOfLines > 1 ? 8 : 16,
+              left: 16,
+            },
+          ]}
         >
-          <View style={styles.image}>
-            {/* {!!blurhash && !imageLoaded && (
-              <Blurhash blurhash={blurhash} style={styles.image} />
-            )} */}
-            <Image
-              source={{ uri: image }}
-              // style={[styles.image, !imageLoaded && { width: 0, height: 0 }]}
-              style={[styles.image]}
-              onLoad={() => {
-                setImageLoaded(true)
-              }}
-            />
-            {!!length && (
-              <View style={styles.length}>
-                <Text style={[styles.length]}>{length}</Text>
-              </View>
-            )}
-            {!!progressPercentage && <View style={styles.progress} />}
-          </View>
-        </Shadow>
+          {!!blurhash && !imageLoaded && (
+            <Blurhash blurhash={blurhash} style={styles.image} />
+          )}
+          <Image
+            source={{ uri: image }}
+            style={[styles.image, !imageLoaded && { width: 0, height: 0 }]}
+            onLoad={() => {
+              setImageLoaded(true)
+            }}
+          />
+          {!!length && (
+            <View style={styles.length}>
+              <Text style={[styles.length]}>{length}</Text>
+            </View>
+          )}
+          {!!progressPercentage && <View style={styles.progress} />}
+        </View>
         <Text
           style={{ fontSize: 16, width: width }}
           fontWeight={500}
