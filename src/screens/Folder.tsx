@@ -19,7 +19,7 @@ const Folder = ({
   const theme = useTheme()
   const { width } = useWindowDimensions()
 
-  const { item } = route.params
+  const { item, ignoreLengths } = route.params
   const { data, isLoading } = useItems(item.Id, {
     SortBy: 'IsFolder,SortName',
     SortOrder: 'Ascending',
@@ -48,7 +48,11 @@ const Folder = ({
                   ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
                   : undefined
               }
-              length={!item.IsFolder && ticksToTime(item.RunTimeTicks)}
+              length={
+                !item.IsFolder &&
+                !ignoreLengths &&
+                ticksToTime(item.RunTimeTicks)
+              }
               progressPercentage={
                 !item.IsFolder && item.UserData.PlayedPercentage
               }

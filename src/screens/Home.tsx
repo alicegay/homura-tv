@@ -51,7 +51,10 @@ const Home = ({
                       : undefined
                   }
                   onPress={() => {
-                    navigation.push('Folder', { item: item })
+                    navigation.push('Folder', {
+                      item: item,
+                      ignoreLengths: item.CollectionType === 'movies',
+                    })
                   }}
                   onFocus={() => {
                     viewsList.current.scrollToIndex({
