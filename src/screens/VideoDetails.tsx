@@ -106,8 +106,15 @@ const VideoDetails = ({
             }}
           >
             {!!item.ProductionYear && <Text>{item.ProductionYear}</Text>}
-            {!!item.RunTimeTicks && item.RunTimeTicks > 0 && (
+            {video && !!item.RunTimeTicks && item.RunTimeTicks > 0 && (
               <Text>{ticksToTime(item.RunTimeTicks, true)}</Text>
+            )}
+            {!video && data && (
+              <Text>
+                {data.ChildCount +
+                  ' Season' +
+                  (data.ChildCount !== 1 ? 's' : '')}
+              </Text>
             )}
             {!!item.OfficialRating && (
               <Classification rating={item.OfficialRating} />
@@ -150,9 +157,10 @@ const VideoDetails = ({
               </Button>
               {/* <Button icon="movie" /> */}
               <Button icon="information" />
-              <Button icon="check" />
-              <Button icon="volume-high" />
-              <Button icon="subtitles" />
+              <Button icon={data?.UserData.Played ? 'check-all' : 'check'} />
+              {streams?.videos.length > 1 && <Button icon="movie" />}
+              {streams?.audios.length > 1 && <Button icon="volume-high" />}
+              {streams?.subtitles.length > 0 && <Button icon="subtitles" />}
             </View>
           ) : (
             <View
@@ -162,10 +170,20 @@ const VideoDetails = ({
                 marginTop: 16,
               }}
             >
-              <Button icon="television" hasTVPreferredFocus={true}>
-                Seasons
-              </Button>
-              <Button icon="star">Special Features</Button>
+              {data?.ChildCount > 1 ? (
+                <Button icon="television" hasTVPreferredFocus={true}>
+                  Seasons
+                </Button>
+              ) : (
+                data?.ChildCount > 0 && (
+                  <Button icon="television" hasTVPreferredFocus={true}>
+                    Episodes
+                  </Button>
+                )
+              )}
+              {data?.SpecialFeatureCount > 0 && (
+                <Button icon="star">Special Features</Button>
+              )}
               <Button icon="information" />
             </View>
           )}
