@@ -31,6 +31,11 @@ const VideoDetails = ({
     client.server + '/Items/' + item.Id + '/Images/Logo',
   )
 
+  const video =
+    item.Type === 'Movie' ||
+    item.Type === 'Episode' ||
+    item.Type === 'MusicVideo'
+
   // useEffect(() => {
   //   console.log(item)
   // }, [])
@@ -110,9 +115,7 @@ const VideoDetails = ({
             <Text>English SSA/ASS</Text> */}
           </View>
 
-          {item.Type === 'Movie' ||
-          item.Type === 'Episode' ||
-          item.Type === 'MusicVideo' ? (
+          {video ? (
             <View
               style={{
                 flexDirection: 'row',

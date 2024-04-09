@@ -25,43 +25,34 @@ const Classification = ({ rating }: Props) => {
   const height = 20
 
   // Australia
-  if (rating.startsWith('AU-') && split in au) {
+  if (rating.startsWith('AU-') && split in au && au[split] in auIcons) {
     return <SvgXml xml={auIcons[au[split]]} width={width} height={height} />
   }
 
   // Japan
-  if (rating.startsWith('JP-') && split in jp) {
+  if (rating.startsWith('JP-') && split in jp && jp[split] in jpIcons) {
     return <SvgXml xml={jpIcons[jp[split]]} width={width} height={height} />
   }
 
   // United Kingdom
   if (
-    (rating.startsWith('UK-') && split in uk) ||
-    (rating.startsWith('GB-') && split in uk)
+    (rating.startsWith('UK-') && split in uk && uk[split] in ukIcons) ||
+    (rating.startsWith('GB-') && split in uk && uk[split] in ukIcons)
   ) {
     return <SvgXml xml={ukIcons[uk[split]]} width={width} height={height} />
   }
 
   // United States
-  if (rating.startsWith('US-') && split in us) {
+  if (rating.startsWith('US-') && split in us && us[split] in usIcons) {
     return <SvgXml xml={usIcons[us[split]]} width={width} height={height} />
   }
 
-  // Fallback
-  if (rating in us) {
+  // US Fallback
+  if (rating in us && us[rating] in usIcons) {
     return <SvgXml xml={usIcons[us[rating]]} width={width} height={height} />
   }
-  if (rating in au) {
-    return <SvgXml xml={auIcons[au[rating]]} width={width} height={height} />
-  }
-  if (rating in jp) {
-    return <SvgXml xml={jpIcons[us[rating]]} width={width} height={height} />
-  }
-  if (rating in uk) {
-    return <SvgXml xml={ukIcons[us[rating]]} width={width} height={height} />
-  }
 
-  // Fallback Fallback
+  // Fallback
   return <Text>{rating}</Text>
 }
 

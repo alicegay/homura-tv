@@ -1,6 +1,6 @@
 // https://github.com/jellyfin/jellyfin/blob/master/Emby.Server.Implementations/Localization/Ratings/jp.csv
 
-const au = {
+const jp = {
   A: 'G',
   G: 'G',
   B: 'PG12',
@@ -13,4 +13,4 @@ const au = {
   '18+': 'R18',
 }
 
-export default au
+export default jp
