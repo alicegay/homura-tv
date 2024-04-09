@@ -21,7 +21,9 @@ interface Props {
   numberOfLines?: number
   subtitle?: string
   image: string
+  imageFallback?: string
   blurhash?: string
+  strongShadow?: boolean
   width?: number
   aspectRatio?: 'wide' | 'tall' | 'square'
   progressPercentage?: number
@@ -38,7 +40,9 @@ const ItemCard = ({
   subtitle,
   numberOfLines = 1,
   image,
+  imageFallback,
   blurhash,
+  strongShadow,
   width = 256,
   aspectRatio = 'wide',
   progressPercentage,
@@ -53,6 +57,8 @@ const ItemCard = ({
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const color = !!blurhash ? averageBlurhash(blurhash) : theme.tint
+  const shadowColor = strongShadow ? color + '80' : color + '40'
+  const [imageURI, setImageURI] = useState(image)
 
   const aspectRatioMultiplier =
     aspectRatio === 'wide' ? 9 / 16 : aspectRatio === 'tall' ? 3 / 2 : 1
@@ -107,7 +113,7 @@ const ItemCard = ({
       <View style={[styles.view]}>
         <Shadow
           distance={40}
-          startColor={tinycolor(color + '40')
+          startColor={tinycolor(shadowColor)
             .lighten((1.0 - tinycolor(color).getLuminance()) * 30)
             .toHex8String()}
           disabled={!focus}
@@ -127,10 +133,14 @@ const ItemCard = ({
             <Blurhash blurhash={blurhash} style={styles.image} />
           )}
           <Image
-            source={{ uri: image }}
+            source={{ uri: imageURI }}
             style={[styles.image, !imageLoaded && { width: 0, height: 0 }]}
             onLoad={() => {
               setImageLoaded(true)
+            }}
+            onError={() => {
+              if (!!imageFallback && imageURI !== imageFallback)
+                setImageURI(imageFallback)
             }}
           />
           {!!length && (

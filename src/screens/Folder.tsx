@@ -37,6 +37,7 @@ const Folder = ({
         <FlatList
           ref={list}
           data={data.Items}
+          keyExtractor={(item: Item) => item.Id}
           renderItem={({ item, index }: { item: Item; index: number }) => (
             <ItemCard
               title={item.Name}

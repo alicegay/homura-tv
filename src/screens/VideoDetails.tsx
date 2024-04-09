@@ -11,6 +11,7 @@ import Text from 'components/Text'
 import Classification from 'components/Classification'
 import ticksToTime from 'lib/ticksToTime'
 import sortStreams, { sortedStreams } from 'lib/sortStreams'
+import useSeasons from 'api/useSeasons'
 
 const VideoDetails = ({
   navigation,
@@ -18,25 +19,36 @@ const VideoDetails = ({
 }: NativeStackScreenProps<RootStackParamList, 'VideoDetails'>) => {
   const { item } = route.params
 
+  const video =
+    item.Type === 'Movie' ||
+    item.Type === 'Episode' ||
+    item.Type === 'MusicVideo'
+
   const client = useClient()
   const theme = useTheme()
   const { data, isLoading } = useItem(item.Id)
   const [streams, setStreams] = useState<sortedStreams>(null)
 
+  const backdropExists = 'Backdrop' in item.ImageBlurHashes
+  const logoExists = 'Logo' in item.ImageBlurHashes
+
   const [primaryImage, setPrimaryImage] = useState(
     client.server + '/Items/' + item.Id + '/Images/Primary',
   )
   const [backdropImage, setBackdropImage] = useState(
-    client.server + '/Items/' + item.Id + '/Images/Backdrop/0',
+    client.server +
+      '/Items/' +
+      item.Id +
+      '/Images/Backdrop/0?' +
+      (backdropExists ? item.ImageBlurHashes.Backdrop[0] : ''),
   )
   const [logoImage, setLogoImage] = useState(
-    client.server + '/Items/' + item.Id + '/Images/Logo',
+    client.server +
+      '/Items/' +
+      item.Id +
+      '/Images/Logo?' +
+      (logoExists ? item.ImageBlurHashes.Logo[0] : ''),
   )
-
-  const video =
-    item.Type === 'Movie' ||
-    item.Type === 'Episode' ||
-    item.Type === 'MusicVideo'
 
   useEffect(() => {
     if (video && data) setStreams(sortStreams(data.MediaStreams))
@@ -171,18 +183,42 @@ const VideoDetails = ({
               }}
             >
               {data?.ChildCount > 1 ? (
-                <Button icon="television" hasTVPreferredFocus={true}>
+                <Button
+                  icon="television"
+                  hasTVPreferredFocus={true}
+                  onPress={() => {
+                    navigation.push('Season', { series: data })
+                  }}
+                >
                   Seasons
                 </Button>
               ) : (
                 data?.ChildCount > 0 && (
-                  <Button icon="television" hasTVPreferredFocus={true}>
+                  <Button
+                    icon="television"
+                    hasTVPreferredFocus={true}
+                    onPress={() => {
+                      navigation.push('Episodes', {
+                        series: data,
+                      })
+                    }}
+                  >
                     Episodes
                   </Button>
                 )
               )}
               {data?.SpecialFeatureCount > 0 && (
-                <Button icon="star">Special Features</Button>
+                <Button
+                  icon="star"
+                  onPress={() => {
+                    navigation.push('Episodes', {
+                      series: data,
+                      special: true,
+                    })
+                  }}
+                >
+                  Special Features
+                </Button>
               )}
               <Button icon="information" />
             </View>

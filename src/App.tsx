@@ -10,6 +10,8 @@ import RootStackParamList from 'types/RootStackParamList'
 import Initial from 'screens/Initial'
 import Home from 'screens/Home'
 import Folder from 'screens/Folder'
+import Season from 'screens/Season'
+import Episodes from 'screens/Episodes'
 import VideoDetails from 'screens/VideoDetails'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -59,6 +61,8 @@ const App = () => {
           <Stack.Screen name="Initial" component={Initial} />
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="Folder" component={Folder} />
+          <Stack.Screen name="Season" component={Season} />
+          <Stack.Screen name="Episodes" component={Episodes} />
           <Stack.Screen name="VideoDetails" component={VideoDetails} />
         </Stack.Navigator>
       </NavigationContainer>

@@ -39,6 +39,7 @@ const Home = ({
             <FlatList
               ref={viewsList}
               data={views.data}
+              keyExtractor={(item: Item) => item.Id}
               renderItem={({ item, index }: { item: Item; index: number }) => (
                 <ItemCard
                   title={item.Name}
