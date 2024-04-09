@@ -10,6 +10,7 @@ import Button from 'components/Button'
 import Text from 'components/Text'
 import Classification from 'components/Classification'
 import ticksToTime from 'lib/ticksToTime'
+import sortStreams, { sortedStreams } from 'lib/sortStreams'
 
 const VideoDetails = ({
   navigation,
@@ -20,6 +21,7 @@ const VideoDetails = ({
   const client = useClient()
   const theme = useTheme()
   const { data, isLoading } = useItem(item.Id)
+  const [streams, setStreams] = useState<sortedStreams>(null)
 
   const [primaryImage, setPrimaryImage] = useState(
     client.server + '/Items/' + item.Id + '/Images/Primary',
@@ -36,9 +38,9 @@ const VideoDetails = ({
     item.Type === 'Episode' ||
     item.Type === 'MusicVideo'
 
-  // useEffect(() => {
-  //   console.log(item)
-  // }, [])
+  useEffect(() => {
+    if (video && data) setStreams(sortStreams(data.MediaStreams))
+  }, [data])
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -110,9 +112,17 @@ const VideoDetails = ({
             {!!item.OfficialRating && (
               <Classification rating={item.OfficialRating} />
             )}
-            {/* <Text>4K HDR</Text>
-            <Text>Japanese DTS-HD MA 3.1</Text>
-            <Text>English SSA/ASS</Text> */}
+            {!!streams && (
+              <>
+                <Text>{streams.videos[streams.defaults.video].title}</Text>
+                <Text>{streams.audios[streams.defaults.audio].title}</Text>
+                {streams.defaults.subtitle != -1 && (
+                  <Text>
+                    {streams.subtitles[streams.defaults.subtitle].title}
+                  </Text>
+                )}
+              </>
+            )}
           </View>
 
           {video ? (
