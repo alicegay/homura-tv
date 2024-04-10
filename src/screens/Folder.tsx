@@ -10,6 +10,7 @@ import findAspectRatio from 'lib/findAspectRatio'
 import Text from 'components/Text'
 import { useRef } from 'react'
 import ticksToTime from 'lib/ticksToTime'
+import CenterLoading from 'components/CenterLoading'
 
 const Folder = ({
   navigation,
@@ -88,6 +89,7 @@ const Folder = ({
       >
         {item.Name}
       </Text>
+      {isLoading && <CenterLoading />}
     </View>
   )
 }

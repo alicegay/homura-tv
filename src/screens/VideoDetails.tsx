@@ -11,7 +11,7 @@ import Text from 'components/Text'
 import Classification from 'components/Classification'
 import ticksToTime from 'lib/ticksToTime'
 import sortStreams, { sortedStreams } from 'lib/sortStreams'
-import useSeasons from 'api/useSeasons'
+import CenterLoading from 'components/CenterLoading'
 
 const VideoDetails = ({
   navigation,
@@ -28,31 +28,42 @@ const VideoDetails = ({
   const theme = useTheme()
   const { data, isLoading } = useItem(item.Id)
   const [streams, setStreams] = useState<sortedStreams>(null)
-
-  const backdropExists = 'Backdrop' in item.ImageBlurHashes
-  const logoExists = 'Logo' in item.ImageBlurHashes
-
-  const [primaryImage, setPrimaryImage] = useState(
-    client.server + '/Items/' + item.Id + '/Images/Primary',
-  )
-  const [backdropImage, setBackdropImage] = useState(
-    client.server +
-      '/Items/' +
-      item.Id +
-      '/Images/Backdrop/0?' +
-      (backdropExists ? item.ImageBlurHashes.Backdrop[0] : ''),
-  )
-  const [logoImage, setLogoImage] = useState(
-    client.server +
-      '/Items/' +
-      item.Id +
-      '/Images/Logo?' +
-      (logoExists ? item.ImageBlurHashes.Logo[0] : ''),
-  )
+  const [videoStream, setVideoStream] = useState<number>(null)
+  const [audioStream, setAudioStream] = useState<number>(null)
+  const [subtitleStream, setSubtitleStream] = useState<number>(null)
 
   useEffect(() => {
     if (video && data) setStreams(sortStreams(data.MediaStreams))
   }, [data])
+  useEffect(() => {
+    if (streams) {
+      setVideoStream(streams.defaults.video)
+      setAudioStream(streams.defaults.audio)
+      setSubtitleStream(streams.defaults.subtitle)
+    }
+  }, [streams])
+
+  const primaryExists = 'Primary' in item.ImageBlurHashes
+  const backdropExists = 'Backdrop' in item.ImageBlurHashes
+  const logoExists = 'Logo' in item.ImageBlurHashes
+  const primaryImage =
+    client.server +
+    '/Items/' +
+    item.Id +
+    '/Images/Primary?' +
+    (primaryExists ? item.ImageBlurHashes.Primary[0] : '')
+  const backdropImage =
+    client.server +
+    '/Items/' +
+    item.Id +
+    '/Images/Backdrop/0?' +
+    (backdropExists ? item.ImageBlurHashes.Backdrop[0] : '')
+  const logoImage =
+    client.server +
+    '/Items/' +
+    item.Id +
+    '/Images/Logo?' +
+    (logoExists ? item.ImageBlurHashes.Logo[0] : '')
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -85,146 +96,172 @@ const VideoDetails = ({
           </View>
         </View>
       </ImageBackground>
-      <View style={styles.details}>
-        <LinearGradient
-          colors={[
-            '#00000000',
-            item.ImageTags.hasOwnProperty('Logo') ? '#00000040' : '#00000080',
-          ]}
-          style={styles.detailsGradient}
-        >
-          <Text style={styles.title} fontWeight={700} numberOfLines={2}>
-            {item.Name}
-          </Text>
-          {!!item.OriginalTitle && item.OriginalTitle != item.Name && (
-            <Text style={styles.subtitle} fontWeight={500}>
-              {item.OriginalTitle}
-            </Text>
-          )}
-          {item.Type === 'Episode' && (
-            <Text style={styles.subtitle} fontWeight={500}>
-              {item.SeriesName +
-                ' ' +
-                (item.ParentIndexNumber === 0
-                  ? 'Special'
-                  : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)}
-            </Text>
-          )}
-          <View
-            style={{
-              flexDirection: 'row',
-              columnGap: 16,
-              marginTop: 12,
-            }}
+      {!isLoading && (
+        <View style={styles.details}>
+          <LinearGradient
+            colors={[
+              '#00000000',
+              item.ImageTags.hasOwnProperty('Logo') ? '#00000040' : '#00000080',
+            ]}
+            style={styles.detailsGradient}
           >
-            {!!item.ProductionYear && <Text>{item.ProductionYear}</Text>}
-            {video && !!item.RunTimeTicks && item.RunTimeTicks > 0 && (
-              <Text>{ticksToTime(item.RunTimeTicks, true)}</Text>
-            )}
-            {!video && data && (
-              <Text>
-                {data.ChildCount +
-                  ' Season' +
-                  (data.ChildCount !== 1 ? 's' : '')}
+            <Text style={styles.title} fontWeight={700} numberOfLines={2}>
+              {item.Name}
+            </Text>
+            {!!item.OriginalTitle && item.OriginalTitle != item.Name && (
+              <Text style={styles.subtitle} fontWeight={500}>
+                {item.OriginalTitle}
               </Text>
             )}
-            {!!item.OfficialRating && (
-              <Classification rating={item.OfficialRating} />
+            {item.Type === 'Episode' && (
+              <Text style={styles.subtitle} fontWeight={500}>
+                {item.SeriesName +
+                  ' ' +
+                  (item.ParentIndexNumber === 0
+                    ? 'Special'
+                    : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)}
+              </Text>
             )}
-            {!!streams && (
-              <>
-                <Text>{streams.videos[streams.defaults.video].title}</Text>
-                <Text>{streams.audios[streams.defaults.audio].title}</Text>
-                {streams.defaults.subtitle != -1 && (
-                  <Text>
-                    {streams.subtitles[streams.defaults.subtitle].title}
-                  </Text>
-                )}
-              </>
-            )}
-          </View>
-
-          {video ? (
             <View
               style={{
                 flexDirection: 'row',
-                columnGap: 8,
-                marginTop: 16,
+                columnGap: 16,
+                marginTop: 12,
               }}
             >
-              {item.UserData.PlaybackPositionTicks > 0 && (
-                <Button icon="play" hasTVPreferredFocus={true}>
-                  Resume from {ticksToTime(item.UserData.PlaybackPositionTicks)}
-                </Button>
+              {!!item.ProductionYear && <Text>{item.ProductionYear}</Text>}
+              {video && !!item.RunTimeTicks && item.RunTimeTicks > 0 && (
+                <Text>{ticksToTime(item.RunTimeTicks, true)}</Text>
               )}
-              <Button
-                icon={
-                  item.UserData.PlaybackPositionTicks > 0 ? 'reload' : 'play'
-                }
-                hasTVPreferredFocus={
-                  item.UserData.PlaybackPositionTicks > 0 ? false : true
-                }
-              >
-                Play
-              </Button>
-              {/* <Button icon="movie" /> */}
-              <Button icon="information" />
-              <Button icon={data?.UserData.Played ? 'check-all' : 'check'} />
-              {streams?.videos.length > 1 && <Button icon="movie" />}
-              {streams?.audios.length > 1 && <Button icon="volume-high" />}
-              {streams?.subtitles.length > 0 && <Button icon="subtitles" />}
+              {!video && data && (
+                <Text>
+                  {data.ChildCount +
+                    ' Season' +
+                    (data.ChildCount !== 1 ? 's' : '')}
+                </Text>
+              )}
+              {!!item.OfficialRating && (
+                <Classification rating={item.OfficialRating} />
+              )}
+              {!!streams && (
+                <>
+                  <Text>{streams.videos[videoStream].title}</Text>
+                  <Text>{streams.audios[audioStream].title}</Text>
+                  {streams.defaults.subtitle != -1 && (
+                    <Text>{streams.subtitles[subtitleStream].title}</Text>
+                  )}
+                </>
+              )}
             </View>
-          ) : (
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 8,
-                marginTop: 16,
-              }}
-            >
-              {data?.ChildCount > 1 ? (
+
+            {video ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  columnGap: 8,
+                  marginTop: 16,
+                }}
+              >
+                {data.UserData.PlaybackPositionTicks > 0 && (
+                  <Button
+                    icon="play"
+                    hasTVPreferredFocus={true}
+                    onPress={() => {
+                      navigation.push('Player', {
+                        item: data,
+                        startFrom: data.UserData.PlaybackPositionTicks,
+                        streams: {
+                          video: videoStream,
+                          audio: audioStream,
+                          subtitle: subtitleStream,
+                        },
+                      })
+                    }}
+                  >
+                    Resume from{' '}
+                    {ticksToTime(data.UserData.PlaybackPositionTicks)}
+                  </Button>
+                )}
                 <Button
-                  icon="television"
-                  hasTVPreferredFocus={true}
+                  icon={
+                    data.UserData.PlaybackPositionTicks > 0 ? 'reload' : 'play'
+                  }
+                  hasTVPreferredFocus={
+                    data.UserData.PlaybackPositionTicks > 0 ? false : true
+                  }
                   onPress={() => {
-                    navigation.push('Season', { series: data })
+                    navigation.push('Player', {
+                      item: data,
+                      streams: {
+                        video: videoStream,
+                        audio: audioStream,
+                        subtitle: subtitleStream,
+                      },
+                    })
                   }}
                 >
-                  Seasons
+                  Play
                 </Button>
-              ) : (
-                data?.ChildCount > 0 && (
+                {/* <Button icon="movie" /> */}
+                <Button icon="information" />
+                <Button icon={data?.UserData.Played ? 'check-all' : 'check'} />
+                {streams?.videos.length > 1 && <Button icon="movie" />}
+                {streams?.audios.length > 1 && <Button icon="volume-high" />}
+                {streams?.subtitles.length > 0 && <Button icon="subtitles" />}
+              </View>
+            ) : (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  columnGap: 8,
+                  marginTop: 16,
+                }}
+              >
+                {data?.ChildCount > 1 ? (
                   <Button
                     icon="television"
                     hasTVPreferredFocus={true}
                     onPress={() => {
+                      navigation.push('Season', { series: data })
+                    }}
+                  >
+                    Seasons
+                  </Button>
+                ) : (
+                  data?.ChildCount > 0 && (
+                    <Button
+                      icon="television"
+                      hasTVPreferredFocus={true}
+                      onPress={() => {
+                        navigation.push('Episodes', {
+                          series: data,
+                        })
+                      }}
+                    >
+                      Episodes
+                    </Button>
+                  )
+                )}
+                {data?.SpecialFeatureCount > 0 && (
+                  <Button
+                    icon="star"
+                    onPress={() => {
                       navigation.push('Episodes', {
                         series: data,
+                        special: true,
                       })
                     }}
                   >
-                    Episodes
+                    Special Features
                   </Button>
-                )
-              )}
-              {data?.SpecialFeatureCount > 0 && (
-                <Button
-                  icon="star"
-                  onPress={() => {
-                    navigation.push('Episodes', {
-                      series: data,
-                      special: true,
-                    })
-                  }}
-                >
-                  Special Features
-                </Button>
-              )}
-              <Button icon="information" />
-            </View>
-          )}
-        </LinearGradient>
-      </View>
+                )}
+                <Button icon="information" />
+              </View>
+            )}
+          </LinearGradient>
+        </View>
+      )}
+      {isLoading && <CenterLoading />}
     </View>
   )
 }

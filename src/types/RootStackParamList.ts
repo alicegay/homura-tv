@@ -7,6 +7,11 @@ type RootStackParamList = {
   Season: { series: Item }
   Episodes: { season?: Item; series: Item; special?: boolean }
   VideoDetails: { item: Item }
+  Player: {
+    item: Item
+    startFrom?: number
+    streams: { video: number; audio: number; subtitle: number }
+  }
 }
 
 export default RootStackParamList

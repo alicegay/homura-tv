@@ -12,6 +12,7 @@ import ItemCard from 'components/ItemCard'
 import Text from 'components/Text'
 import cardSubtitle from 'lib/cardSubtitle'
 import ticksToTime from 'lib/ticksToTime'
+import CenterLoading from 'components/CenterLoading'
 
 const Home = ({
   navigation,
@@ -33,9 +34,9 @@ const Home = ({
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
-        <View>
-          {!views.isLoading && (
+      {!views.isLoading && !resume.isLoading && !nextup.isLoading && (
+        <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
+          <View>
             <FlatList
               ref={viewsList}
               data={views.data}
@@ -62,7 +63,11 @@ const Home = ({
                       index: index,
                       viewPosition: 0.5,
                     })
-                    scrollView.current.scrollTo({ x: 0, y: 0, animated: true })
+                    scrollView.current.scrollTo({
+                      x: 0,
+                      y: 0,
+                      animated: true,
+                    })
                   }}
                   hasTVPreferredFocus={index === 0}
                 />
@@ -71,21 +76,20 @@ const Home = ({
               showsHorizontalScrollIndicator={false}
               style={{ paddingTop: 48 }}
             />
-          )}
-          <Text
-            style={{
-              fontSize: 28,
-              paddingTop: 12,
-              paddingHorizontal: 32,
-              position: 'absolute',
-            }}
-            fontWeight={700}
-          >
-            Libraries
-          </Text>
-        </View>
-        <View onLayout={(event) => setReusmeY(event.nativeEvent.layout.y)}>
-          {!resume.isLoading && (
+            <Text
+              style={{
+                fontSize: 28,
+                paddingTop: 12,
+                paddingHorizontal: 32,
+                position: 'absolute',
+              }}
+              fontWeight={700}
+            >
+              Libraries
+            </Text>
+          </View>
+
+          <View onLayout={(event) => setReusmeY(event.nativeEvent.layout.y)}>
             <FlatList
               ref={resumeList}
               data={resume.data.Items}
@@ -121,21 +125,20 @@ const Home = ({
               showsHorizontalScrollIndicator={false}
               style={{ paddingTop: 32 }}
             />
-          )}
-          <Text
-            style={{
-              fontSize: 28,
-              top: -4,
-              paddingHorizontal: 32,
-              position: 'absolute',
-            }}
-            fontWeight={700}
-          >
-            Continue Watching
-          </Text>
-        </View>
-        <View>
-          {!nextup.isLoading && (
+            <Text
+              style={{
+                fontSize: 28,
+                top: -4,
+                paddingHorizontal: 32,
+                position: 'absolute',
+              }}
+              fontWeight={700}
+            >
+              Continue Watching
+            </Text>
+          </View>
+
+          <View>
             <FlatList
               ref={nextupList}
               data={nextup.data.Items}
@@ -166,20 +169,24 @@ const Home = ({
               showsHorizontalScrollIndicator={false}
               style={{ paddingTop: 32 }}
             />
-          )}
-          <Text
-            style={{
-              fontSize: 28,
-              top: -4,
-              paddingHorizontal: 32,
-              position: 'absolute',
-            }}
-            fontWeight={700}
-          >
-            Next Up
-          </Text>
-        </View>
-      </ScrollView>
+            <Text
+              style={{
+                fontSize: 28,
+                top: -4,
+                paddingHorizontal: 32,
+                position: 'absolute',
+              }}
+              fontWeight={700}
+            >
+              Next Up
+            </Text>
+          </View>
+        </ScrollView>
+      )}
+
+      {(views.isLoading || resume.isLoading || nextup.isLoading) && (
+        <CenterLoading />
+      )}
     </View>
   )
 }
