@@ -20,4 +20,8 @@ const pad = (n: number, width: number) => {
     : new Array(width - nn.length + 1).join('0') + nn
 }
 
+export const ticksToSecs = (ticks: number) => {
+  return ticks / 10000 / 1000
+}
+
 export default ticksToTime

@@ -143,15 +143,18 @@ const VideoDetails = ({
               {!!item.OfficialRating && (
                 <Classification rating={item.OfficialRating} />
               )}
-              {!!streams && (
-                <>
-                  <Text>{streams.videos[videoStream].title}</Text>
-                  <Text>{streams.audios[audioStream].title}</Text>
-                  {streams.defaults.subtitle != -1 && (
-                    <Text>{streams.subtitles[subtitleStream].title}</Text>
-                  )}
-                </>
-              )}
+              {!!streams &&
+                videoStream !== null &&
+                audioStream !== null &&
+                subtitleStream !== null && (
+                  <>
+                    <Text>{streams.videos[videoStream].title}</Text>
+                    <Text>{streams.audios[audioStream].title}</Text>
+                    {streams.defaults.subtitle != -1 && (
+                      <Text>{streams.subtitles[subtitleStream].title}</Text>
+                    )}
+                  </>
+                )}
             </View>
 
             {video ? (

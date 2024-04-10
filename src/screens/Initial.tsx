@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
-import { View } from 'react-native'
+import { Linking, View } from 'react-native'
 import { system, users } from 'jellyfin-api'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { ParamListBase } from '@react-navigation/native'
 import useClient from 'hooks/useClient'
 import Button from 'components/Button'
+import DeviceInfo from 'react-native-device-info'
 
 const Initial = ({
   navigation,
@@ -67,6 +67,7 @@ const Initial = ({
         Sign out
       </Button>
       <Button
+        hasTVPreferredFocus={true}
         onPress={() => {
           navigation.push('Home')
         }}
@@ -75,10 +76,63 @@ const Initial = ({
       </Button>
       <Button
         onPress={() => {
-          navigation.push('VideoDetails')
+          console.log(DeviceInfo.getSupportedMediaTypeListSync())
         }}
       >
-        SCREEN: VideoDetails
+        Supported Codecs
+      </Button>
+      {/* Android TV Emulator:
+      [
+        "audio/mp4a-latm",
+        "audio/3gpp",
+        "audio/amr-wb",
+        "audio/flac",
+        "audio/g711-alaw",
+        "audio/mpeg",
+        "audio/opus",
+        "audio/raw",
+        "audio/vorbis",
+        "video/avc",
+        "video/x-vnd.on2.vp8",
+        "video/x-vnd.on2.vp9",
+        "video/av01",
+        "video/3gpp",
+        "video/hevc",
+        "video/mpeg2",
+        "video/mp4v-es",
+      ]
+        Chromecast with Google TV:
+      [
+        "audio/mp4a-latm",
+        "audio/3gpp",
+        "audio/amr-wb",
+        "audio/flac",
+        "audio/g711-alaw",
+        "audio/mpeg",
+        "audio/opus",
+        "audio/raw",
+        "audio/vorbis",
+        "video/x-vnd.on2.vp9",
+        "video/avc",
+        "video/dolby-vision",
+        "video/hevc",
+        "video/mpeg2",
+        "video/mp4v-es",
+        "video/x-vnd.on2.vp8",
+        "video/3gpp",
+        "video/x-vnd.on2.vp8",
+      ]
+      */}
+      <Button
+        onPress={async () => {
+          try {
+            await Linking.sendIntent('android.settings.CAPTIONING_SETTINGS')
+          } catch (e: any) {
+            console.log(e)
+          }
+        }}
+      >
+        Captions Settings
       </Button>
     </View>
   )
