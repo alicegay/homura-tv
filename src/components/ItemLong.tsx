@@ -85,16 +85,16 @@ const ItemLong = ({
       style={style}
     >
       <View style={[styles.view, focus && { backgroundColor: color + '60' }]}>
-        <View style={styles.image}>
-          <Shadow
-            distance={40}
-            startColor={tinycolor(color + '80')
-              .lighten((1.0 - tinycolor(color).getLuminance()) * 30)
-              .toHex8String()}
-            disabled={!focus}
-            style={styles.image}
-          />
-          {!imageLoaded && (
+        <Shadow
+          distance={40}
+          startColor={tinycolor(color + '80')
+            .lighten((1.0 - tinycolor(color).getLuminance()) * 30)
+            .toHex8String()}
+          disabled={!focus}
+          style={[styles.image, { position: 'absolute' }]}
+        />
+        <View style={[styles.image, { backgroundColor: 'transparent' }]}>
+          {!!blurhash && (
             <Blurhash
               blurhash={blurhash}
               style={[styles.image, { position: 'absolute' }]}

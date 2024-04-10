@@ -126,15 +126,19 @@ const ItemCard = ({
               position: 'absolute',
               top: numberOfLines > 1 ? 8 : 16,
               left: 16,
+              backgroundColor: 'transparent',
             },
           ]}
         >
-          {!!blurhash && !imageLoaded && (
-            <Blurhash blurhash={blurhash} style={styles.image} />
+          {!!blurhash && (
+            <Blurhash
+              blurhash={blurhash}
+              style={[styles.image, { position: 'absolute' }]}
+            />
           )}
           <Image
             source={{ uri: imageURI }}
-            style={[styles.image, !imageLoaded && { width: 0, height: 0 }]}
+            style={[styles.image, { position: 'absolute' }]}
             onLoad={() => {
               setImageLoaded(true)
             }}
