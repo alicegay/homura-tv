@@ -1,0 +1,43 @@
+await Linking.sendIntent('android.settings.CAPTIONING_SETTINGS')
+
+Android TV Emulator:
+[
+  "audio/mp4a-latm",
+  "audio/3gpp",
+  "audio/amr-wb",
+  "audio/flac",
+  "audio/g711-alaw",
+  "audio/mpeg",
+  "audio/opus",
+  "audio/raw",
+  "audio/vorbis",
+  "video/avc",
+  "video/x-vnd.on2.vp8",
+  "video/x-vnd.on2.vp9",
+  "video/av01",
+  "video/3gpp",
+  "video/hevc",
+  "video/mpeg2",
+  "video/mp4v-es",
+]
+  Chromecast with Google TV:
+[
+  "audio/mp4a-latm",
+  "audio/3gpp",
+  "audio/amr-wb",
+  "audio/flac",
+  "audio/g711-alaw",
+  "audio/mpeg",
+  "audio/opus",
+  "audio/raw",
+  "audio/vorbis",
+  "video/x-vnd.on2.vp9",
+  "video/avc",
+  "video/dolby-vision",
+  "video/hevc",
+  "video/mpeg2",
+  "video/mp4v-es",
+  "video/x-vnd.on2.vp8",
+  "video/3gpp",
+  "video/x-vnd.on2.vp8",
+]

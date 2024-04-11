@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 interface ClientStore {
   client: AxiosInstance | null
   server: string | null
+  name: string | null
   user: string | null
   token: string | null
   api: Client
@@ -21,6 +22,7 @@ interface ClientStore {
   }) => void
   signout: () => void
   clear: () => void
+  setName: (name: string) => void
 }
 
 const useClient = create<ClientStore>()(
@@ -28,6 +30,7 @@ const useClient = create<ClientStore>()(
     (set) => ({
       client: null,
       server: null,
+      name: null,
       user: null,
       token: null,
       api: {
@@ -66,7 +69,14 @@ const useClient = create<ClientStore>()(
       },
       signout: () => set(() => ({ client: null, user: null, token: null })),
       clear: () =>
-        set(() => ({ client: null, server: null, user: null, token: null })),
+        set(() => ({
+          client: null,
+          server: null,
+          name: null,
+          user: null,
+          token: null,
+        })),
+      setName: (name) => set(() => ({ name: name })),
     }),
     {
       name: 'client',

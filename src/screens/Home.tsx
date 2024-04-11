@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FlatList, ScrollView, View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { CommonActions } from '@react-navigation/native'
 import RootStackParamList from 'types/RootStackParamList'
 import Item from 'jellyfin-api/lib/types/media/Item'
 import useClient from 'hooks/useClient'
