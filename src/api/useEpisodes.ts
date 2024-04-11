@@ -5,7 +5,7 @@ import ItemsQuery from 'jellyfin-api/lib/types/users/ItemsQuery'
 
 const useEpisodes = (itemId: string, params?: ItemsQuery) => {
   return useQuery({
-    queryKey: ['episodes', itemId],
+    queryKey: ['episodes', itemId, params],
     queryFn: () => {
       return shows.episodes(useClient.getState().api, itemId, params)
     },
