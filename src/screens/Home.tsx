@@ -106,7 +106,7 @@ const Home = ({
                       : undefined
                   }
                   length={ticksToTime(item.RunTimeTicks)}
-                  progressPercentage={80}
+                  progressPercentage={item.UserData.PlayedPercentage}
                   onFocus={() => {
                     resumeList.current.scrollToIndex({
                       index: index,
