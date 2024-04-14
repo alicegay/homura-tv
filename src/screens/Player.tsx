@@ -17,8 +17,16 @@ import CenterLoading from 'components/CenterLoading'
 import LinearGradient from 'react-native-linear-gradient'
 import Clock from 'components/Clock'
 import PlayerButton from 'components/PlayerButton'
-import Button from 'components/Button'
 import sortStreams, { sortedStreams } from 'lib/sortStreams'
+import { items, sessions } from 'jellyfin-api'
+import PlaybackInfoQuery from 'jellyfin-api/lib/types/queries/PlaybackInfoQuery'
+import deviceProfile from 'lib/deviceProfile'
+import ProgressQuery, {
+  ProgressStoppedQuery,
+} from 'jellyfin-api/lib/types/queries/ProgressQuery'
+import secsToTicks from 'lib/secsToTicks'
+import useInterval from 'hooks/useInterval'
+import { useBackHandler } from '@react-native-community/hooks'
 
 const Player = ({
   navigation,
@@ -43,10 +51,97 @@ const Player = ({
   const [audioStream, setAudioStream] = useState(initStreams.audio)
   const [subtitleStream, setSubtitleStream] = useState(initStreams.subtitle)
 
+  const [playMethod, setPlayMethod] = useState<
+    'DirectPlay' | 'DirectStream' | 'Transcode'
+  >('DirectPlay')
+  const [playSession, setPlaySession] = useState<string>(null)
+
   useEffect(() => {
-    setSource(client.server + '/Videos/' + item.Id + '/stream?static=true')
     setStreams(sortStreams(item.MediaStreams))
+    const profile = deviceProfile()
+    const playbackInfo: PlaybackInfoQuery = {
+      DeviceProfile: profile,
+      AudioStreamIndex: initStreams.audio,
+      SubtitleStreamIndex: initStreams.subtitle,
+    }
+    items.playbackInfo(client, item.Id, playbackInfo).then((res) => {
+      setPlaySession(res.PlaySessionId)
+      if (res.MediaSources[0].SupportsDirectPlay) {
+        console.log('DIRECT PLAY')
+        setPlayMethod('DirectPlay')
+        setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
+      } else {
+        if (res.MediaSources[0].SupportsDirectStream) {
+          console.log('DIRECT STREAM')
+          setPlayMethod('DirectStream')
+        } else {
+          console.log('TRANSCODING')
+          setPlayMethod('Transcode')
+        }
+        setSource(client.server + res.MediaSources[0].TranscodingUrl)
+        console.log(res)
+      }
+    })
   }, [])
+
+  const [firstPause, setFirstPause] = useState(false)
+  useEffect(() => {
+    if (!firstPause) {
+      setFirstPause(true)
+    } else {
+      console.log('PAUSE/UNPAUSE: ' + secsToTime(currentTime))
+      playingProgress(paused ? 'pause' : 'unpause')
+    }
+  }, [paused])
+
+  useInterval(() => {
+    console.log('PROGRESS: ' + secsToTime(currentTime))
+    playingProgress('timeupdate')
+  }, 10 * 1000)
+
+  const playingProgress = (
+    event: 'timeupdate' | 'pause' | 'unpause',
+    position?: number,
+  ) => {
+    const payload: ProgressQuery = {
+      CanSeek: true,
+      ItemId: item.Id,
+      SessionId: playSession,
+      EventName: event,
+      IsPaused: paused,
+      IsMuted: false,
+      PositionTicks: position
+        ? secsToTicks(position)
+        : currentTime === 0 && !!startFrom
+        ? startFrom
+        : secsToTicks(currentTime),
+      PlayMethod: playMethod,
+      RepeatMode: 'RepeatNone',
+    }
+    sessions.playingProgress(client, payload)
+  }
+
+  useBackHandler(() => {
+    if (seeking) {
+      setSeeking(false)
+      return true
+    } else {
+      console.log('PLAYBACK END: ' + secsToTime(currentTime))
+      playingStopped()
+      return false
+    }
+  })
+
+  const playingStopped = (failed: boolean = false) => {
+    const payload: ProgressStoppedQuery = {
+      ItemId: item.Id,
+      SessionId: playSession,
+      Failed: failed,
+    }
+    sessions.playingStopped(client, payload).then(() => {
+      // TODO)) invalidate queries
+    })
+  }
 
   return (
     <View style={{ backgroundColor: '#000', width: '100%', height: '100%' }}>
@@ -94,9 +189,16 @@ const Player = ({
             videoRef.current.seek(ticksToSecs(startFrom))
           }
         }}
+        onEnd={() => {
+          console.log('PLAYBACK END: ' + secsToTime(currentTime))
+          playingStopped()
+          navigation.pop()
+        }}
         onError={(e) => {
           console.log(e.error.errorString)
           console.log(e.error.errorException)
+          playingStopped(true)
+          navigation.pop()
         }}
         style={{
           position: 'absolute',
