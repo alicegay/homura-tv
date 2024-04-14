@@ -8,13 +8,17 @@ export interface formattedStream {
   title: string
   name?: string
   codec: string
+  codecName?: string
+  resolution?: string
+  framerate?: number
+  layout?: string
   default: boolean
   original: MediaStream
 }
 
 const formatStream = (stream: MediaStream): formattedStream => {
   if (stream.Type === 'Video') {
-    var title = [
+    let title = [
       getVideoSize(stream.Width, stream.Height, stream.IsInterlaced),
       // stream.AspectRatio,
       stream.Codec.toUpperCase(),
@@ -27,6 +31,12 @@ const formatStream = (stream: MediaStream): formattedStream => {
       title: title.join(' '),
       name: stream.Title,
       codec: stream.Codec.toUpperCase(),
+      resolution: getVideoSize(
+        stream.Width,
+        stream.Height,
+        stream.IsInterlaced,
+      ),
+      framerate: Math.round(stream.RealFrameRate),
       default: stream.IsDefault,
       original: stream,
     }
@@ -45,6 +55,10 @@ const formatStream = (stream: MediaStream): formattedStream => {
       title: title.join(' '),
       name: stream.Title,
       codec: stream.Codec.toUpperCase(),
+      codecName: getAudioFormat(stream.Codec),
+      layout: stream.ChannelLayout
+        ? capitalize(stream.ChannelLayout)
+        : getAudioLayout(stream.Channels),
       default: stream.IsDefault,
       original: stream,
     }
