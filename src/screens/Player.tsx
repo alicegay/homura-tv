@@ -7,6 +7,8 @@ import Video, {
   SelectedVideoTrackType,
   VideoRef,
 } from 'react-native-video'
+import { useBackHandler } from '@react-native-community/hooks'
+import { useQueryClient } from '@tanstack/react-query'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
 import { ticksToSecs } from 'lib/ticksToTime'
@@ -26,7 +28,6 @@ import ProgressQuery, {
 } from 'jellyfin-api/lib/types/queries/ProgressQuery'
 import secsToTicks from 'lib/secsToTicks'
 import useInterval from 'hooks/useInterval'
-import { useBackHandler } from '@react-native-community/hooks'
 
 const Player = ({
   navigation,
@@ -35,6 +36,7 @@ const Player = ({
   const { item, startFrom, streams: initStreams } = route.params
   const client = useClient()
   const theme = useTheme()
+  const query = useQueryClient()
 
   const videoRef = useRef<VideoRef>(null)
   const [source, setSource] = useState<string>(null)
@@ -118,6 +120,7 @@ const Player = ({
       PlayMethod: playMethod,
       RepeatMode: 'RepeatNone',
     }
+    console.log(payload)
     sessions.playingProgress(client, payload)
   }
 
@@ -136,10 +139,17 @@ const Player = ({
     const payload: ProgressStoppedQuery = {
       ItemId: item.Id,
       SessionId: playSession,
+      PositionTicks:
+        currentTime === 0 && !!startFrom ? startFrom : secsToTicks(currentTime),
       Failed: failed,
     }
     sessions.playingStopped(client, payload).then(() => {
-      // TODO)) invalidate queries
+      query.invalidateQueries({ queryKey: ['views'] })
+      query.invalidateQueries({ queryKey: ['itemsResume'] })
+      query.invalidateQueries({ queryKey: ['showsNextup'] })
+      query.invalidateQueries({ queryKey: ['item', item.Id] })
+      if (item.SeasonId)
+        query.invalidateQueries({ queryKey: ['episodes', item.SeasonId] })
     })
   }
 
@@ -182,11 +192,17 @@ const Player = ({
             setBufferTime(e.playableDuration)
           }
         }}
-        onSeek={(e) => {}}
+        onSeek={(e) => {
+          console.log('SEEK: ' + secsToTime(e.currentTime))
+          setCurrentTime(e.currentTime)
+          playingProgress('timeupdate', e.currentTime)
+        }}
         onLoad={(e) => {
           setDuration(e.duration)
           if (!!startFrom) {
             videoRef.current.seek(ticksToSecs(startFrom))
+          } else {
+            playingProgress('timeupdate', e.currentTime)
           }
         }}
         onEnd={() => {

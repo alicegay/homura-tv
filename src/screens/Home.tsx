@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { CommonActions } from '@react-navigation/native'
 import RootStackParamList from 'types/RootStackParamList'
 import Item from 'jellyfin-api/lib/types/media/Item'
+import { useQueryClient } from '@tanstack/react-query'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
 import useViews from 'api/useViews'
@@ -21,12 +22,19 @@ const Home = ({
 }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
   const client = useClient()
   const theme = useTheme()
+  const query = useQueryClient()
   const { height } = useWindowDimensions()
   const [resumeY, setReusmeY] = useState(0)
 
   const views = useViews()
   const resume = useItemsResume({ EnableImageTypes: 'Primary,Backdrop,Logo' })
   const nextup = useShowsNextup({ EnableImageTypes: 'Primary,Backdrop,Logo' })
+
+  useEffect(() => {
+    query.invalidateQueries({ queryKey: ['views'] })
+    query.invalidateQueries({ queryKey: ['itemsResume'] })
+    query.invalidateQueries({ queryKey: ['showsNextup'] })
+  }, [navigation])
 
   const scrollView = useRef<ScrollView>()
   const viewsList = useRef<FlatList>()
