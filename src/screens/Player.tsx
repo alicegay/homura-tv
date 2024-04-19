@@ -28,6 +28,8 @@ import ProgressQuery, {
 } from 'jellyfin-api/lib/types/queries/ProgressQuery'
 import secsToTicks from 'lib/secsToTicks'
 import useInterval from 'hooks/useInterval'
+import formatPlayerCodec from 'lib/formatPlayerCodec'
+import { getVideoSize } from 'lib/formatStream'
 
 const Player = ({
   navigation,
@@ -45,7 +47,7 @@ const Player = ({
   const [seeking, setSeeking] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [bufferTime, setBufferTime] = useState(0)
-  const [seekTimeState, setSeekTime] = useState(0)
+  const [seekTime, setSeekTime] = useState(0)
   const [duration, setDuration] = useState(0)
 
   const [streams, setStreams] = useState<sortedStreams>(null)
@@ -53,18 +55,31 @@ const Player = ({
   const [audioStream, setAudioStream] = useState(initStreams.audio)
   const [subtitleStream, setSubtitleStream] = useState(initStreams.subtitle)
 
+  const [currentVideoCodec, setCurrentVideoCodec] = useState<string>(null)
+  const [currentVideoResolution, setCurrentVideoResolution] =
+    useState<string>(null)
+  const [currentAudioCodec, setCurrentAudioCodec] = useState<string>(null)
+
   const [playMethod, setPlayMethod] = useState<
     'DirectPlay' | 'DirectStream' | 'Transcode'
   >('DirectPlay')
   const [playSession, setPlaySession] = useState<string>(null)
 
   useEffect(() => {
-    setStreams(sortStreams(item.MediaStreams))
+    const s = sortStreams(item.MediaStreams)
+    setStreams(s)
     const profile = deviceProfile()
     const playbackInfo: PlaybackInfoQuery = {
       DeviceProfile: profile,
-      AudioStreamIndex: initStreams.audio,
-      SubtitleStreamIndex: initStreams.subtitle,
+      MediaSourceId: item.Id,
+      MaxStreamingBitrate: 50000000,
+      MaxAudioChannels: 8,
+      AudioStreamIndex: s.audios[initStreams.audio].id,
+      SubtitleStreamIndex:
+        initStreams.subtitle === -1 ? -1 : s.subtitles[initStreams.subtitle].id,
+      EnableDirectPlay: true,
+      EnableDirectStream: true,
+      EnableTranscoding: true,
     }
     items.playbackInfo(client, item.Id, playbackInfo).then((res) => {
       setPlaySession(res.PlaySessionId)
@@ -82,6 +97,7 @@ const Player = ({
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
         console.log(res)
+        // console.log(res.MediaSources[0].MediaStreams)
       }
     })
   }, [])
@@ -99,19 +115,22 @@ const Player = ({
   useInterval(() => {
     console.log('PROGRESS: ' + secsToTime(currentTime))
     playingProgress('timeupdate')
-  }, 10 * 1000)
+  }, 10_1000)
 
   const playingProgress = (
-    event: 'timeupdate' | 'pause' | 'unpause',
+    event: 'timeupdate' | 'pause' | 'unpause' | undefined,
     position?: number,
   ) => {
     const payload: ProgressQuery = {
       CanSeek: true,
       ItemId: item.Id,
+      MediaSourceId: item.Id,
       SessionId: playSession,
+      PlaySessionId: playSession,
       EventName: event,
       IsPaused: paused,
       IsMuted: false,
+      VolumeLevel: 100,
       PositionTicks: position
         ? secsToTicks(position)
         : currentTime === 0 && !!startFrom
@@ -119,9 +138,15 @@ const Player = ({
         : secsToTicks(currentTime),
       PlayMethod: playMethod,
       RepeatMode: 'RepeatNone',
+      AudioStreamIndex: streams.audios[initStreams.audio].id,
+      SubtitleStreamIndex: streams.subtitles[initStreams.subtitle].id,
     }
     console.log(payload)
-    sessions.playingProgress(client, payload)
+    if (event === undefined) {
+      sessions.playing(client, payload)
+    } else {
+      sessions.playingProgress(client, payload)
+    }
   }
 
   useBackHandler(() => {
@@ -138,7 +163,9 @@ const Player = ({
   const playingStopped = (failed: boolean = false) => {
     const payload: ProgressStoppedQuery = {
       ItemId: item.Id,
+      MediaSourceId: item.Id,
       SessionId: playSession,
+      PlaySessionId: playSession,
       PositionTicks:
         currentTime === 0 && !!startFrom ? startFrom : secsToTicks(currentTime),
       Failed: failed,
@@ -199,11 +226,21 @@ const Player = ({
         }}
         onLoad={(e) => {
           setDuration(e.duration)
-          if (!!startFrom) {
-            videoRef.current.seek(ticksToSecs(startFrom))
-          } else {
-            playingProgress('timeupdate', e.currentTime)
+          playingProgress(undefined, e.currentTime)
+          if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
+        }}
+        onVideoTracks={(e) => {
+          console.log(e)
+          if (e.videoTracks.length > 0) {
+            setCurrentVideoCodec(formatPlayerCodec(e.videoTracks[0].codecs))
+            setCurrentVideoResolution(
+              getVideoSize(e.videoTracks[0].width, e.videoTracks[0].height),
+            )
           }
+        }}
+        onAudioTracks={(e) => {
+          console.log(e)
+          setCurrentAudioCodec(formatPlayerCodec(e.audioTracks[0].type))
         }}
         onEnd={() => {
           console.log('PLAYBACK END: ' + secsToTime(currentTime))
@@ -271,17 +308,45 @@ const Player = ({
               <PlayerButton icon="cog" focus={false} />
             </View>
             {!!streams && (
-              <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
-                {streams.videos[videoStream].resolution +
-                  streams.videos[videoStream].framerate +
-                  ' ' +
-                  streams.videos[videoStream].codec +
-                  ' / ' +
-                  streams.audios[audioStream].codecName +
-                  (streams.audios[audioStream].layout !== 'Stereo'
-                    ? ' ' + streams.audios[audioStream].layout
-                    : '')}
-              </Text>
+              <>
+                {playMethod !== 'DirectPlay' && !!currentVideoCodec ? (
+                  <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
+                    {currentVideoResolution +
+                      streams.videos[videoStream].framerate +
+                      ' ' +
+                      currentVideoCodec}
+                  </Text>
+                ) : (
+                  <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
+                    {streams.videos[videoStream].resolution +
+                      streams.videos[videoStream].framerate +
+                      ' ' +
+                      streams.videos[videoStream].codec}
+                  </Text>
+                )}
+                <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>/</Text>
+                <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
+                  {(playMethod === 'DirectPlay'
+                    ? streams.audios[audioStream].codec
+                    : currentAudioCodec) +
+                    (streams.audios[audioStream].layout !== 'Stereo'
+                      ? ' ' + streams.audios[audioStream].layout
+                      : '')}
+                </Text>
+
+                {playMethod !== 'DirectPlay' && (
+                  <>
+                    <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
+                      /
+                    </Text>
+                    <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
+                      {playMethod === 'DirectStream'
+                        ? 'Direct Stream'
+                        : 'Transcoding'}
+                    </Text>
+                  </>
+                )}
+              </>
             )}
           </View>
           <View style={{ flex: 1, flexDirection: 'row', gap: 32 }}>

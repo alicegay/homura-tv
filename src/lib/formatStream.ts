@@ -80,7 +80,7 @@ const formatStream = (stream: MediaStream): formattedStream => {
   }
 }
 
-const getVideoSize = (
+export const getVideoSize = (
   width: number,
   height: number,
   interlaced: boolean = false,

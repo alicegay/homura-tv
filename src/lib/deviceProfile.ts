@@ -10,7 +10,13 @@ const deviceProfile = () => {
         AudioCodec: 'vorbis,opus',
       },
       {
-        Container: 'mp4,m4v,mov',
+        Container: 'mp4,m4v',
+        Type: 'Video',
+        VideoCodec: 'h264,hevc,vp9',
+        AudioCodec: 'aac,mp3,opus,flac,vorbis',
+      },
+      {
+        Container: 'mov',
         Type: 'Video',
         VideoCodec: 'h264,hevc',
         AudioCodec: 'aac,mp3,opus,flac,vorbis',
