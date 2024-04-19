@@ -15,6 +15,8 @@ import Text from 'components/Text'
 import cardSubtitle from 'lib/cardSubtitle'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
+import Button from 'components/Button'
+import codecSupport from 'lib/codecSupport'
 
 const Home = ({
   navigation,
@@ -43,6 +45,13 @@ const Home = ({
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <Button
+        onPress={() => {
+          codecSupport()
+        }}
+      >
+        Codec Support
+      </Button>
       {!views.isLoading && !resume.isLoading && !nextup.isLoading && (
         <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
           <View>
