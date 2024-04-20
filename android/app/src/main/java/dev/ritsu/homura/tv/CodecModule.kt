@@ -203,38 +203,39 @@ class CodecModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
   }
 
+  data class Codec(val name: String, val encoding: Int)
   @ReactMethod fun getAudioSupport(promise: Promise) {
-    //val audioManager = currentActivity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    val codecs: ArrayList<String> = ArrayList()
-    val attr = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build()
-    val ac3 = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_AC3).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    val eac3 = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_E_AC3).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    val dmat = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_DOLBY_MAT).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    val truehd = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_DOLBY_TRUEHD).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    val dts = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_DTS).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    val dtshd = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_DTS_HD).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    val pcm8 = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_8BIT).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    val pcmf = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_FLOAT).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-    if (AudioTrack.isDirectPlaybackSupported(ac3, attr)) { codecs.add("AC3") }
-    if (AudioTrack.isDirectPlaybackSupported(eac3, attr)) { codecs.add("EAC3") }
-    if (AudioTrack.isDirectPlaybackSupported(dmat, attr)) { codecs.add("DMAT") }
-    if (AudioTrack.isDirectPlaybackSupported(truehd, attr)) { codecs.add("TRUEHD") }
-    if (AudioTrack.isDirectPlaybackSupported(dts, attr)) { codecs.add("DTS") }
-    if (AudioTrack.isDirectPlaybackSupported(dtshd, attr)) { codecs.add("DTSHD") }
-    if (AudioTrack.isDirectPlaybackSupported(pcm8, attr)) { codecs.add("PCM8") }
-    if (AudioTrack.isDirectPlaybackSupported(pcmf, attr)) { codecs.add("PCMF") }
+    val codecs = ArrayList<Codec>()
+    codecs.add(Codec("AC3", AudioFormat.ENCODING_AC3))
+    codecs.add(Codec("EAC3", AudioFormat.ENCODING_E_AC3))
+    codecs.add(Codec("DMAT", AudioFormat.ENCODING_DOLBY_MAT))
+    codecs.add(Codec("TRUEHD", AudioFormat.ENCODING_DOLBY_TRUEHD))
+    codecs.add(Codec("DTS", AudioFormat.ENCODING_DTS))
+    codecs.add(Codec("DTSHD", AudioFormat.ENCODING_DTS_HD))
+    codecs.add(Codec("PCM8", AudioFormat.ENCODING_PCM_8BIT))
+    codecs.add(Codec("PCMF", AudioFormat.ENCODING_PCM_FLOAT))
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-      val dtshdma = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_DTS_HD_MA).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-      val dtsx = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_DTS_UHD_P1).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-      if (AudioTrack.isDirectPlaybackSupported(dtshdma, attr)) { codecs.add("DTSMA") }
-      if (AudioTrack.isDirectPlaybackSupported(dtsx, attr)) { codecs.add("DTSX") }
+      codecs.add(Codec("DTSHDMA", AudioFormat.ENCODING_DTS_HD_MA))
+      codecs.add(Codec("DTSX", AudioFormat.ENCODING_DTS_UHD_P1))
+    } else {
+      codecs.add(Codec("DTSX", AudioFormat.ENCODING_DTS_UHD))
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-      val pcm24 = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_24BIT_PACKED).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-      val pcm32 = AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_32BIT).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
-      if (AudioTrack.isDirectPlaybackSupported(pcm24, attr)) { codecs.add("PCM24LE") }
-      if (AudioTrack.isDirectPlaybackSupported(pcm32, attr)) { codecs.add("PCM32") }
+      codecs.add(Codec("PCM24LE", AudioFormat.ENCODING_PCM_24BIT_PACKED))
+      codecs.add(Codec("PCM32", AudioFormat.ENCODING_PCM_32BIT))
     }
-    promise.resolve(codecs.joinToString("\",\"", "[\"", "\"]"))
+
+    val supportedCodecs: ArrayList<String> = ArrayList()
+    val attr = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build()
+    for (codec in codecs) {
+      val audio = AudioFormat.Builder().setEncoding(codec.encoding).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()
+      val audio51 = AudioFormat.Builder().setEncoding(codec.encoding).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1).build()
+      val audio71 = AudioFormat.Builder().setEncoding(codec.encoding).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_7POINT1_SURROUND).build()
+      if (AudioTrack.isDirectPlaybackSupported(audio, attr)) { supportedCodecs.add(codec.name) }
+      if (AudioTrack.isDirectPlaybackSupported(audio51, attr)) { supportedCodecs.add(codec.name + "_51") }
+      if (AudioTrack.isDirectPlaybackSupported(audio71, attr)) { supportedCodecs.add(codec.name + "_71") }
+    }
+
+    promise.resolve(supportedCodecs.joinToString("\",\"", "[\"", "\"]"))
   }
 }
