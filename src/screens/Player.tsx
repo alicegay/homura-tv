@@ -11,25 +11,26 @@ import { useBackHandler } from '@react-native-community/hooks'
 import { useQueryClient } from '@tanstack/react-query'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
+import useSettings from 'hooks/useSettings'
+import useInterval from 'hooks/useInterval'
+import deviceProfile from 'lib/deviceProfile'
 import { ticksToSecs } from 'lib/ticksToTime'
 import secsToTime from 'lib/secsToTime'
+import secsToTicks from 'lib/secsToTicks'
+import formatPlayerCodec from 'lib/formatPlayerCodec'
+import { getVideoSize } from 'lib/formatStream'
+import sortStreams, { sortedStreams } from 'lib/sortStreams'
 import Text from 'components/Text'
 import Seekbar from 'components/Seekbar'
 import CenterLoading from 'components/CenterLoading'
-import LinearGradient from 'react-native-linear-gradient'
 import Clock from 'components/Clock'
 import PlayerButton from 'components/PlayerButton'
-import sortStreams, { sortedStreams } from 'lib/sortStreams'
+import LinearGradient from 'react-native-linear-gradient'
 import { items, sessions } from 'jellyfin-api'
 import PlaybackInfoQuery from 'jellyfin-api/lib/types/queries/PlaybackInfoQuery'
-import deviceProfile from 'lib/deviceProfile'
 import ProgressQuery, {
   ProgressStoppedQuery,
 } from 'jellyfin-api/lib/types/queries/ProgressQuery'
-import secsToTicks from 'lib/secsToTicks'
-import useInterval from 'hooks/useInterval'
-import formatPlayerCodec from 'lib/formatPlayerCodec'
-import { getVideoSize } from 'lib/formatStream'
 
 const Player = ({
   navigation,
@@ -38,6 +39,7 @@ const Player = ({
   const { item, startFrom, streams: initStreams } = route.params
   const client = useClient()
   const theme = useTheme()
+  const settings = useSettings()
   const query = useQueryClient()
 
   const videoRef = useRef<VideoRef>(null)
@@ -68,9 +70,8 @@ const Player = ({
   useEffect(() => {
     const s = sortStreams(item.MediaStreams)
     setStreams(s)
-    const profile = deviceProfile()
     const playbackInfo: PlaybackInfoQuery = {
-      DeviceProfile: profile,
+      DeviceProfile: settings.deviceProfile,
       MediaSourceId: item.Id,
       MaxStreamingBitrate: 50000000,
       MaxAudioChannels: 8,
@@ -139,7 +140,10 @@ const Player = ({
       PlayMethod: playMethod,
       RepeatMode: 'RepeatNone',
       AudioStreamIndex: streams.audios[initStreams.audio].id,
-      SubtitleStreamIndex: streams.subtitles[initStreams.subtitle].id,
+      SubtitleStreamIndex:
+        initStreams.subtitle === -1
+          ? -1
+          : streams.subtitles[initStreams.subtitle].id,
     }
     console.log(payload)
     if (event === undefined) {

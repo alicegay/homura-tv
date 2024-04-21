@@ -135,13 +135,13 @@ class CodecModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     )
   }
 
-  @ReactMethod fun supportsHevc(promise: Promise) {
+  @ReactMethod fun supportsHEVC(promise: Promise) {
     promise.resolve(
       hasCodecForMime(MediaFormat.MIMETYPE_VIDEO_HEVC)
     )
   }
 
-  @ReactMethod fun supportsHevcMain10(promise: Promise) {
+  @ReactMethod fun supportsHEVCMain10(promise: Promise) {
     promise.resolve(
       hasDecoder(
         MediaFormat.MIMETYPE_VIDEO_HEVC,
@@ -151,7 +151,7 @@ class CodecModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     )
   }
 
-  @ReactMethod fun getHevcMainLevel(promise: Promise) {
+  @ReactMethod fun getHEVCMainLevel(promise: Promise) {
     promise.resolve(
       getHevcLevelString(
         CodecProfileLevel.HEVCProfileMain
@@ -159,7 +159,7 @@ class CodecModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     )
   }
 
-  @ReactMethod fun getHevcMain10Level(promise: Promise) {
+  @ReactMethod fun getHEVCMain10Level(promise: Promise) {
     promise.resolve(
       getHevcLevelString(
         CodecProfileLevel.HEVCProfileMain10
@@ -203,6 +203,7 @@ class CodecModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
     }
   }
 
+  // https://developer.android.com/training/tv/playback/audio-capabilities
   data class Codec(val name: String, val encoding: Int)
   @ReactMethod fun getAudioSupport(promise: Promise) {
     val codecs = ArrayList<Codec>()
@@ -225,7 +226,7 @@ class CodecModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
       codecs.add(Codec("PCM32", AudioFormat.ENCODING_PCM_32BIT))
     }
 
-    val supportedCodecs: ArrayList<String> = ArrayList()
+    val supportedCodecs = ArrayList<String>()
     val attr = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build()
     for (codec in codecs) {
       val audio = AudioFormat.Builder().setEncoding(codec.encoding).setSampleRate(48000).setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).build()

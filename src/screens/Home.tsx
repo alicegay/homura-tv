@@ -1,22 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { FlatList, ScrollView, View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { CommonActions } from '@react-navigation/native'
 import RootStackParamList from 'types/RootStackParamList'
 import Item from 'jellyfin-api/lib/types/media/Item'
 import { useQueryClient } from '@tanstack/react-query'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
+import useSettings from 'hooks/useSettings'
 import useViews from 'api/useViews'
 import useItemsResume from 'api/useItemsResume'
 import useShowsNextup from 'api/useShowsNextup'
-import ItemCard from 'components/ItemCard'
-import Text from 'components/Text'
+import deviceProfile from 'lib/deviceProfile'
 import cardSubtitle from 'lib/cardSubtitle'
 import ticksToTime from 'lib/ticksToTime'
+import ItemCard from 'components/ItemCard'
+import Text from 'components/Text'
 import CenterLoading from 'components/CenterLoading'
-import Button from 'components/Button'
-import codecSupport from 'lib/codecSupport'
 
 const Home = ({
   navigation,
@@ -24,6 +23,7 @@ const Home = ({
 }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
   const client = useClient()
   const theme = useTheme()
+  const settings = useSettings()
   const query = useQueryClient()
   const { height } = useWindowDimensions()
   const [resumeY, setReusmeY] = useState(0)
@@ -36,7 +36,13 @@ const Home = ({
     query.invalidateQueries({ queryKey: ['views'] })
     query.invalidateQueries({ queryKey: ['itemsResume'] })
     query.invalidateQueries({ queryKey: ['showsNextup'] })
+    setDeviceProfile()
   }, [navigation])
+
+  const setDeviceProfile = async () => {
+    const profile = await deviceProfile()
+    settings.setDeviceProfile(profile)
+  }
 
   const scrollView = useRef<ScrollView>()
   const viewsList = useRef<FlatList>()
@@ -45,13 +51,6 @@ const Home = ({
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <Button
-        onPress={() => {
-          codecSupport()
-        }}
-      >
-        Codec Support
-      </Button>
       {!views.isLoading && !resume.isLoading && !nextup.isLoading && (
         <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
           <View>
