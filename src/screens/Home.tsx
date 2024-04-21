@@ -33,10 +33,13 @@ const Home = ({
   const nextup = useShowsNextup({ EnableImageTypes: 'Primary,Backdrop,Logo' })
 
   useEffect(() => {
-    query.invalidateQueries({ queryKey: ['views'] })
-    query.invalidateQueries({ queryKey: ['itemsResume'] })
-    query.invalidateQueries({ queryKey: ['showsNextup'] })
-    setDeviceProfile()
+    const unsubscribe = navigation.addListener('focus', () => {
+      query.invalidateQueries({ queryKey: ['views'] })
+      query.invalidateQueries({ queryKey: ['itemsResume'] })
+      query.invalidateQueries({ queryKey: ['showsNextup'] })
+      setDeviceProfile()
+    })
+    return unsubscribe
   }, [navigation])
 
   const setDeviceProfile = async () => {

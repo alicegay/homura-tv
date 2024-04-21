@@ -14,21 +14,13 @@ import { Blurhash } from 'react-native-blurhash'
 import averageBlurhash from 'lib/averageBlurhash'
 import tinycolor from 'tinycolor2'
 import useTheme from 'hooks/useTheme'
-import {
-  Canvas,
-  RoundedRect,
-  BoxShadow,
-  Box,
-  rect,
-  rrect,
-} from '@shopify/react-native-skia'
 import Animated, {
   Easing,
   useSharedValue,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import { opacity } from 'react-native-reanimated/lib/typescript/reanimated2/Colors'
+import { Shadow } from 'react-native-shadow-2'
 
 interface Props {
   title: string
@@ -69,7 +61,6 @@ const ItemCard = ({
 }: Props) => {
   const theme = useTheme()
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
-  const [imageLoaded, setImageLoaded] = useState(false)
   const color = !!blurhash ? averageBlurhash(blurhash) : theme.tint
   const shadowColor = strongShadow ? color + '80' : color + '40'
   const [imageURI, setImageURI] = useState(image)
@@ -88,12 +79,11 @@ const ItemCard = ({
       width: width,
       height: width * aspectRatioMultiplier,
     },
-    canvas: {
+    glow: {
       position: 'absolute',
-      left: -16,
-      top: -48,
-      width: width + 32 + 32,
-      height: width * aspectRatioMultiplier + topPadding * 2 + 64 + 16,
+      left: 16,
+      top: topPadding,
+      opacity: 0,
     },
     selector: {
       position: 'absolute',
@@ -136,23 +126,23 @@ const ItemCard = ({
     },
   })
 
-  const radius = useSharedValue(0)
+  const radius = useSharedValue(0.0)
   const opacity = useSharedValue(0.0)
 
   useEffect(() => {
     if (focus) {
-      radius.value = withTiming(20, {
-        duration: 200,
+      radius.value = withTiming(1.0, {
+        duration: 400,
         easing: Easing.out(Easing.quad),
       })
       opacity.value = withRepeat(withTiming(1.0, { duration: 400 }), 0, true)
     } else {
-      radius.value = withTiming(0, {
+      radius.value = withTiming(0.0, {
         duration: 100,
         easing: Easing.in(Easing.quad),
       })
       opacity.value = withTiming(0.0, {
-        duration: 200,
+        duration: 400,
         easing: Easing.in(Easing.quad),
       })
     }
@@ -174,32 +164,15 @@ const ItemCard = ({
     >
       <View style={[styles.view]}>
         <View style={styles.padding} />
-        <Canvas style={styles.canvas}>
-          <Box
-            box={rrect(
-              rect(
-                16 + 16,
-                topPadding + 48,
-                width,
-                width * aspectRatioMultiplier,
-              ),
-              20,
-              20,
-            )}
-            color={tinycolor(color)
+        <Animated.View style={[styles.glow, { opacity: radius }]}>
+          <Shadow
+            distance={40}
+            startColor={tinycolor(shadowColor)
               .lighten((1.0 - tinycolor(color).getLuminance()) * 40)
               .toHex8String()}
-          >
-            <BoxShadow
-              dx={0}
-              dy={0}
-              blur={radius}
-              color={tinycolor(color)
-                .lighten((1.0 - tinycolor(color).getLuminance()) * 20)
-                .toHex8String()}
-            />
-          </Box>
-        </Canvas>
+            style={styles.image}
+          />
+        </Animated.View>
         <Animated.View style={[styles.selector, { opacity: opacity }]} />
         <View
           style={[
@@ -221,9 +194,6 @@ const ItemCard = ({
           <Image
             source={{ uri: imageURI }}
             style={[styles.image, { position: 'absolute' }]}
-            onLoad={() => {
-              setImageLoaded(true)
-            }}
             onError={() => {
               if (!!imageFallback && imageURI !== imageFallback)
                 setImageURI(imageFallback)
