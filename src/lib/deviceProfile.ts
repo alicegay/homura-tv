@@ -79,7 +79,7 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
   })
 
   profile.DirectPlayProfiles.push({
-    Container: 'mp4,m4v',
+    Container: 'mp4,m4v,mov,mkv,ts',
     Type: 'Video',
     VideoCodec: addCodecs([
       add('h264', support.h264),
@@ -87,41 +87,6 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
       add('vp8', support.vp8),
       add('vp9', support.vp9),
       add('av1', support.av1),
-    ]),
-    AudioCodec: addCodecs([
-      add('aac', support.aac),
-      add('flac', support.flac),
-      add('mp3', support.mp3),
-      add('vorbis', support.vorbis),
-      add('opus', support.opus),
-    ]),
-  })
-
-  profile.DirectPlayProfiles.push({
-    Container: 'mov',
-    Type: 'Video',
-    VideoCodec: addCodecs([
-      add('h264', support.h264),
-      add('hevc', support.hevc),
-      add('vp8', support.vp8),
-      add('vp9', support.vp9),
-      add('av1', support.av1),
-    ]),
-    AudioCodec: addCodecs([
-      add('aac', support.aac),
-      add('flac', support.flac),
-      add('mp3', support.mp3),
-      add('vorbis', support.vorbis),
-      add('opus', support.opus),
-    ]),
-  })
-
-  profile.DirectPlayProfiles.push({
-    Container: 'mkv,ts',
-    Type: 'Video',
-    VideoCodec: addCodecs([
-      add('h264', support.h264),
-      add('hevc', support.hevc),
     ]),
     AudioCodec: addCodecs([
       add('aac', support.aac),
@@ -157,6 +122,13 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
       add('mp3', support.mp3),
       add('vorbis', support.vorbis),
       add('opus', support.opus),
+      await addAudio('ac3', support.ac3, 'AC3', directAudio),
+      await addAudio('eac3', support.eac3, 'EAC3', directAudio),
+      await addAudio('truehd', support.truehd, 'TRUEHD', directAudio),
+      await addAudio('dts', support.dts, 'DTS', directAudio),
+      await addAudio('dts_hd', support.dtshd, 'DTSHD', directAudio),
+      await addAudio('dts_x', support.dtshd, 'DTSX', directAudio),
+      await addAudio('pcm_s24le', support.pcm, 'PCM24LE', directAudio),
     ]),
   })
 

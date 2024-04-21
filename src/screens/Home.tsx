@@ -110,6 +110,7 @@ const Home = ({
             <FlatList
               ref={resumeList}
               data={resume.data.Items}
+              keyExtractor={(item: Item) => item.Id}
               renderItem={({ item, index }: { item: Item; index: number }) => (
                 <ItemCard
                   title={item.Type === 'Episode' ? item.SeriesName : item.Name}
@@ -159,6 +160,7 @@ const Home = ({
             <FlatList
               ref={nextupList}
               data={nextup.data.Items}
+              keyExtractor={(item: Item) => item.Id}
               renderItem={({ item, index }: { item: Item; index: number }) => (
                 <ItemCard
                   title={item.SeriesName}
