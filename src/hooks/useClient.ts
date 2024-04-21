@@ -10,6 +10,7 @@ interface ClientStore {
   name: string | null
   user: string | null
   token: string | null
+  deviceID: string | null
   api: Client
   setClient: (data: {
     server: string
@@ -33,6 +34,7 @@ const useClient = create<ClientStore>()(
       name: null,
       user: null,
       token: null,
+      deviceID: null,
       api: {
         client: null,
         server: null,
@@ -60,6 +62,7 @@ const useClient = create<ClientStore>()(
           server: data.server,
           user: data.user,
           token: data.token,
+          deviceID: data.deviceID,
           api: {
             client: client,
             server: data.server,

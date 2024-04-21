@@ -13,7 +13,6 @@ import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
 import useSettings from 'hooks/useSettings'
 import useInterval from 'hooks/useInterval'
-import deviceProfile from 'lib/deviceProfile'
 import { ticksToSecs } from 'lib/ticksToTime'
 import secsToTime from 'lib/secsToTime'
 import secsToTicks from 'lib/secsToTicks'
@@ -31,6 +30,8 @@ import PlaybackInfoQuery from 'jellyfin-api/lib/types/queries/PlaybackInfoQuery'
 import ProgressQuery, {
   ProgressStoppedQuery,
 } from 'jellyfin-api/lib/types/queries/ProgressQuery'
+import Session from 'jellyfin-api/lib/types/sessions/Session'
+import SessionInfo from 'components/SessionInfo'
 
 const Player = ({
   navigation,
@@ -66,6 +67,8 @@ const Player = ({
     'DirectPlay' | 'DirectStream' | 'Transcode'
   >('DirectPlay')
   const [playSession, setPlaySession] = useState<string>(null)
+  const [sessionInfo, setSessionInfo] = useState<Session>(null)
+  const [showSessionInfo, setShowSessionInfo] = useState(false)
 
   useEffect(() => {
     const s = sortStreams(item.MediaStreams)
@@ -232,6 +235,12 @@ const Player = ({
           setDuration(e.duration)
           playingProgress(undefined, e.currentTime)
           if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
+          sessions.sessions(client, { deviceId: client.deviceID }).then((r) => {
+            if (r.length > 0) {
+              setSessionInfo(r[0])
+              setPlayMethod(r[0].PlayState.PlayMethod)
+            }
+          })
         }}
         onVideoTracks={(e) => {
           console.log(e)
@@ -366,6 +375,12 @@ const Player = ({
             </Text>
           </View>
         </LinearGradient>
+      </View>
+
+      <View style={{ position: 'absolute', top: 16, left: 64 }}>
+        {!!sessionInfo && showSessionInfo && (
+          <SessionInfo sessionInfo={sessionInfo} />
+        )}
       </View>
 
       {buffering && <CenterLoading />}

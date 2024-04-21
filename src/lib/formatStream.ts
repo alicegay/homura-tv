@@ -105,7 +105,7 @@ const getAudioFormat = (codec: string): string => {
   if (c === 'AC3') return 'Dolby Digital'
   if (c === 'EAC3') return 'Dolby Digital Plus'
   if (c === 'TRUEHD') return 'Dolby TrueHD'
-  if (c === 'DTS') return 'DTS-HD MA'
+  if (c === 'DTS') return 'DTS'
   return c
 }
 
