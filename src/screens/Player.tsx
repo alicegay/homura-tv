@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { View } from 'react-native'
+import { HWEvent, View, useTVEventHandler } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import Video, {
@@ -32,11 +32,149 @@ import ProgressQuery, {
 } from 'jellyfin-api/lib/types/queries/ProgressQuery'
 import Session from 'jellyfin-api/lib/types/sessions/Session'
 import SessionInfo from 'components/SessionInfo'
+import PlayerTime from 'components/PlayerTime'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
+
+let menuX = 0
+let menuY = 0
+let seekTime = 0
+let longSeekLeft = 0
+let longSeekRight = 0
 
 const Player = ({
   navigation,
   route,
 }: NativeStackScreenProps<RootStackParamList, 'Player'>) => {
+  const TVEventHandler = (e: HWEvent) => {
+    const button = e.eventType
+
+    if (introVisibility) {
+    } else {
+      if (
+        (button == 'select' && menuY == -1) ||
+        (button == 'select' && menuY == 0 && menuX == 0)
+      ) {
+        setPaused(!paused)
+      } else if (button == 'up' && menuY >= 0 && !seeking) {
+        menuY -= 1
+        resetControlsTimeout()
+      } else if (
+        (button == 'down' && menuY < 1 && !seeking) ||
+        (button == 'up' && menuY == -1 && !seeking)
+      ) {
+        menuY += 1
+        resetControlsTimeout()
+      }
+    }
+
+    // SEEKING
+    if (
+      (button == 'left' && menuY == 1) ||
+      (button == 'right' && menuY == 1) ||
+      (button == 'longLeft' && menuY == 1) ||
+      (button == 'longRight' && menuY == 1) ||
+      (button == 'left' && menuY == -1) ||
+      (button == 'right' && menuY == -1)
+    ) {
+      if (menuY == -1) {
+        menuX = 0
+        menuY = 1
+      }
+      if (!seeking) {
+        seekTime = currentTime
+        longSeekLeft = 0
+        longSeekRight = 0
+        setSeeking(true)
+        clearControlsTimeout()
+      }
+      if (button == 'left') {
+        let toSeek = seekTime - 5
+        if (toSeek < 0) toSeek = 0
+        seekTime = toSeek
+        longSeekLeft = 0
+        longSeekRight = 0
+      } else if (button == 'right') {
+        let toSeek = seekTime + 5
+        if (toSeek > duration) toSeek = duration
+        seekTime = toSeek
+        longSeekLeft = 0
+        longSeekRight = 0
+      } else if (button == 'longLeft') {
+        let toSeek = seekTime - 5 - longSeekLeft * 2.5
+        if (toSeek < 0) toSeek = 0
+        seekTime = toSeek
+        longSeekLeft += 1
+        longSeekRight = 0
+      } else if (button == 'longRight') {
+        let toSeek = seekTime + 5 + longSeekRight * 2.5
+        if (toSeek > duration) toSeek = duration
+        seekTime = toSeek
+        longSeekLeft = 0
+        longSeekRight += 1
+      }
+      setSeekTime(seekTime)
+    }
+    if (button == 'select' && seeking) {
+      setSeeking(false)
+      videoRef.current.seek(seekTime)
+      resetControlsTimeout()
+    }
+
+    if (menuY == -1 && controlsVisibility) {
+      setControlsVisibility(false)
+    } else if (menuY >= 0 && !controlsVisibility) {
+      setControlsVisibility(true)
+    }
+
+    if (menuY == 0 && menuX == 0) {
+      setPlayPauseButton(true)
+    } else {
+      setPlayPauseButton(false)
+    }
+  }
+  useTVEventHandler(TVEventHandler)
+
+  const [playPauseButton, setPlayPauseButton] = useState(false)
+
+  const controlsTimeout = useRef(null)
+  const setControlsTimeout = () => {
+    controlsTimeout.current = setTimeout(() => {
+      menuY = -1
+      setControlsVisibility(false)
+    }, 3_000)
+  }
+  const clearControlsTimeout = () => {
+    clearTimeout(controlsTimeout.current)
+  }
+  const resetControlsTimeout = () => {
+    clearControlsTimeout()
+    setControlsTimeout()
+  }
+
+  const [controlsVisibility, setControlsVisibility] = useState(true)
+  const controlsAnim = useSharedValue(1)
+  const controlsView = useAnimatedStyle(() => ({
+    bottom: 0 - (1 - controlsAnim.value) * 32,
+  }))
+  useEffect(() => {
+    if (controlsVisibility) {
+      controlsAnim.value = withTiming(1, {
+        duration: 100,
+        easing: Easing.out(Easing.quad),
+      })
+    } else {
+      controlsAnim.value = withTiming(0, {
+        duration: 100,
+        easing: Easing.in(Easing.quad),
+      })
+    }
+  }, [controlsVisibility])
+
   const { item, startFrom, streams: initStreams } = route.params
   const client = useClient()
   const theme = useTheme()
@@ -50,7 +188,7 @@ const Player = ({
   const [seeking, setSeeking] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [bufferTime, setBufferTime] = useState(0)
-  const [seekTime, setSeekTime] = useState(0)
+  const [seekTimeState, setSeekTime] = useState(0)
   const [duration, setDuration] = useState(0)
 
   const [streams, setStreams] = useState<sortedStreams>(null)
@@ -70,7 +208,13 @@ const Player = ({
   const [sessionInfo, setSessionInfo] = useState<Session>(null)
   const [showSessionInfo, setShowSessionInfo] = useState(false)
 
+  const [introVisibility, setIntroVisibility] = useState(false)
+
   useEffect(() => {
+    menuX = 0
+    menuY = 0
+    setControlsTimeout()
+
     const s = sortStreams(item.MediaStreams)
     setStreams(s)
     const playbackInfo: PlaybackInfoQuery = {
@@ -100,7 +244,7 @@ const Player = ({
           setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
-        console.log(res)
+        // console.log(res)
         // console.log(res.MediaSources[0].MediaStreams)
       }
     })
@@ -148,7 +292,6 @@ const Player = ({
           ? -1
           : streams.subtitles[initStreams.subtitle].id,
     }
-    console.log(payload)
     if (event === undefined) {
       sessions.playing(client, payload)
     } else {
@@ -159,10 +302,12 @@ const Player = ({
   useBackHandler(() => {
     if (seeking) {
       setSeeking(false)
+      resetControlsTimeout()
       return true
     } else {
       console.log('PLAYBACK END: ' + secsToTime(currentTime))
       playingStopped()
+      clearControlsTimeout()
       return false
     }
   })
@@ -200,14 +345,14 @@ const Player = ({
         selectedVideoTrack={{
           type: SelectedVideoTrackType.INDEX,
           // @ts-ignore
-          value: videoStream.toString(),
+          value: playMethod !== 'DirectPlay' ? '0' : videoStream.toString(),
         }}
         selectedAudioTrack={{
           type: SelectedTrackType.INDEX,
-          value: audioStream.toString(),
+          value: playMethod !== 'DirectPlay' ? '0' : audioStream.toString(),
         }}
         selectedTextTrack={
-          subtitleStream === -1
+          subtitleStream === -1 || playMethod !== 'DirectPlay'
             ? { type: SelectedTrackType.DISABLED }
             : {
                 type: SelectedTrackType.INDEX,
@@ -258,12 +403,14 @@ const Player = ({
         onEnd={() => {
           console.log('PLAYBACK END: ' + secsToTime(currentTime))
           playingStopped()
+          clearControlsTimeout()
           navigation.pop()
         }}
         onError={(e) => {
           console.log(e.error.errorString)
           console.log(e.error.errorException)
           playingStopped(true)
+          clearControlsTimeout()
           navigation.pop()
         }}
         style={{
@@ -275,13 +422,19 @@ const Player = ({
         }}
       />
 
-      <View
-        style={{
-          flex: 1,
-          width: '100%',
-          position: 'absolute',
-          bottom: 0,
-        }}
+      <Animated.View
+        style={[
+          {
+            flex: 1,
+            width: '100%',
+            position: 'absolute',
+            bottom: 0,
+          },
+          {
+            opacity: controlsAnim,
+          },
+          controlsView,
+        ]}
       >
         <LinearGradient
           colors={['#00000000', '#00000080']}
@@ -313,12 +466,15 @@ const Player = ({
               fontWeight={500}
             />
           </View>
-          <View style={{ flex: 1, flexDirection: 'row', gap: 8 }}>
+          <View style={{ flex: 1, flexDirection: 'row', gap: 16 }}>
             <View
               style={{ flex: 1, flexDirection: 'row', gap: 16, flexGrow: 1 }}
             >
-              <PlayerButton icon={paused ? 'play' : 'pause'} focus={true} />
-              <PlayerButton icon="cog" focus={false} />
+              <PlayerButton
+                icon={paused ? 'play' : 'pause'}
+                focus={playPauseButton}
+              />
+              <PlayerButton icon="information" focus={false} />
             </View>
             {!!streams && (
               <>
@@ -364,18 +520,19 @@ const Player = ({
           </View>
           <View style={{ flex: 1, flexDirection: 'row', gap: 32 }}>
             <Seekbar
-              currentTime={currentTime}
+              currentTime={seeking ? seekTimeState : currentTime}
               duration={duration}
               bufferTime={bufferTime}
               seeking={seeking}
-              seekTime={0}
+              selected={menuY == 1}
             />
-            <Text style={{ fontSize: 16 }} fontWeight={500}>
-              {secsToTime(currentTime) + ' / ' + secsToTime(duration)}
-            </Text>
+            <PlayerTime
+              currentTime={seeking ? seekTimeState : currentTime}
+              duration={duration}
+            />
           </View>
         </LinearGradient>
-      </View>
+      </Animated.View>
 
       <View style={{ position: 'absolute', top: 16, left: 64 }}>
         {!!sessionInfo && showSessionInfo && (
