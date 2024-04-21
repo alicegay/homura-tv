@@ -22,7 +22,7 @@ import {
   rect,
   rrect,
 } from '@shopify/react-native-skia'
-import {
+import Animated, {
   Easing,
   useSharedValue,
   withRepeat,
@@ -94,6 +94,19 @@ const ItemCard = ({
       top: -48,
       width: width + 32 + 32,
       height: width * aspectRatioMultiplier + topPadding * 2 + 64 + 16,
+    },
+    selector: {
+      position: 'absolute',
+      left: 16 - 4,
+      top: topPadding - 4,
+      width: width + 8,
+      height: width * aspectRatioMultiplier + 8,
+      backgroundColor: tinycolor(color)
+        .lighten((1.0 - tinycolor(color).getLuminance()) * 40)
+        .toHex8String(),
+      borderRadius: 16 + 4,
+      overflow: 'hidden',
+      opacity: 0,
     },
     image: {
       width: width,
@@ -186,18 +199,8 @@ const ItemCard = ({
                 .toHex8String()}
             />
           </Box>
-          <RoundedRect
-            x={16 - 4 + 16}
-            y={topPadding + 48 - 4}
-            width={width + 8}
-            height={width * aspectRatioMultiplier + 8}
-            color={tinycolor(color)
-              .lighten((1.0 - tinycolor(color).getLuminance()) * 40)
-              .toHex8String()}
-            r={16 + 4}
-            opacity={opacity}
-          />
         </Canvas>
+        <Animated.View style={[styles.selector, { opacity: opacity }]} />
         <View
           style={[
             styles.image,
