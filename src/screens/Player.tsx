@@ -238,10 +238,10 @@ const Player = ({
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
           console.log('DIRECT STREAM')
-          setPlayMethod('DirectStream')
+          // setPlayMethod('DirectStream')
         } else {
           console.log('TRANSCODING')
-          setPlayMethod('Transcode')
+          // setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
         // console.log(res)

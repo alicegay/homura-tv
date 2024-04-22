@@ -13,6 +13,7 @@ import { Blurhash } from 'react-native-blurhash'
 import averageBlurhash from 'lib/averageBlurhash'
 import useTheme from 'hooks/useTheme'
 import tinycolor from 'tinycolor2'
+import { Shadow } from 'react-native-shadow-2'
 
 interface Props {
   title: string
@@ -58,7 +59,7 @@ const ItemLong = ({
     },
     image: {
       width: 240,
-      height: 240 * (9 / 16),
+      height: 240 * (1 / 2),
       borderRadius: 16,
       overflow: 'hidden',
     },
@@ -84,14 +85,14 @@ const ItemLong = ({
       style={style}
     >
       <View style={[styles.view, focus && { backgroundColor: color + '60' }]}>
-        {/* <Shadow
+        <Shadow
           distance={40}
           startColor={tinycolor(color + '80')
             .lighten((1.0 - tinycolor(color).getLuminance()) * 30)
             .toHex8String()}
           disabled={!focus}
           style={[styles.image, { position: 'absolute' }]}
-        /> */}
+        />
         <View style={[styles.image, { backgroundColor: 'transparent' }]}>
           {!!blurhash && (
             <Blurhash
@@ -112,11 +113,11 @@ const ItemLong = ({
           />
         </View>
         <View style={styles.details}>
-          <Text style={{ fontSize: 24 }} fontWeight={500}>
+          <Text style={{ fontSize: 18 }} fontWeight={700}>
             {title}
           </Text>
           {!!description && (
-            <Text style={{ fontSize: 15 }} numberOfLines={3}>
+            <Text style={{ fontSize: 16 }} numberOfLines={3}>
               {description}
             </Text>
           )}

@@ -9,6 +9,7 @@ import useEpisodes from 'api/useEpisodes'
 import useSpecialFeatures from 'api/useSpecialFeatures'
 import Text from 'components/Text'
 import ItemLong from 'components/ItemLong'
+import CenterLoading from 'components/CenterLoading'
 
 const Episodes = ({
   navigation,
@@ -20,7 +21,7 @@ const Episodes = ({
   const { width, height } = useWindowDimensions()
 
   const params = !!season ? { SeasonId: season.Id } : {}
-  const episode = !special
+  const episodes = !special
     ? useEpisodes(series.Id, {
         ...params,
         Fields: 'Overview',
@@ -30,6 +31,7 @@ const Episodes = ({
   const specials = special
     ? useSpecialFeatures(season ? season.Id : series.Id)
     : null
+  const [specialsSorted, setSpecialsSorted] = useState<Item[]>(null)
 
   const [primaryImage, setPrimaryImage] = useState(
     client.server + '/Items/' + series.Id + '/Images/Primary',
@@ -39,6 +41,15 @@ const Episodes = ({
   )
 
   const episodeList = useRef<FlatList>(null)
+
+  useEffect(() => {
+    if (special && specials.data) {
+      console.log('aaaaaa')
+      setSpecialsSorted(
+        specials.data.sort((a, b) => a.SortName.localeCompare(b.SortName)),
+      )
+    }
+  }, [specials])
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -52,20 +63,22 @@ const Episodes = ({
         }}
       />
       <View style={{ position: 'absolute', width: width, height: height }}>
-        {((!special && !episode.isLoading) ||
-          (special && specials.isLoading)) && (
+        {((!special && !episodes.isLoading) ||
+          (special && !specials.isLoading && specialsSorted)) && (
           <FlatList
             ref={episodeList}
-            data={special ? specials.data : episode.data.Items}
+            data={special ? specialsSorted : episodes.data.Items}
             keyExtractor={(item: Item) => item.Id}
             renderItem={({ item, index }: { item: Item; index: number }) => (
               <ItemLong
                 title={
-                  item.ParentIndexNumber !== 0
+                  special
+                    ? item.Name
+                    : item.ParentIndexNumber !== 0
                     ? item.IndexNumber + '. ' + item.Name
                     : 'Special: ' + item.Name
                 }
-                description={item.Overview}
+                description={!special && item.Overview}
                 image={client.server + '/Items/' + item.Id + '/Images/Primary'}
                 imageFallback={
                   client.server + '/Items/' + series.Id + '/Images/Primary'
@@ -90,7 +103,7 @@ const Episodes = ({
                 style={[
                   index === 0 && { paddingTop: 48 },
                   !special &&
-                    index === episode.data.Items.length - 1 && {
+                    index === episodes.data.Items.length - 1 && {
                       paddingBottom: 16,
                     },
                   special &&
@@ -115,6 +128,10 @@ const Episodes = ({
           {!!season ? season.Name : series.Name}
         </Text>
       </View>
+
+      {((!special && episodes.isLoading) ||
+        (special && specials.isLoading) ||
+        (special && !specialsSorted)) && <CenterLoading />}
     </View>
   )
 }

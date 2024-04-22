@@ -22,7 +22,8 @@ const VideoDetails = ({
   const video =
     item.Type === 'Movie' ||
     item.Type === 'Episode' ||
-    item.Type === 'MusicVideo'
+    item.Type === 'MusicVideo' ||
+    item.Type === 'Video'
 
   const client = useClient()
   const theme = useTheme()
@@ -71,7 +72,8 @@ const VideoDetails = ({
         source={{
           uri:
             item.ImageBlurHashes.hasOwnProperty('Backdrop') &&
-            item.Type !== 'Episode'
+            item.Type !== 'Episode' &&
+            item.Type !== 'Video'
               ? backdropImage
               : primaryImage,
         }}
