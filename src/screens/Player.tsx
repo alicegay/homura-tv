@@ -72,6 +72,15 @@ const Player = ({
       }
     }
 
+    if (button == 'left' && menuY == 0) {
+      menuX = 0
+    } else if (button == 'right' && menuY == 0) {
+      menuX = 1
+    }
+    if (button == 'select' && menuX == 1) {
+      setShowSessionInfo(!showSessionInfo)
+    }
+
     // SEEKING
     if (
       (button == 'left' && menuY == 1) ||
@@ -136,10 +145,16 @@ const Player = ({
     } else {
       setPlayPauseButton(false)
     }
+    if (menuY == 0 && menuX == 1) {
+      setInfoButton(true)
+    } else {
+      setInfoButton(false)
+    }
   }
   useTVEventHandler(TVEventHandler)
 
   const [playPauseButton, setPlayPauseButton] = useState(false)
+  const [infoButton, setInfoButton] = useState(false)
 
   const controlsTimeout = useRef(null)
   const setControlsTimeout = () => {
@@ -238,10 +253,10 @@ const Player = ({
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
           console.log('DIRECT STREAM')
-          // setPlayMethod('DirectStream')
+          setPlayMethod('DirectStream')
         } else {
           console.log('TRANSCODING')
-          // setPlayMethod('Transcode')
+          setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
         // console.log(res)
@@ -474,7 +489,7 @@ const Player = ({
                 icon={paused ? 'play' : 'pause'}
                 focus={playPauseButton}
               />
-              <PlayerButton icon="information" focus={false} />
+              <PlayerButton icon="information" focus={infoButton} />
             </View>
             {!!streams && (
               <>

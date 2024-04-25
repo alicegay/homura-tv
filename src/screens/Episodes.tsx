@@ -44,7 +44,6 @@ const Episodes = ({
 
   useEffect(() => {
     if (special && specials.data) {
-      console.log('aaaaaa')
       setSpecialsSorted(
         specials.data.sort((a, b) => a.SortName.localeCompare(b.SortName)),
       )
