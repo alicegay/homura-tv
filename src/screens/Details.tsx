@@ -124,6 +124,13 @@ const Details = ({
                     : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)}
               </Text>
             )}
+            {item.Type === 'MusicVideo' &&
+              'Artists' in item &&
+              item.Artists.length > 0 && (
+                <Text style={styles.subtitle} fontWeight={500}>
+                  {item.Artists.join(', ')}
+                </Text>
+              )}
             <View
               style={{
                 flexDirection: 'row',
