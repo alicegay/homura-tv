@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react'
-import { HWEvent, View, useTVEventHandler } from 'react-native'
+import { HWEvent, ToastAndroid, View, useTVEventHandler } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import Video, {
@@ -425,6 +425,7 @@ const Player = ({
         onError={(e) => {
           console.log(e.error.errorString)
           console.log(e.error.errorException)
+          ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
           playingStopped(true)
           clearControlsTimeout()
           navigation.pop()
