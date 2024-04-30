@@ -94,6 +94,7 @@ const Home = ({
               )}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
+              initialNumToRender={4}
               style={{ paddingTop: 48 }}
             />
             <Text
@@ -153,6 +154,7 @@ const Home = ({
                 )}
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
+                initialNumToRender={4}
                 style={{ paddingTop: 32 }}
               />
               <Text
@@ -206,6 +208,7 @@ const Home = ({
                 )}
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
+                initialNumToRender={4}
                 style={{ paddingTop: 32 }}
               />
               <Text
