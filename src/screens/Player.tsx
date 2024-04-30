@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { HWEvent, View, useTVEventHandler } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
@@ -161,7 +161,7 @@ const Player = ({
     controlsTimeout.current = setTimeout(() => {
       menuY = -1
       setControlsVisibility(false)
-    }, 3_000)
+    }, 5_000)
   }
   const clearControlsTimeout = () => {
     clearTimeout(controlsTimeout.current)
@@ -398,7 +398,8 @@ const Player = ({
           sessions.sessions(client, { deviceId: client.deviceID }).then((r) => {
             if (r.length > 0) {
               setSessionInfo(r[0])
-              setPlayMethod(r[0].PlayState.PlayMethod)
+              if (r[0].PlayState.PlayMethod === 'DirectStream')
+                setPlayMethod('DirectStream')
             }
           })
         }}

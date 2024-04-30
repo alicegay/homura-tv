@@ -6,7 +6,7 @@ type RootStackParamList = {
   Folder: { item: Item; ignoreLengths?: boolean }
   Season: { series: Item }
   Episodes: { season?: Item; series: Item; special?: boolean }
-  VideoDetails: { item: Item }
+  Details: { item: Item }
   Player: {
     item: Item
     startFrom?: number

@@ -8,7 +8,7 @@ import Home from 'screens/Home'
 import Folder from 'screens/Folder'
 import Season from 'screens/Season'
 import Episodes from 'screens/Episodes'
-import VideoDetails from 'screens/VideoDetails'
+import Details from 'screens/Details'
 import Player from 'screens/Player'
 import SelectServer from 'screens/SelectServer'
 import SelectUser from 'screens/SelectUser'
@@ -42,7 +42,7 @@ const App = () => {
           <Stack.Screen name="Folder" component={Folder} />
           <Stack.Screen name="Season" component={Season} />
           <Stack.Screen name="Episodes" component={Episodes} />
-          <Stack.Screen name="VideoDetails" component={VideoDetails} />
+          <Stack.Screen name="Details" component={Details} />
           <Stack.Screen name="Player" component={Player} />
           <Stack.Screen name="SelectServer" component={SelectServer} />
           <Stack.Screen name="SelectUser" component={SelectUser} />

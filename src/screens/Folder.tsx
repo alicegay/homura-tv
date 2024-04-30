@@ -8,7 +8,7 @@ import ItemCard from 'components/ItemCard'
 import Item from 'jellyfin-api/lib/types/media/Item'
 import findAspectRatio from 'lib/findAspectRatio'
 import Text from 'components/Text'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
 
@@ -21,7 +21,7 @@ const Folder = ({
   const { width } = useWindowDimensions()
 
   const { item, ignoreLengths } = route.params
-  const { data, isLoading } = useItems(item.Id, {
+  const { data, isLoading, isRefetching } = useItems(item.Id, {
     SortBy: 'IsFolder,SortName',
     SortOrder: 'Ascending',
     Fields: 'OriginalTitle',
@@ -67,7 +67,7 @@ const Folder = ({
               onPress={() => {
                 item.Type === 'Folder'
                   ? navigation.push('Folder', { item })
-                  : navigation.push('VideoDetails', { item })
+                  : navigation.push('Details', { item })
               }}
               hasTVPreferredFocus={index === 0}
               width={width / columns - 32}
@@ -76,6 +76,8 @@ const Folder = ({
           )}
           numColumns={columns}
           showsVerticalScrollIndicator={false}
+          refreshing={isRefetching}
+          initialNumToRender={12}
         />
       )}
       <Text

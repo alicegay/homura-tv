@@ -90,7 +90,7 @@ const Episodes = ({
                     : undefined
                 }
                 onPress={() => {
-                  navigation.push('VideoDetails', { item: item })
+                  navigation.push('Details', { item: item })
                 }}
                 onFocus={() => {
                   episodeList.current.scrollToIndex({

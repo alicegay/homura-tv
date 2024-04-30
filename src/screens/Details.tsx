@@ -13,10 +13,10 @@ import ticksToTime from 'lib/ticksToTime'
 import sortStreams, { sortedStreams } from 'lib/sortStreams'
 import CenterLoading from 'components/CenterLoading'
 
-const VideoDetails = ({
+const Details = ({
   navigation,
   route,
-}: NativeStackScreenProps<RootStackParamList, 'VideoDetails'>) => {
+}: NativeStackScreenProps<RootStackParamList, 'Details'>) => {
   const { item } = route.params
 
   const video =
@@ -305,4 +305,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default VideoDetails
+export default Details
