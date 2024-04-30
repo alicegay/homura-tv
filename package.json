@@ -9,10 +9,11 @@
     "start": "react-native start",
     "test": "jest",
     "build": "cd android && ./gradlew assembleRelease",
-    "adb": "adb install ./android/app/build/outputs/apk/release/app-release.apk"
+    "adb": "adb install ./android/app/build/outputs/apk/release/app-release.apk",
+    "postinstall": "patch-package"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.23.1",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/hooks": "3.0.0",
     "@react-navigation/native": "6.1.17",
     "@react-navigation/native-stack": "6.9.26",
@@ -54,6 +55,7 @@
     "babel-plugin-module-resolver": "^5.0.0",
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
+    "patch-package": "^8.0.0",
     "prettier": "2.8.8",
     "react-native-dotenv": "^3.4.11",
     "react-test-renderer": "18.2.0",
