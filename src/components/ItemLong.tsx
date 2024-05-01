@@ -115,21 +115,21 @@ const ItemLong = ({
     },
   })
 
-  const radius = useSharedValue(0.0)
+  // const radius = useSharedValue(0.0)
   const opacity = useSharedValue(0.0)
 
   useEffect(() => {
     if (focus) {
-      radius.value = withTiming(1.0, {
-        duration: 400,
-        easing: Easing.out(Easing.quad),
-      })
+      // radius.value = withTiming(1.0, {
+      //   duration: 400,
+      //   easing: Easing.out(Easing.quad),
+      // })
       opacity.value = withRepeat(withTiming(1.0, { duration: 400 }), 0, true)
     } else {
-      radius.value = withTiming(0.0, {
-        duration: 100,
-        easing: Easing.in(Easing.quad),
-      })
+      // radius.value = withTiming(0.0, {
+      //   duration: 100,
+      //   easing: Easing.in(Easing.quad),
+      // })
       opacity.value = withTiming(0.0, {
         duration: 400,
         easing: Easing.in(Easing.quad),
@@ -153,7 +153,7 @@ const ItemLong = ({
     >
       {/* <View style={[styles.view, focus && { backgroundColor: color + '60' }]}> */}
       <View style={[styles.view]}>
-        <Animated.View style={[styles.glow, { opacity: radius }]}>
+        {/* <Animated.View style={[styles.glow, { opacity: radius }]}>
           <Shadow
             distance={40}
             startColor={tinycolor(color + '80')
@@ -161,7 +161,7 @@ const ItemLong = ({
               .toHex8String()}
             style={[styles.image]}
           />
-        </Animated.View>
+        </Animated.View> */}
         <Animated.View style={[styles.selector, { opacity: opacity }]} />
         <View style={styles.fallback}>
           <Icon name="movie" size={48} />

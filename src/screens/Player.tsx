@@ -349,98 +349,103 @@ const Player = ({
 
   return (
     <View style={{ backgroundColor: '#000', width: '100%', height: '100%' }}>
-      <Video
-        ref={videoRef}
-        source={{
-          uri: source,
-        }}
-        useTextureView={false}
-        paused={seeking ? true : paused}
-        resizeMode="contain"
-        selectedVideoTrack={{
-          type: SelectedVideoTrackType.INDEX,
-          // @ts-ignore
-          value: playMethod !== 'DirectPlay' ? '0' : videoStream.toString(),
-        }}
-        selectedAudioTrack={{
-          type: SelectedTrackType.INDEX,
-          value: playMethod !== 'DirectPlay' ? '0' : audioStream.toString(),
-        }}
-        selectedTextTrack={
-          subtitleStream === -1 || playMethod !== 'DirectPlay'
-            ? { type: SelectedTrackType.DISABLED }
-            : {
-                type: SelectedTrackType.INDEX,
-                value: subtitleStream.toString(),
-              }
-        }
-        bufferConfig={{
-          minBufferMs: 5000,
-        }}
-        onBuffer={(e) => {
-          setBuffering(e.isBuffering)
-        }}
-        onProgress={(e) => {
-          if (!seeking) {
-            setCurrentTime(e.currentTime)
-            setBufferTime(e.playableDuration)
+      {!!source && (
+        <Video
+          ref={videoRef}
+          source={{
+            uri: source,
+          }}
+          useTextureView={false}
+          paused={seeking ? true : paused}
+          resizeMode="contain"
+          selectedVideoTrack={{
+            type: SelectedVideoTrackType.INDEX,
+            // @ts-ignore
+            value: playMethod !== 'DirectPlay' ? '0' : videoStream.toString(),
+          }}
+          selectedAudioTrack={{
+            type: SelectedTrackType.INDEX,
+            value: playMethod !== 'DirectPlay' ? '0' : audioStream.toString(),
+          }}
+          selectedTextTrack={
+            subtitleStream === -1 || playMethod !== 'DirectPlay'
+              ? { type: SelectedTrackType.DISABLED }
+              : {
+                  type: SelectedTrackType.INDEX,
+                  value: subtitleStream.toString(),
+                }
           }
-        }}
-        onSeek={(e) => {
-          console.log('SEEK: ' + secsToTime(e.currentTime))
-          setCurrentTime(e.currentTime)
-          playingProgress('timeupdate', e.currentTime)
-        }}
-        onLoad={(e) => {
-          setDuration(e.duration)
-          playingProgress(undefined, e.currentTime)
-          if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
-          sessions.sessions(client, { deviceId: client.deviceID }).then((r) => {
-            if (r.length > 0) {
-              setSessionInfo(r[0])
-              if (
-                r[0].PlayState.PlayMethod !== 'DirectPlay' &&
-                r[0].TranscodingInfo.IsVideoDirect
-              )
-                setPlayMethod('DirectStream')
+          bufferConfig={{
+            minBufferMs: 5000,
+          }}
+          onBuffer={(e) => {
+            setBuffering(e.isBuffering)
+          }}
+          onProgress={(e) => {
+            if (!seeking) {
+              setCurrentTime(e.currentTime)
+              setBufferTime(e.playableDuration)
             }
-          })
-        }}
-        onVideoTracks={(e) => {
-          console.log(e)
-          if (e.videoTracks.length > 0) {
-            setCurrentVideoCodec(formatPlayerCodec(e.videoTracks[0].codecs))
-            setCurrentVideoResolution(
-              getVideoSize(e.videoTracks[0].width, e.videoTracks[0].height),
-            )
-          }
-        }}
-        onAudioTracks={(e) => {
-          console.log(e)
-          setCurrentAudioCodec(formatPlayerCodec(e.audioTracks[0].type))
-        }}
-        onEnd={() => {
-          console.log('PLAYBACK END: ' + secsToTime(currentTime))
-          playingStopped()
-          clearControlsTimeout()
-          navigation.pop()
-        }}
-        onError={(e) => {
-          console.log(e.error.errorString)
-          console.log(e.error.errorException)
-          ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
-          playingStopped(true)
-          clearControlsTimeout()
-          navigation.pop()
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-        }}
-      />
+          }}
+          onSeek={(e) => {
+            console.log('SEEK: ' + secsToTime(e.currentTime))
+            setCurrentTime(e.currentTime)
+            playingProgress('timeupdate', e.currentTime)
+          }}
+          onLoad={(e) => {
+            setDuration(e.duration)
+            playingProgress(undefined, e.currentTime)
+            if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
+            sessions
+              .sessions(client, { deviceId: client.deviceID })
+              .then((r) => {
+                if (r.length > 0) {
+                  setSessionInfo(r[0])
+                  if (
+                    r[0].PlayState.PlayMethod !== 'DirectPlay' &&
+                    'TranscodingInfo' in r[0] &&
+                    r[0].TranscodingInfo.IsVideoDirect
+                  )
+                    setPlayMethod('DirectStream')
+                }
+              })
+          }}
+          onVideoTracks={(e) => {
+            console.log(e)
+            if (e.videoTracks.length > 0) {
+              setCurrentVideoCodec(formatPlayerCodec(e.videoTracks[0].codecs))
+              setCurrentVideoResolution(
+                getVideoSize(e.videoTracks[0].width, e.videoTracks[0].height),
+              )
+            }
+          }}
+          onAudioTracks={(e) => {
+            console.log(e)
+            setCurrentAudioCodec(formatPlayerCodec(e.audioTracks[0].type))
+          }}
+          onEnd={() => {
+            console.log('PLAYBACK END: ' + secsToTime(currentTime))
+            playingStopped()
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          onError={(e) => {
+            console.log(e.error.errorString)
+            console.log(e.error.errorException)
+            ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
+            playingStopped(true)
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+          }}
+        />
+      )}
 
       <Animated.View
         style={[
