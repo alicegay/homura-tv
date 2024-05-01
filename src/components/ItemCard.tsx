@@ -35,6 +35,7 @@ interface Props {
   progressPercentage?: number
   length?: string
   onPress?: (e: GestureResponderEvent) => void
+  onLongPress?: (e: GestureResponderEvent) => void
   onFocus?: () => void
   onBlur?: () => void
   style?: StyleProp<ViewStyle>
@@ -54,6 +55,7 @@ const ItemCard = ({
   progressPercentage,
   length,
   onPress,
+  onLongPress,
   onFocus,
   onBlur,
   style,
@@ -152,6 +154,7 @@ const ItemCard = ({
     <Pressable
       hasTVPreferredFocus={hasTVPreferredFocus}
       onPress={onPress}
+      onLongPress={onLongPress}
       onFocus={() => {
         setFocus(true)
         !!onFocus && onFocus()

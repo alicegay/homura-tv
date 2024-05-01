@@ -4,6 +4,7 @@ import Session from 'jellyfin-api/lib/types/sessions/Session'
 
 interface Props {
   sessionInfo: Session
+  playMethod: string
 }
 
 const bitsToMegabits = (bits: number) => {
@@ -13,7 +14,7 @@ const bitsToKilobits = (bits: number) => {
   return Math.round(bits / 100) / 10
 }
 
-const SessionInfo = ({ sessionInfo: info }: Props) => {
+const SessionInfo = ({ sessionInfo: info, playMethod }: Props) => {
   const audio = info.PlayState.AudioStreamIndex
 
   return (
@@ -26,7 +27,7 @@ const SessionInfo = ({ sessionInfo: info }: Props) => {
         overflow: 'hidden',
       }}
     >
-      <Text>Play method: {info.PlayState.PlayMethod}</Text>
+      <Text>Play method: {playMethod}</Text>
       <Text>
         Resolution:{' '}
         {!!info.TranscodingInfo

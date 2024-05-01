@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { HWEvent, ToastAndroid, View, useTVEventHandler } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
@@ -398,7 +398,10 @@ const Player = ({
           sessions.sessions(client, { deviceId: client.deviceID }).then((r) => {
             if (r.length > 0) {
               setSessionInfo(r[0])
-              if (r[0].PlayState.PlayMethod === 'DirectStream')
+              if (
+                r[0].PlayState.PlayMethod !== 'DirectPlay' &&
+                r[0].TranscodingInfo.IsVideoDirect
+              )
                 setPlayMethod('DirectStream')
             }
           })
@@ -559,8 +562,8 @@ const Player = ({
       </Animated.View>
 
       <View style={{ position: 'absolute', top: 16, left: 64 }}>
-        {!!sessionInfo && showSessionInfo && (
-          <SessionInfo sessionInfo={sessionInfo} />
+        {showSessionInfo && !!sessionInfo && (
+          <SessionInfo sessionInfo={sessionInfo} playMethod={playMethod} />
         )}
       </View>
 

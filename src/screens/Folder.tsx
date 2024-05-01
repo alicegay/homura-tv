@@ -8,7 +8,7 @@ import ItemCard from 'components/ItemCard'
 import Item from 'jellyfin-api/lib/types/media/Item'
 import findAspectRatio from 'lib/findAspectRatio'
 import Text from 'components/Text'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
 
