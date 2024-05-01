@@ -10,6 +10,7 @@ import useSpecialFeatures from 'api/useSpecialFeatures'
 import Text from 'components/Text'
 import ItemLong from 'components/ItemLong'
 import CenterLoading from 'components/CenterLoading'
+import { FlashList } from '@shopify/flash-list'
 
 const Episodes = ({
   navigation,
@@ -40,7 +41,7 @@ const Episodes = ({
     client.server + '/Items/' + series.Id + '/Images/Backdrop/0',
   )
 
-  const episodeList = useRef<FlatList>(null)
+  const episodeList = useRef<FlashList<any>>(null)
 
   useEffect(() => {
     if (special && specials.data) {
@@ -64,12 +65,13 @@ const Episodes = ({
       <View style={{ position: 'absolute', width: width, height: height }}>
         {((!special && !episodes.isLoading) ||
           (special && !specials.isLoading && specialsSorted)) && (
-          <FlatList
+          <FlashList
             ref={episodeList}
             data={special ? specialsSorted : episodes.data.Items}
             keyExtractor={(item: Item) => item.Id}
             renderItem={({ item, index }: { item: Item; index: number }) => (
               <ItemLong
+                id={item.Id}
                 title={
                   special
                     ? item.Name
@@ -96,6 +98,7 @@ const Episodes = ({
                   episodeList.current.scrollToIndex({
                     index: index,
                     viewPosition: 0.5,
+                    animated: true,
                   })
                 }}
                 hasTVPreferredFocus={index === 0}
@@ -113,6 +116,7 @@ const Episodes = ({
               />
             )}
             showsVerticalScrollIndicator={false}
+            estimatedItemSize={138}
           />
         )}
         <Text

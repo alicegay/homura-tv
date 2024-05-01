@@ -21,6 +21,8 @@ import sortStreams, { sortedStreams } from 'lib/sortStreams'
 import CenterLoading from 'components/CenterLoading'
 import ListButton from 'components/ListButton'
 import { FlashList } from '@shopify/flash-list'
+import { users } from 'jellyfin-api'
+import { useQueryClient } from '@tanstack/react-query'
 
 const Details = ({
   navigation,
@@ -32,10 +34,12 @@ const Details = ({
     item.Type === 'Movie' ||
     item.Type === 'Episode' ||
     item.Type === 'MusicVideo' ||
-    item.Type === 'Video'
+    item.Type === 'Video' ||
+    item.Type === 'Audio'
 
   const client = useClient()
   const theme = useTheme()
+  const query = useQueryClient()
   const { data, isLoading } = useItem(item.Id)
   const [streams, setStreams] = useState<sortedStreams>(null)
   const [videoStream, setVideoStream] = useState<number>(null)
@@ -181,8 +185,8 @@ const Details = ({
                   audioStream !== null &&
                   subtitleStream !== null && (
                     <>
-                      <Text>{streams.videos[videoStream].title}</Text>
-                      <Text>{streams.audios[audioStream].title}</Text>
+                      <Text>{streams.videos[videoStream]?.title}</Text>
+                      <Text>{streams.audios[audioStream]?.title}</Text>
                       {subtitleStream !== -1 && (
                         <Text>{streams.subtitles[subtitleStream].title}</Text>
                       )}
@@ -240,9 +244,24 @@ const Details = ({
                   >
                     Play
                   </Button>
-                  <Button icon="information" />
+                  {/* <Button icon="information" /> */}
                   <Button
                     icon={data?.UserData.Played ? 'check-all' : 'check'}
+                    onPress={() => {
+                      if (data.UserData.Played) {
+                        users.playedItemsDel(client, item.Id).then(() => {
+                          query.invalidateQueries({
+                            queryKey: ['item', item.Id],
+                          })
+                        })
+                      } else {
+                        users.playedItems(client, item.Id).then(() => {
+                          query.invalidateQueries({
+                            queryKey: ['item', item.Id],
+                          })
+                        })
+                      }
+                    }}
                   />
                   {streams?.videos.length > 1 && (
                     <Button

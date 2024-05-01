@@ -42,6 +42,7 @@ const Folder = ({
           keyExtractor={(item: Item) => item.Id}
           renderItem={({ item, index }: { item: Item; index: number }) => (
             <ItemCard
+              id={item.Id}
               title={item.Name}
               numberOfLines={2}
               aspectRatio={aspectRatio}
@@ -50,7 +51,7 @@ const Folder = ({
                 '/Items/' +
                 item.Id +
                 '/Images/Primary?fillWidth=' +
-                (width / columns - 32).toString() +
+                ((width / columns) * 2).toString() +
                 '&quality=96'
               }
               blurhash={
@@ -87,7 +88,7 @@ const Folder = ({
           numColumns={columns}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
-          estimatedItemSize={columns === 4 ? 164 : 243}
+          estimatedItemSize={columns === 4 ? 178 : 253}
         />
       )}
       <Text

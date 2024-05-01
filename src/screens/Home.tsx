@@ -63,6 +63,7 @@ const Home = ({
               keyExtractor={(item: Item) => item.Id}
               renderItem={({ item, index }: { item: Item; index: number }) => (
                 <ItemCard
+                  id={item.Id}
                   title={item.Name}
                   image={
                     client.server + '/Items/' + item.Id + '/Images/Primary'
@@ -124,6 +125,7 @@ const Home = ({
                   index: number
                 }) => (
                   <ItemCard
+                    id={item.Id}
                     title={
                       item.Type === 'Episode' ? item.SeriesName : item.Name
                     }
@@ -185,6 +187,7 @@ const Home = ({
                   index: number
                 }) => (
                   <ItemCard
+                    id={item.Id}
                     title={item.SeriesName}
                     subtitle={cardSubtitle(item)}
                     image={

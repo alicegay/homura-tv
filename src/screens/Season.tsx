@@ -48,6 +48,7 @@ const Season = ({
             keyExtractor={(item: Item) => item.Id}
             renderItem={({ item, index }: { item: Item; index: number }) => (
               <ItemCard
+                id={item.Id}
                 title={item.Name}
                 aspectRatio="tall"
                 width={192}

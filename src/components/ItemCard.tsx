@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   DimensionValue,
   GestureResponderEvent,
@@ -21,8 +21,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { Shadow } from 'react-native-shadow-2'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 interface Props {
+  id: string
   title: string
   numberOfLines?: number
   subtitle?: string
@@ -43,6 +45,7 @@ interface Props {
 }
 
 const ItemCard = ({
+  id,
   title,
   subtitle,
   numberOfLines = 1,
@@ -61,15 +64,17 @@ const ItemCard = ({
   style,
   hasTVPreferredFocus,
 }: Props) => {
+  const lastID = useRef(id)
   const theme = useTheme()
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
   const color = !!blurhash ? averageBlurhash(blurhash) : theme.tint
   const shadowColor = strongShadow ? color + '80' : color + '40'
-  const [imageURI, setImageURI] = useState<string>()
+  const [imageURI, setImageURI] = useState(image)
 
-  useEffect(() => {
+  if (id !== lastID.current) {
+    lastID.current = id
     setImageURI(image)
-  })
+  }
 
   const aspectRatioMultiplier =
     aspectRatio === 'wide' ? 9 / 16 : aspectRatio === 'tall' ? 3 / 2 : 1
@@ -104,6 +109,19 @@ const ItemCard = ({
       overflow: 'hidden',
       opacity: 0,
     },
+    fallback: {
+      position: 'absolute',
+      left: 16,
+      top: topPadding,
+      width: width,
+      height: width * aspectRatioMultiplier,
+      backgroundColor: '#000',
+      borderRadius: 16,
+      overflow: 'hidden',
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     image: {
       width: width,
       height: width * aspectRatioMultiplier,
@@ -132,21 +150,21 @@ const ItemCard = ({
     },
   })
 
-  // const radius = useSharedValue(0.0)
+  const radius = useSharedValue(0.0)
   const opacity = useSharedValue(0.0)
 
   useEffect(() => {
     if (focus) {
-      // radius.value = withTiming(1.0, {
-      //   duration: 400,
-      //   easing: Easing.out(Easing.quad),
-      // })
+      radius.value = withTiming(1.0, {
+        duration: 400,
+        easing: Easing.out(Easing.quad),
+      })
       opacity.value = withRepeat(withTiming(1.0, { duration: 400 }), 0, true)
     } else {
-      // radius.value = withTiming(0.0, {
-      //   duration: 100,
-      //   easing: Easing.in(Easing.quad),
-      // })
+      radius.value = withTiming(0.0, {
+        duration: 100,
+        easing: Easing.in(Easing.quad),
+      })
       opacity.value = withTiming(0.0, {
         duration: 400,
         easing: Easing.in(Easing.quad),
@@ -171,7 +189,7 @@ const ItemCard = ({
     >
       <View style={[styles.view]}>
         <View style={styles.padding} />
-        {/* <Animated.View style={[styles.glow, { opacity: radius }]}>
+        <Animated.View style={[styles.glow, { opacity: radius }]}>
           <Shadow
             distance={40}
             startColor={tinycolor(shadowColor)
@@ -179,8 +197,11 @@ const ItemCard = ({
               .toHex8String()}
             style={styles.image}
           />
-        </Animated.View> */}
+        </Animated.View>
         <Animated.View style={[styles.selector, { opacity: opacity }]} />
+        <View style={styles.fallback}>
+          <Icon name="movie" size={48} />
+        </View>
         <View
           style={[
             styles.image,
