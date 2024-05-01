@@ -1,4 +1,4 @@
-import { FlatList, View, useWindowDimensions } from 'react-native'
+import { View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
@@ -11,6 +11,7 @@ import Text from 'components/Text'
 import { useRef } from 'react'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
+import { FlashList } from '@shopify/flash-list'
 
 const Folder = ({
   navigation,
@@ -28,14 +29,14 @@ const Folder = ({
     EnableImageTypes: 'Primary,Backdrop,Logo',
   })
 
-  const list = useRef<FlatList>()
+  const list = useRef<FlashList<any>>()
   const aspectRatio = findAspectRatio(item.CollectionType)
   const columns = aspectRatio === 'wide' ? 4 : 6
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       {!isLoading && (
-        <FlatList
+        <FlashList
           ref={list}
           data={data.Items}
           keyExtractor={(item: Item) => item.Id}
@@ -44,7 +45,14 @@ const Folder = ({
               title={item.Name}
               numberOfLines={2}
               aspectRatio={aspectRatio}
-              image={client.server + '/Items/' + item.Id + '/Images/Primary'}
+              image={
+                client.server +
+                '/Items/' +
+                item.Id +
+                '/Images/Primary?fillWidth=' +
+                (width / columns - 32).toString() +
+                '&quality=96'
+              }
               blurhash={
                 !!item.ImageBlurHashes.Primary
                   ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
@@ -60,8 +68,10 @@ const Folder = ({
               }
               onFocus={() =>
                 list.current.scrollToIndex({
-                  index: Math.floor(index / columns),
+                  //index: Math.floor(index / columns), // FlatList
+                  index: Math.floor(index / columns) * columns, // FlashList
                   viewPosition: 0.5,
+                  animated: true,
                 })
               }
               onPress={() => {
@@ -77,7 +87,7 @@ const Folder = ({
           numColumns={columns}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
-          initialNumToRender={12}
+          estimatedItemSize={columns === 4 ? 164 : 243}
         />
       )}
       <Text

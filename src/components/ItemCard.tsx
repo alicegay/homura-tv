@@ -65,7 +65,11 @@ const ItemCard = ({
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
   const color = !!blurhash ? averageBlurhash(blurhash) : theme.tint
   const shadowColor = strongShadow ? color + '80' : color + '40'
-  const [imageURI, setImageURI] = useState(image)
+  const [imageURI, setImageURI] = useState<string>()
+
+  useEffect(() => {
+    setImageURI(image)
+  })
 
   const aspectRatioMultiplier =
     aspectRatio === 'wide' ? 9 / 16 : aspectRatio === 'tall' ? 3 / 2 : 1
@@ -194,14 +198,16 @@ const ItemCard = ({
               style={[styles.image, { position: 'absolute' }]}
             />
           )}
-          <Image
-            source={{ uri: imageURI }}
-            style={[styles.image, { position: 'absolute' }]}
-            onError={() => {
-              if (!!imageFallback && imageURI !== imageFallback)
-                setImageURI(imageFallback)
-            }}
-          />
+          {!!imageURI && (
+            <Image
+              source={{ uri: imageURI }}
+              style={[styles.image, { position: 'absolute' }]}
+              onError={() => {
+                if (!!imageFallback && imageURI !== imageFallback)
+                  setImageURI(imageFallback)
+              }}
+            />
+          )}
           {!!length && (
             <View style={styles.length}>
               <Text style={[styles.length]}>{length}</Text>

@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'center',
     marginVertical: 8,
     marginHorizontal: 24,
