@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { FlatList, ScrollView, View, useWindowDimensions } from 'react-native'
+import {
+  FlatList,
+  ScrollView,
+  TVFocusGuideView,
+  View,
+  useWindowDimensions,
+} from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import Item from 'jellyfin-api/lib/types/media/Item'
@@ -58,47 +64,55 @@ const Home = ({
       {!views.isLoading && !resume.isLoading && !nextup.isLoading && (
         <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
           <View>
-            <FlatList
-              ref={viewsList}
-              data={views.data}
-              keyExtractor={(item: Item) => item.Id}
-              renderItem={({ item, index }: { item: Item; index: number }) => (
-                <ItemCard
-                  id={item.Id}
-                  title={item.Name}
-                  image={
-                    client.server + '/Items/' + item.Id + '/Images/Primary'
-                  }
-                  blurhash={
-                    !!item.ImageBlurHashes.Primary
-                      ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
-                      : undefined
-                  }
-                  onPress={() => {
-                    navigation.push('Folder', {
-                      item: item,
-                      ignoreLengths: item.CollectionType === 'movies',
-                    })
-                  }}
-                  onFocus={() => {
-                    viewsList.current.scrollToIndex({
-                      index: index,
-                      viewPosition: 0.5,
-                    })
-                    scrollView.current.scrollTo({
-                      x: 0,
-                      y: 0,
-                      animated: true,
-                    })
-                  }}
-                  hasTVPreferredFocus={index === 0}
-                />
-              )}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-              initialNumToRender={4}
-              style={{ paddingTop: 48 }}
-            />
+            <TVFocusGuideView trapFocusLeft trapFocusRight>
+              <FlatList
+                ref={viewsList}
+                data={views.data}
+                keyExtractor={(item: Item) => item.Id}
+                renderItem={({
+                  item,
+                  index,
+                }: {
+                  item: Item
+                  index: number
+                }) => (
+                  <ItemCard
+                    id={item.Id}
+                    title={item.Name}
+                    image={
+                      client.server + '/Items/' + item.Id + '/Images/Primary'
+                    }
+                    blurhash={
+                      !!item.ImageBlurHashes.Primary
+                        ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
+                        : undefined
+                    }
+                    onPress={() => {
+                      navigation.push('Folder', {
+                        item: item,
+                        ignoreLengths: item.CollectionType === 'movies',
+                      })
+                    }}
+                    onFocus={() => {
+                      viewsList.current.scrollToIndex({
+                        index: index,
+                        viewPosition: 0.5,
+                      })
+                      scrollView.current.scrollTo({
+                        x: 0,
+                        y: 0,
+                        animated: true,
+                      })
+                    }}
+                    hasTVPreferredFocus={index === 0}
+                  />
+                )}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                initialNumToRender={4}
+                style={{ paddingTop: 48 }}
+              />
+            </TVFocusGuideView>
             <Text
               style={{
                 fontSize: 28,
@@ -132,52 +146,54 @@ const Home = ({
 
           {'Items' in resume.data && resume.data.Items.length > 0 && (
             <View onLayout={(event) => setReusmeY(event.nativeEvent.layout.y)}>
-              <FlatList
-                ref={resumeList}
-                data={resume.data.Items}
-                keyExtractor={(item: Item) => item.Id}
-                renderItem={({
-                  item,
-                  index,
-                }: {
-                  item: Item
-                  index: number
-                }) => (
-                  <ItemCard
-                    id={item.Id}
-                    title={
-                      item.Type === 'Episode' ? item.SeriesName : item.Name
-                    }
-                    subtitle={cardSubtitle(item)}
-                    image={
-                      client.server + '/Items/' + item.Id + '/Images/Primary'
-                    }
-                    blurhash={
-                      !!item.ImageBlurHashes.Primary
-                        ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
-                        : undefined
-                    }
-                    length={ticksToTime(item.RunTimeTicks)}
-                    progressPercentage={item.UserData.PlayedPercentage}
-                    onFocus={() => {
-                      resumeList.current.scrollToIndex({
-                        index: index,
-                        viewPosition: 0.5,
-                      })
-                      scrollView.current.scrollTo({
-                        x: 0,
-                        y: resumeY - height / 4,
-                        animated: true,
-                      })
-                    }}
-                    onPress={() => navigation.push('Details', { item })}
-                  />
-                )}
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-                initialNumToRender={4}
-                style={{ paddingTop: 32 }}
-              />
+              <TVFocusGuideView trapFocusLeft trapFocusRight>
+                <FlatList
+                  ref={resumeList}
+                  data={resume.data.Items}
+                  keyExtractor={(item: Item) => item.Id}
+                  renderItem={({
+                    item,
+                    index,
+                  }: {
+                    item: Item
+                    index: number
+                  }) => (
+                    <ItemCard
+                      id={item.Id}
+                      title={
+                        item.Type === 'Episode' ? item.SeriesName : item.Name
+                      }
+                      subtitle={cardSubtitle(item)}
+                      image={
+                        client.server + '/Items/' + item.Id + '/Images/Primary'
+                      }
+                      blurhash={
+                        !!item.ImageBlurHashes.Primary
+                          ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
+                          : undefined
+                      }
+                      length={ticksToTime(item.RunTimeTicks)}
+                      progressPercentage={item.UserData.PlayedPercentage}
+                      onFocus={() => {
+                        resumeList.current.scrollToIndex({
+                          index: index,
+                          viewPosition: 0.5,
+                        })
+                        scrollView.current.scrollTo({
+                          x: 0,
+                          y: resumeY - height / 4,
+                          animated: true,
+                        })
+                      }}
+                      onPress={() => navigation.push('Details', { item })}
+                    />
+                  )}
+                  horizontal={true}
+                  showsHorizontalScrollIndicator={false}
+                  initialNumToRender={4}
+                  style={{ paddingTop: 32 }}
+                />
+              </TVFocusGuideView>
               <Text
                 style={{
                   fontSize: 28,
@@ -194,45 +210,47 @@ const Home = ({
 
           {'Items' in nextup.data && nextup.data.Items.length > 0 && (
             <View>
-              <FlatList
-                ref={nextupList}
-                data={nextup.data.Items}
-                keyExtractor={(item: Item) => item.Id}
-                renderItem={({
-                  item,
-                  index,
-                }: {
-                  item: Item
-                  index: number
-                }) => (
-                  <ItemCard
-                    id={item.Id}
-                    title={item.SeriesName}
-                    subtitle={cardSubtitle(item)}
-                    image={
-                      client.server + '/Items/' + item.Id + '/Images/Primary'
-                    }
-                    blurhash={
-                      !!item.ImageBlurHashes.Primary
-                        ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
-                        : undefined
-                    }
-                    length={ticksToTime(item.RunTimeTicks)}
-                    onFocus={() => {
-                      nextupList.current.scrollToIndex({
-                        index: index,
-                        viewPosition: 0.5,
-                      })
-                      scrollView.current.scrollToEnd({ animated: true })
-                    }}
-                    onPress={() => navigation.push('Details', { item })}
-                  />
-                )}
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-                initialNumToRender={4}
-                style={{ paddingTop: 32 }}
-              />
+              <TVFocusGuideView trapFocusLeft trapFocusRight>
+                <FlatList
+                  ref={nextupList}
+                  data={nextup.data.Items}
+                  keyExtractor={(item: Item) => item.Id}
+                  renderItem={({
+                    item,
+                    index,
+                  }: {
+                    item: Item
+                    index: number
+                  }) => (
+                    <ItemCard
+                      id={item.Id}
+                      title={item.SeriesName}
+                      subtitle={cardSubtitle(item)}
+                      image={
+                        client.server + '/Items/' + item.Id + '/Images/Primary'
+                      }
+                      blurhash={
+                        !!item.ImageBlurHashes.Primary
+                          ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
+                          : undefined
+                      }
+                      length={ticksToTime(item.RunTimeTicks)}
+                      onFocus={() => {
+                        nextupList.current.scrollToIndex({
+                          index: index,
+                          viewPosition: 0.5,
+                        })
+                        scrollView.current.scrollToEnd({ animated: true })
+                      }}
+                      onPress={() => navigation.push('Details', { item })}
+                    />
+                  )}
+                  horizontal={true}
+                  showsHorizontalScrollIndicator={false}
+                  initialNumToRender={4}
+                  style={{ paddingTop: 32 }}
+                />
+              </TVFocusGuideView>
               <Text
                 style={{
                   fontSize: 28,
