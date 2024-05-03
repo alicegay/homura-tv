@@ -249,15 +249,21 @@ const Details = ({
                     icon={data?.UserData.Played ? 'check-all' : 'check'}
                     onPress={() => {
                       if (data.UserData.Played) {
-                        users.playedItemsDel(client, item.Id).then(() => {
+                        users.playedItemsDel(client, data.Id).then(() => {
                           query.invalidateQueries({
-                            queryKey: ['item', item.Id],
+                            queryKey: ['item', data.Id],
+                          })
+                          query.invalidateQueries({
+                            queryKey: ['items', data.ParentId],
                           })
                         })
                       } else {
-                        users.playedItems(client, item.Id).then(() => {
+                        users.playedItems(client, data.Id).then(() => {
                           query.invalidateQueries({
-                            queryKey: ['item', item.Id],
+                            queryKey: ['item', data.Id],
+                          })
+                          query.invalidateQueries({
+                            queryKey: ['items', data.ParentId],
                           })
                         })
                       }

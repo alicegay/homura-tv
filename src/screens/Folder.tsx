@@ -65,7 +65,9 @@ const Folder = ({
                 ticksToTime(item.RunTimeTicks)
               }
               progressPercentage={
-                !item.IsFolder && item.UserData.PlayedPercentage
+                !item.IsFolder && item.UserData.Played
+                  ? 100
+                  : !item.IsFolder && item.UserData.PlayedPercentage
               }
               onFocus={() =>
                 list.current.scrollToIndex({
