@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20,
+    minHeight: 36,
     backgroundColor: useTheme.getState().background,
   },
   rootFocus: {

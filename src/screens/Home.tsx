@@ -16,6 +16,7 @@ import ticksToTime from 'lib/ticksToTime'
 import ItemCard from 'components/ItemCard'
 import Text from 'components/Text'
 import CenterLoading from 'components/CenterLoading'
+import Button from 'components/Button'
 
 const Home = ({
   navigation,
@@ -109,6 +110,24 @@ const Home = ({
             >
               Libraries
             </Text>
+
+            <View
+              style={{
+                position: 'absolute',
+                paddingTop: 14,
+                right: 16,
+                flex: 1,
+                flexDirection: 'row',
+              }}
+            >
+              {/* <Button icon="update">Update</Button> */}
+              <Button
+                icon="cog"
+                onPress={() => {
+                  navigation.push('Settings')
+                }}
+              />
+            </View>
           </View>
 
           {'Items' in resume.data && resume.data.Items.length > 0 && (

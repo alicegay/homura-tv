@@ -12,6 +12,7 @@ type RootStackParamList = {
     startFrom?: number
     streams: { video: number; audio: number; subtitle: number }
   }
+  Settings: undefined
   SelectServer: undefined
   SelectUser: { server: string }
 }
