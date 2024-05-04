@@ -25,7 +25,7 @@ import CenterLoading from 'components/CenterLoading'
 import Clock from 'components/Clock'
 import PlayerButton from 'components/PlayerButton'
 import LinearGradient from 'react-native-linear-gradient'
-import { items, sessions } from 'jellyfin-api'
+import { items, other, sessions } from 'jellyfin-api'
 import PlaybackInfoQuery from 'jellyfin-api/lib/types/queries/PlaybackInfoQuery'
 import ProgressQuery, {
   ProgressStoppedQuery,
@@ -39,6 +39,9 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
+import IntroTimestamps from 'jellyfin-api/lib/types/other/IntroTimestamps'
+import { opacity } from 'react-native-reanimated/lib/typescript/reanimated2/Colors'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 let menuX = 0
 let menuY = 0
@@ -54,6 +57,13 @@ const Player = ({
     const button = e.eventType
 
     if (introVisibility) {
+      if (button == 'select') {
+        videoRef.current.seek(introTimestamps.IntroEnd)
+      } else if (button == 'up' || button == 'down') {
+        setIntroVisibility(false)
+        menuY += 1
+        resetControlsTimeout()
+      }
     } else {
       if (
         (button == 'select' && menuY == -1) ||
@@ -153,7 +163,7 @@ const Player = ({
   }
   useTVEventHandler(TVEventHandler)
 
-  const [playPauseButton, setPlayPauseButton] = useState(false)
+  const [playPauseButton, setPlayPauseButton] = useState(true)
   const [infoButton, setInfoButton] = useState(false)
 
   const controlsTimeout = useRef(null)
@@ -223,7 +233,22 @@ const Player = ({
   const [sessionInfo, setSessionInfo] = useState<Session>(null)
   const [showSessionInfo, setShowSessionInfo] = useState(false)
 
+  const [introTimestamps, setIntroTimestamps] = useState<IntroTimestamps>(null)
   const [introVisibility, setIntroVisibility] = useState(false)
+  const introAnim = useSharedValue(0.0)
+  useEffect(() => {
+    if (introVisibility) {
+      introAnim.value = withTiming(1.0, {
+        duration: 200,
+        easing: Easing.out(Easing.quad),
+      })
+    } else {
+      introAnim.value = withTiming(0.0, {
+        duration: 200,
+        easing: Easing.in(Easing.quad),
+      })
+    }
+  }, [introVisibility])
 
   useEffect(() => {
     menuX = 0
@@ -263,6 +288,23 @@ const Player = ({
         // console.log(res.MediaSources[0].MediaStreams)
       }
     })
+    if (item.Type === 'Episode' && settings.playback.introSkipper) {
+      other.introTimestamps(client, item.Id).then(
+        (res) => {
+          setIntroTimestamps(res)
+          console.log(
+            'Intro Skipper: ' +
+              res.ShowSkipPromptAt.toString() +
+              ' - ' +
+              res.HideSkipPromptAt.toString(),
+          )
+        },
+        (error) => {
+          console.log('No Intro Skipper data')
+          console.log(error)
+        },
+      )
+    }
   }, [])
 
   const [firstPause, setFirstPause] = useState(false)
@@ -385,6 +427,23 @@ const Player = ({
             if (!seeking) {
               setCurrentTime(e.currentTime)
               setBufferTime(e.playableDuration)
+              if (!!introTimestamps) {
+                if (
+                  e.currentTime > introTimestamps.ShowSkipPromptAt &&
+                  e.currentTime < introTimestamps.HideSkipPromptAt &&
+                  !introVisibility &&
+                  !controlsVisibility
+                ) {
+                  setIntroVisibility(true)
+                } else if (
+                  (e.currentTime < introTimestamps.ShowSkipPromptAt &&
+                    introVisibility) ||
+                  (e.currentTime > introTimestamps.HideSkipPromptAt &&
+                    introVisibility)
+                ) {
+                  setIntroVisibility(false)
+                }
+              }
             }
           }}
           onSeek={(e) => {
@@ -564,6 +623,34 @@ const Player = ({
             />
           </View>
         </LinearGradient>
+      </Animated.View>
+
+      <Animated.View
+        style={{
+          opacity: introAnim,
+          position: 'absolute',
+          bottom: 32,
+          right: 64,
+          width: 160,
+          height: 36,
+          backgroundColor: theme.foreground,
+          borderRadius: 20,
+          overflow: 'hidden',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Icon
+          style={{ fontSize: 14, color: theme.background, paddingRight: 4 }}
+          name="skip-next"
+        />
+        <Text
+          style={{ fontSize: 14, color: theme.background }}
+          fontWeight={700}
+        >
+          Skip Opening
+        </Text>
       </Animated.View>
 
       <View style={{ position: 'absolute', top: 16, left: 64 }}>
