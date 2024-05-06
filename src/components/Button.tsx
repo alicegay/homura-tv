@@ -4,12 +4,12 @@ import {
   Pressable,
   StyleProp,
   StyleSheet,
-  Text,
   View,
   ViewStyle,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import useTheme from 'hooks/useTheme'
+import Text from './Text'
 
 interface Props {
   children?: ReactNode
@@ -42,7 +42,48 @@ const Button = forwardRef<View, Props>(
     }: Props,
     ref,
   ) => {
+    const theme = useTheme()
     const [focus, setFocus] = useState(false)
+
+    const styles = StyleSheet.create({
+      root: {
+        minWidth: 36,
+        overflow: 'hidden',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 20,
+        minHeight: 36,
+        backgroundColor: theme.background,
+      },
+      rootFocus: {
+        backgroundColor: theme.foreground,
+      },
+      rootWithLabel: {
+        minWidth: 96,
+      },
+      icon: {
+        fontSize: 14,
+        color: theme.foreground,
+      },
+      iconFocus: {
+        color: theme.background,
+      },
+      iconWithLabel: {
+        marginLeft: 16,
+        marginRight: -16,
+      },
+      label: {
+        fontSize: 14,
+        textAlign: 'center',
+        marginVertical: 8,
+        marginHorizontal: 24,
+        color: theme.foreground,
+      },
+      labelFocus: {
+        color: theme.background,
+      },
+    })
 
     return (
       <Pressable
@@ -81,6 +122,7 @@ const Button = forwardRef<View, Props>(
           <Text
             numberOfLines={1}
             style={[styles.label, focus && styles.labelFocus]}
+            fontWeight={700}
           >
             {children}
           </Text>
@@ -89,47 +131,5 @@ const Button = forwardRef<View, Props>(
     )
   },
 )
-
-const styles = StyleSheet.create({
-  root: {
-    minWidth: 36,
-    overflow: 'hidden',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
-    minHeight: 36,
-    backgroundColor: useTheme.getState().background,
-  },
-  rootFocus: {
-    backgroundColor: useTheme.getState().foreground,
-  },
-  rootWithLabel: {
-    minWidth: 96,
-  },
-  icon: {
-    fontSize: 14,
-    color: useTheme.getState().foreground,
-  },
-  iconFocus: {
-    color: useTheme.getState().background,
-  },
-  iconWithLabel: {
-    marginLeft: 16,
-    marginRight: -16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginVertical: 8,
-    marginHorizontal: 24,
-    color: useTheme.getState().foreground,
-    fontFamily: useTheme.getState().font700,
-  },
-  labelFocus: {
-    color: useTheme.getState().background,
-  },
-})
 
 export default Button
