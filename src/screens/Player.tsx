@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { HWEvent, ToastAndroid, View, useTVEventHandler } from 'react-native'
+import {
+  HWEvent,
+  Pressable,
+  ToastAndroid,
+  View,
+  useTVEventHandler,
+} from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import Video, {
@@ -40,7 +46,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import IntroTimestamps from 'jellyfin-api/lib/types/other/IntroTimestamps'
-import { opacity } from 'react-native-reanimated/lib/typescript/reanimated2/Colors'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { AxiosError } from 'axios'
 
@@ -54,9 +59,7 @@ const Player = ({
   navigation,
   route,
 }: NativeStackScreenProps<RootStackParamList, 'Player'>) => {
-  const TVEventHandler = (e: HWEvent) => {
-    const button = e.eventType
-
+  const TVEventHandler = ({ eventType: button }: HWEvent) => {
     if (introVisibility) {
       if (button == 'select') {
         videoRef.current.seek(introTimestamps.IntroEnd)
@@ -393,6 +396,8 @@ const Player = ({
 
   return (
     <View style={{ backgroundColor: '#000', width: '100%', height: '100%' }}>
+      <Pressable style={{ width: 0, height: 0 }} hasTVPreferredFocus={true} />
+
       {!!source && (
         <Video
           ref={videoRef}
@@ -400,6 +405,7 @@ const Player = ({
             uri: source,
           }}
           useTextureView={false}
+          focusable={false}
           paused={seeking ? true : paused}
           resizeMode="contain"
           selectedVideoTrack={{
