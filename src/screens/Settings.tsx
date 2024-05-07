@@ -1,7 +1,121 @@
-import { View } from 'react-native'
+import { Linking, View } from 'react-native'
+import useSettings from 'hooks/useSettings'
+import useTheme from 'hooks/useTheme'
+import { FlashList } from '@shopify/flash-list'
+import ListButton from 'components/ListButton'
+import Text from 'components/Text'
+import Switch from 'components/Switch'
+import { useRef } from 'react'
 
 const Settings = () => {
-  return <View></View>
+  const settings = useSettings()
+  const theme = useTheme()
+
+  const data = [
+    {
+      title: 'Playback',
+      separator: true,
+    },
+    {
+      title: 'Force Stereo',
+      subtitle: 'Transcode surround sound into stereo',
+      icon: 'volume-high',
+      onPress: () => {
+        settings.setForceStereo(!settings.forceStereo)
+      },
+      right: () => <Switch state={settings.forceStereo} />,
+      default: true,
+    },
+    {
+      title: 'Use Intro Skipper',
+      subtitle: 'Show skip button during opening sequences',
+      icon: 'skip-next',
+      onPress: () => {
+        settings.setIntroSkipper(!settings.introSkipper)
+      },
+      right: () => <Switch state={settings.introSkipper} />,
+    },
+    {
+      title: 'Caption Settings',
+      subtitle: 'Only applies to SRT and VTT subtitles',
+      icon: 'subtitles',
+      onPress: () => {
+        Linking.sendIntent('android.settings.CAPTIONING_SETTINGS')
+      },
+    },
+    {
+      title: 'User',
+      separator: true,
+    },
+    {
+      title: 'Sign out',
+      icon: 'logout',
+      onPress: () => {},
+    },
+  ]
+
+  const listRef = useRef<FlashList<any>>()
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: theme.background,
+        paddingTop: 56,
+        paddingHorizontal: 96,
+        paddingBottom: 16,
+      }}
+    >
+      <FlashList
+        ref={listRef}
+        data={data}
+        renderItem={({ item, index }) =>
+          item.separator ? (
+            <Text
+              style={{
+                fontSize: 16,
+                paddingTop: 16,
+                paddingHorizontal: 24,
+                paddingBottom: 4,
+              }}
+              fontWeight={700}
+            >
+              {item.title}
+            </Text>
+          ) : (
+            <ListButton
+              title={item.title}
+              subtitle={item.subtitle}
+              icon={item.icon}
+              onPress={item.onPress}
+              right={item.right}
+              onFocus={() => {
+                listRef.current.scrollToIndex({
+                  index: index,
+                  viewPosition: 0.5,
+                  animated: true,
+                })
+              }}
+              hasTVPreferredFocus={item.default ? true : false}
+            />
+          )
+        }
+        estimatedItemSize={88}
+        showsVerticalScrollIndicator={false}
+      />
+      <Text
+        style={{
+          fontSize: 28,
+          paddingTop: 12,
+          paddingHorizontal: 32,
+          position: 'absolute',
+        }}
+        fontWeight={700}
+      >
+        Settings
+      </Text>
+    </View>
+  )
 }
 
 export default Settings

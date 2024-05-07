@@ -42,6 +42,7 @@ import Animated, {
 import IntroTimestamps from 'jellyfin-api/lib/types/other/IntroTimestamps'
 import { opacity } from 'react-native-reanimated/lib/typescript/reanimated2/Colors'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import { AxiosError } from 'axios'
 
 let menuX = 0
 let menuY = 0
@@ -230,6 +231,7 @@ const Player = ({
     'DirectPlay' | 'DirectStream' | 'Transcode'
   >('DirectPlay')
   const [playSession, setPlaySession] = useState<string>(null)
+  const [bitrate, setBitrate] = useState<number>(null)
   const [sessionInfo, setSessionInfo] = useState<Session>(null)
   const [showSessionInfo, setShowSessionInfo] = useState(false)
 
@@ -271,6 +273,7 @@ const Player = ({
     }
     items.playbackInfo(client, item.Id, playbackInfo).then((res) => {
       setPlaySession(res.PlaySessionId)
+      setBitrate(res.MediaSources[0].Bitrate)
       if (res.MediaSources[0].SupportsDirectPlay) {
         console.log('DIRECT PLAY')
         setPlayMethod('DirectPlay')
@@ -288,7 +291,7 @@ const Player = ({
         // console.log(res.MediaSources[0].MediaStreams)
       }
     })
-    if (item.Type === 'Episode' && settings.playback.introSkipper) {
+    if (item.Type === 'Episode' && settings.introSkipper) {
       other.introTimestamps(client, item.Id).then(
         (res) => {
           setIntroTimestamps(res)
@@ -299,9 +302,8 @@ const Player = ({
               res.HideSkipPromptAt.toString(),
           )
         },
-        (error) => {
+        (error: AxiosError) => {
           console.log('No Intro Skipper data')
-          console.log(error)
         },
       )
     }
@@ -466,6 +468,8 @@ const Player = ({
                     r[0].TranscodingInfo.IsVideoDirect
                   )
                     setPlayMethod('DirectStream')
+                  if ('TranscodingInfo' in r[0])
+                    setBitrate(r[0].TranscodingInfo.Bitrate)
                 }
               })
           }}
@@ -603,6 +607,18 @@ const Player = ({
                       {playMethod === 'DirectStream'
                         ? 'Direct Stream'
                         : 'Transcoding'}
+                    </Text>
+                  </>
+                )}
+
+                {!!bitrate && (
+                  <>
+                    <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
+                      /
+                    </Text>
+                    <Text style={{ fontSize: 16, verticalAlign: 'middle' }}>
+                      {(Math.round(bitrate / 1000 / 100) / 10).toString() +
+                        ' Mbps'}
                     </Text>
                   </>
                 )}

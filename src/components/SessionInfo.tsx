@@ -32,7 +32,7 @@ const SessionInfo = ({ sessionInfo: info, playMethod }: Props) => {
         Resolution:{' '}
         {!!info.TranscodingInfo
           ? info.TranscodingInfo.Width + '×' + info.TranscodingInfo.Height
-          : info.NowPlayingItem.Width + '×' + info.NowPlayingItem.Height}
+          : info.NowPlayingItem?.Width + '×' + info.NowPlayingItem?.Height}
       </Text>
 
       {!!info.TranscodingInfo && (
@@ -41,11 +41,12 @@ const SessionInfo = ({ sessionInfo: info, playMethod }: Props) => {
           <Text>Container: {info.TranscodingInfo.Container}</Text>
           <Text>Video codec: {info.TranscodingInfo.VideoCodec}</Text>
           <Text>Audio codec: {info.TranscodingInfo.AudioCodec}</Text>
+          <Text>Audio channels: {info.TranscodingInfo.AudioChannels}</Text>
           <Text>
             Bitrate: {bitsToMegabits(info.TranscodingInfo.Bitrate)} Mbps
           </Text>
           <Text>
-            Reason: {info.TranscodingInfo.TranscodeReasons.join(', ')}
+            Reason: {info.TranscodingInfo.TranscodeReasons?.join(', ')}
           </Text>
         </View>
       )}
@@ -54,30 +55,31 @@ const SessionInfo = ({ sessionInfo: info, playMethod }: Props) => {
         <Text fontWeight={700}>Original Media Info</Text>
         <Text>
           Video codec:{' '}
-          {info.NowPlayingItem.MediaStreams[0].Codec +
+          {info.NowPlayingItem?.MediaStreams[0].Codec +
             ' ' +
-            info.NowPlayingItem.MediaStreams[0].Profile}
+            info.NowPlayingItem?.MediaStreams[0].Profile}
         </Text>
         <Text>
           Video bitrate:{' '}
-          {bitsToMegabits(info.NowPlayingItem.MediaStreams[0].BitRate)} Mbps
+          {bitsToMegabits(info.NowPlayingItem?.MediaStreams[0].BitRate)} Mbps
         </Text>
         <Text>
-          Video range: {info.NowPlayingItem.MediaStreams[0].VideoRangeType}
+          Video range: {info.NowPlayingItem?.MediaStreams[0].VideoRangeType}
         </Text>
         <Text>
-          Audio codec: {info.NowPlayingItem.MediaStreams[audio].Codec}
+          Audio codec: {info.NowPlayingItem?.MediaStreams[audio].Codec}
         </Text>
         <Text>
           Audio bitrate:{' '}
-          {bitsToKilobits(info.NowPlayingItem.MediaStreams[audio].BitRate)} Kbps
+          {bitsToKilobits(info.NowPlayingItem?.MediaStreams[audio].BitRate)}{' '}
+          Kbps
         </Text>
         <Text>
-          Audio channels: {info.NowPlayingItem.MediaStreams[audio].Channels}
+          Audio channels: {info.NowPlayingItem?.MediaStreams[audio].Channels}
         </Text>
         <Text>
           Audio sample rate:{' '}
-          {info.NowPlayingItem.MediaStreams[audio].SampleRate}
+          {info.NowPlayingItem?.MediaStreams[audio].SampleRate}
         </Text>
       </View>
     </View>

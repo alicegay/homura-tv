@@ -4,13 +4,11 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface SettingsStore {
-  playback: {
-    forceStereo: boolean
-    introSkipper: boolean
+  forceStereo: boolean
+  introSkipper: boolean
 
-    setForceStereo: (value: boolean) => void
-    setIntroSkipper: (value: boolean) => void
-  }
+  setForceStereo: (value: boolean) => void
+  setIntroSkipper: (value: boolean) => void
 
   deviceProfile: DeviceProfile | null
   setDeviceProfile: (profile: DeviceProfile) => void
@@ -19,19 +17,11 @@ interface SettingsStore {
 const useSettings = create<SettingsStore>()(
   persist(
     (set) => ({
-      playback: {
-        forceStereo: false,
-        introSkipper: true,
+      forceStereo: false,
+      introSkipper: true,
 
-        setForceStereo: (value) =>
-          set((state) => ({
-            playback: { ...state.playback, forceStereo: value },
-          })),
-        setIntroSkipper: (value) =>
-          set((state) => ({
-            playback: { ...state.playback, introSkipper: value },
-          })),
-      },
+      setForceStereo: (value) => set(() => ({ forceStereo: value })),
+      setIntroSkipper: (value) => set(() => ({ introSkipper: value })),
 
       deviceProfile: null,
       setDeviceProfile: (profile) => set(() => ({ deviceProfile: profile })),

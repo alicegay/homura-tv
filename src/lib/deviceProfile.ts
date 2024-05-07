@@ -10,6 +10,7 @@ import {
   supportsCodec,
   supportsHEVCMain10,
 } from './codecSupport'
+import useSettings from 'hooks/useSettings'
 
 const addCodecs = (codecs: string[], join: string = ',') => {
   return codecs.filter((codec) => !!codec).join(join)
@@ -109,7 +110,7 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
     Type: 'Video',
     Context: 'Streaming',
     Protocol: 'hls',
-    MaxAudioChannels: '8',
+    MaxAudioChannels: useSettings.getState().forceStereo ? '2' : '8',
     MinSegments: 2,
     BreakOnNonKeyFrames: true,
     VideoCodec: addCodecs([
@@ -235,6 +236,18 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
       ],
     })
   }
+
+  profile.CodecProfiles.push({
+    Type: 'VideoAudio',
+    Conditions: [
+      {
+        Condition: 'LessThanEqual',
+        Property: 'AudioChannels',
+        IsRequired: true,
+        Value: useSettings.getState().forceStereo ? '2' : '8',
+      },
+    ],
+  })
 
   profile.SubtitleProfiles.push(
     { Format: 'vtt', Method: 'Embed' },
