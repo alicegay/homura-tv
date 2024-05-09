@@ -63,8 +63,8 @@ const Details = ({
   }, [data])
   useEffect(() => {
     if (streams) {
-      if (!videoStream) setVideoStream(streams.defaults.video)
-      if (!audioStream) setAudioStream(streams.defaults.audio)
+      if (videoStream === null) setVideoStream(streams.defaults.video)
+      if (audioStream === null) setAudioStream(streams.defaults.audio)
       if (subtitleStream === null) setSubtitleStream(streams.defaults.subtitle)
     }
   }, [streams])
