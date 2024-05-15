@@ -278,15 +278,15 @@ const Player = ({
       setPlaySession(res.PlaySessionId)
       setBitrate(res.MediaSources[0].Bitrate)
       if (res.MediaSources[0].SupportsDirectPlay) {
-        console.log('DIRECT PLAY')
+        //console.log('DIRECT PLAY')
         setPlayMethod('DirectPlay')
         setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
-          console.log('DIRECT STREAM')
+          //console.log('DIRECT STREAM')
           setPlayMethod('DirectStream')
         } else {
-          console.log('TRANSCODING')
+          //console.log('TRANSCODING')
           setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
@@ -317,15 +317,15 @@ const Player = ({
     if (!firstPause) {
       setFirstPause(true)
     } else {
-      console.log('PAUSE/UNPAUSE: ' + secsToTime(currentTime))
+      //console.log('PAUSE/UNPAUSE: ' + secsToTime(currentTime))
       playingProgress(paused ? 'pause' : 'unpause')
     }
   }, [paused])
 
   useInterval(() => {
-    console.log('PROGRESS: ' + secsToTime(currentTime))
+    //console.log('PROGRESS: ' + secsToTime(currentTime))
     playingProgress('timeupdate')
-  }, 10_1000)
+  }, 10_0000)
 
   const playingProgress = (
     event: 'timeupdate' | 'pause' | 'unpause' | undefined,
@@ -367,7 +367,7 @@ const Player = ({
       resetControlsTimeout()
       return true
     } else {
-      console.log('PLAYBACK END: ' + secsToTime(currentTime))
+      //console.log('PLAYBACK END: ' + secsToTime(currentTime))
       playingStopped()
       clearControlsTimeout()
       return false
@@ -455,7 +455,7 @@ const Player = ({
             }
           }}
           onSeek={(e) => {
-            console.log('SEEK: ' + secsToTime(e.currentTime))
+            //console.log('SEEK: ' + secsToTime(e.currentTime))
             setCurrentTime(e.currentTime)
             playingProgress('timeupdate', e.currentTime)
           }}
@@ -480,7 +480,7 @@ const Player = ({
               })
           }}
           onVideoTracks={(e) => {
-            console.log(e)
+            //console.log(e)
             if (e.videoTracks.length > 0) {
               setCurrentVideoCodec(formatPlayerCodec(e.videoTracks[0].codecs))
               setCurrentVideoResolution(
@@ -489,11 +489,11 @@ const Player = ({
             }
           }}
           onAudioTracks={(e) => {
-            console.log(e)
+            //console.log(e)
             setCurrentAudioCodec(formatPlayerCodec(e.audioTracks[0].type))
           }}
           onEnd={() => {
-            console.log('PLAYBACK END: ' + secsToTime(currentTime))
+            //console.log('PLAYBACK END: ' + secsToTime(currentTime))
             playingStopped()
             clearControlsTimeout()
             navigation.pop()
