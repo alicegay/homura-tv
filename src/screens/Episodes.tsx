@@ -21,6 +21,10 @@ const Episodes = ({
   const theme = useTheme()
   const { width, height } = useWindowDimensions()
 
+  useEffect(() => {
+    console.log(season)
+  }, [])
+
   const params = !!season ? { SeasonId: season.Id } : {}
   const episodes = !special
     ? useEpisodes(series.Id, {
