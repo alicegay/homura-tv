@@ -11,6 +11,7 @@ import Text from 'components/Text'
 import ItemLong from 'components/ItemLong'
 import CenterLoading from 'components/CenterLoading'
 import { FlashList } from '@shopify/flash-list'
+import useItems from 'api/useItems'
 
 const Episodes = ({
   navigation,
@@ -21,9 +22,7 @@ const Episodes = ({
   const theme = useTheme()
   const { width, height } = useWindowDimensions()
 
-  useEffect(() => {
-    console.log(season)
-  }, [])
+  const seasonDetails = !special ? useItems(season.Id) : null
 
   const params = !!season ? { SeasonId: season.Id } : {}
   const episodes = !special
@@ -36,7 +35,6 @@ const Episodes = ({
   const specials = special
     ? useSpecialFeatures(season ? season.Id : series.Id)
     : null
-  const [specialsSorted, setSpecialsSorted] = useState<Item[]>(null)
 
   const [primaryImage, setPrimaryImage] = useState(
     client.server + '/Items/' + series.Id + '/Images/Primary',
@@ -46,14 +44,6 @@ const Episodes = ({
   )
 
   const episodeList = useRef<FlashList<any>>(null)
-
-  useEffect(() => {
-    if (special && specials.data) {
-      setSpecialsSorted(
-        specials.data.sort((a, b) => a.SortName.localeCompare(b.SortName)),
-      )
-    }
-  }, [specials])
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -67,12 +57,32 @@ const Episodes = ({
         }}
       />
       <View style={{ position: 'absolute', width: width, height: height }}>
-        {((!special && !episodes.isLoading) ||
-          (special && !specials.isLoading && specialsSorted)) && (
+        {((!special && !episodes.isLoading && !seasonDetails.isLoading) ||
+          (special && !specials.isLoading)) && (
           <FlashList
             ref={episodeList}
-            data={special ? specialsSorted : episodes.data.Items}
+            data={special ? specials.data : episodes.data.Items}
             keyExtractor={(item: Item) => item.Id}
+            ListHeaderComponent={
+              !special &&
+              seasonDetails.data.SpecialFeatureCount > 0 && (
+                <ItemLong
+                  id="specials"
+                  title="Special Features"
+                  image={
+                    client.server + '/Items/' + series.Id + '/Images/Backdrop/0'
+                  }
+                  onPress={() => {
+                    navigation.push('Episodes', {
+                      season: seasonDetails.data,
+                      series: series,
+                      special: true,
+                    })
+                  }}
+                  style={{ paddingTop: 48 }}
+                />
+              )
+            }
             renderItem={({ item, index }: { item: Item; index: number }) => (
               <ItemLong
                 id={item.Id}
@@ -107,7 +117,10 @@ const Episodes = ({
                 }}
                 hasTVPreferredFocus={index === 0}
                 style={[
-                  index === 0 && { paddingTop: 48 },
+                  !special &&
+                    seasonDetails.data.SpecialFeatureCount === 0 &&
+                    index === 0 && { paddingTop: 48 },
+                  !!special && index === 0 && { paddingTop: 48 },
                   !special &&
                     index === episodes.data.Items.length - 1 && {
                       paddingBottom: 16,
@@ -132,13 +145,17 @@ const Episodes = ({
           }}
           fontWeight={700}
         >
-          {!!season ? season.Name : series.Name}
+          {!!special
+            ? 'Special Features'
+            : !!season
+            ? season.Name
+            : series.Name}
         </Text>
       </View>
 
       {((!special && episodes.isLoading) ||
-        (special && specials.isLoading) ||
-        (special && !specialsSorted)) && <CenterLoading />}
+        (!special && seasonDetails.isLoading) ||
+        (special && specials.isLoading)) && <CenterLoading />}
     </View>
   )
 }

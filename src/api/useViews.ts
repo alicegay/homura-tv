@@ -10,7 +10,8 @@ const useViews = () => {
       return res.Items.filter(
         (item) =>
           item.CollectionType !== 'playlists' &&
-          item.CollectionType !== 'music',
+          item.CollectionType !== 'music' &&
+          item.CollectionType !== 'books',
       )
     },
   })

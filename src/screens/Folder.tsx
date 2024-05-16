@@ -1,14 +1,14 @@
+import { useRef } from 'react'
 import { View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
-import useItems from 'api/useItems'
+import useUserItems from 'api/useUserItems'
 import ItemCard from 'components/ItemCard'
-import Item from 'jellyfin-api/lib/types/media/Item'
-import findAspectRatio from 'lib/findAspectRatio'
 import Text from 'components/Text'
-import { useRef } from 'react'
+import findAspectRatio from 'lib/findAspectRatio'
+import Item from 'jellyfin-api/lib/types/media/Item'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
 import { FlashList } from '@shopify/flash-list'
@@ -22,7 +22,7 @@ const Folder = ({
   const { width } = useWindowDimensions()
 
   const { item, ignoreLengths } = route.params
-  const { data, isLoading, isRefetching } = useItems(item.Id, {
+  const { data, isLoading, isRefetching } = useUserItems(item.Id, {
     SortBy: 'IsFolder,SortName',
     SortOrder: 'Ascending',
     Fields: 'OriginalTitle',

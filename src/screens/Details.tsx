@@ -10,7 +10,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
-import useItem from 'api/useItem'
+import useUserItem from 'api/useUserItem'
 import useTheme from 'hooks/useTheme'
 import LinearGradient from 'react-native-linear-gradient'
 import Button from 'components/Button'
@@ -23,6 +23,7 @@ import ListButton from 'components/ListButton'
 import { FlashList } from '@shopify/flash-list'
 import { users } from 'jellyfin-api'
 import { useQueryClient } from '@tanstack/react-query'
+import useSeasons from 'api/useSeasons'
 
 const Details = ({
   navigation,
@@ -40,7 +41,9 @@ const Details = ({
   const client = useClient()
   const theme = useTheme()
   const query = useQueryClient()
-  const { data, isLoading } = useItem(item.Id)
+  const { data, isLoading } = useUserItem(item.Id)
+  const seasons = useSeasons(item.Id)
+
   const [streams, setStreams] = useState<sortedStreams>(null)
   const [videoStream, setVideoStream] = useState<number>(null)
   const [audioStream, setAudioStream] = useState<number>(null)
@@ -319,6 +322,7 @@ const Details = ({
                         hasTVPreferredFocus={true}
                         onPress={() => {
                           navigation.push('Episodes', {
+                            season: seasons.data.Items[0],
                             series: data,
                           })
                         }}
