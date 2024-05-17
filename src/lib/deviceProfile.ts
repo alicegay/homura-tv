@@ -114,6 +114,7 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
     MinSegments: 2,
     BreakOnNonKeyFrames: true,
     VideoCodec: addCodecs([
+      add('av1', support.av1),
       add('hevc', support.hevc),
       add('h264', support.h264),
     ]),
