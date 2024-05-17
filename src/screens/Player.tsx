@@ -45,7 +45,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
-import IntroTimestamps from 'jellyfin-api/lib/types/other/IntroTimestamps'
+import { IntroSegments } from 'jellyfin-api/lib/types/other/IntroTimestamps'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { AxiosError } from 'axios'
 
@@ -62,7 +62,7 @@ const Player = ({
   const TVEventHandler = ({ eventType: button }: HWEvent) => {
     if (introVisibility) {
       if (button == 'select') {
-        videoRef.current.seek(introTimestamps.IntroEnd)
+        videoRef.current.seek(introTimestamps.Introduction.IntroEnd)
       } else if (button == 'up' || button == 'down') {
         setIntroVisibility(false)
         menuY += 1
@@ -238,7 +238,7 @@ const Player = ({
   const [sessionInfo, setSessionInfo] = useState<Session>(null)
   const [showSessionInfo, setShowSessionInfo] = useState(false)
 
-  const [introTimestamps, setIntroTimestamps] = useState<IntroTimestamps>(null)
+  const [introTimestamps, setIntroTimestamps] = useState<IntroSegments>(null)
   const [introVisibility, setIntroVisibility] = useState(false)
   const introAnim = useSharedValue(0.0)
   useEffect(() => {
@@ -298,12 +298,6 @@ const Player = ({
       other.introTimestamps(client, item.Id).then(
         (res) => {
           setIntroTimestamps(res)
-          console.log(
-            'Intro Skipper: ' +
-              res.ShowSkipPromptAt.toString() +
-              ' - ' +
-              res.HideSkipPromptAt.toString(),
-          )
         },
         (error: AxiosError) => {
           console.log('No Intro Skipper data')
@@ -437,16 +431,20 @@ const Player = ({
               setBufferTime(e.playableDuration)
               if (!!introTimestamps) {
                 if (
-                  e.currentTime > introTimestamps.ShowSkipPromptAt &&
-                  e.currentTime < introTimestamps.HideSkipPromptAt &&
+                  e.currentTime >
+                    introTimestamps.Introduction.ShowSkipPromptAt &&
+                  e.currentTime <
+                    introTimestamps.Introduction.HideSkipPromptAt &&
                   !introVisibility &&
                   !controlsVisibility
                 ) {
                   setIntroVisibility(true)
                 } else if (
-                  (e.currentTime < introTimestamps.ShowSkipPromptAt &&
+                  (e.currentTime <
+                    introTimestamps.Introduction.ShowSkipPromptAt &&
                     introVisibility) ||
-                  (e.currentTime > introTimestamps.HideSkipPromptAt &&
+                  (e.currentTime >
+                    introTimestamps.Introduction.HideSkipPromptAt &&
                     introVisibility)
                 ) {
                   setIntroVisibility(false)
