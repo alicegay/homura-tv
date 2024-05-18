@@ -20,7 +20,6 @@ import useTheme from 'hooks/useTheme'
 import useSettings from 'hooks/useSettings'
 import useInterval from 'hooks/useInterval'
 import { ticksToSecs } from 'lib/ticksToTime'
-import secsToTime from 'lib/secsToTime'
 import secsToTicks from 'lib/secsToTicks'
 import formatPlayerCodec from 'lib/formatPlayerCodec'
 import { getVideoSize } from 'lib/formatStream'
@@ -60,11 +59,16 @@ const Player = ({
   route,
 }: NativeStackScreenProps<RootStackParamList, 'Player'>) => {
   const TVEventHandler = ({ eventType: button }: HWEvent) => {
-    if (introVisibility) {
+    if (introVisibility || creditVisibility) {
       if (button == 'select') {
-        videoRef.current.seek(introSegments.Introduction.IntroEnd)
+        if (creditVisibility) {
+          videoRef.current.seek(introSegments.Credits.IntroEnd)
+        } else {
+          videoRef.current.seek(introSegments.Introduction.IntroEnd)
+        }
       } else if (button == 'up' || button == 'down') {
         setIntroVisibility(false)
+        setCreditVisibility(false)
         menuY += 1
         resetControlsTimeout()
       }
@@ -240,9 +244,16 @@ const Player = ({
 
   const [introSegments, setIntroSegments] = useState<IntroSegments>(null)
   const [introVisibility, setIntroVisibility] = useState(false)
+  const [creditVisibility, setCreditVisibility] = useState(false)
+  const [introLabel, setIntroLabel] = useState('Skip Opening')
   const introAnim = useSharedValue(0.0)
   useEffect(() => {
-    if (introVisibility) {
+    if (introVisibility || creditVisibility) {
+      if (introVisibility) {
+        setIntroLabel('Skip Opening')
+      } else {
+        setIntroLabel('Skip Ending')
+      }
       introAnim.value = withTiming(1.0, {
         duration: 200,
         easing: Easing.out(Easing.quad),
@@ -253,7 +264,7 @@ const Player = ({
         easing: Easing.in(Easing.quad),
       })
     }
-  }, [introVisibility])
+  }, [introVisibility, creditVisibility])
 
   useEffect(() => {
     menuX = 0
@@ -446,6 +457,23 @@ const Player = ({
                     introVisibility)
                 ) {
                   setIntroVisibility(false)
+                }
+              }
+              if (!!introSegments && introSegments.Credits?.Valid) {
+                if (
+                  e.currentTime > introSegments.Credits.ShowSkipPromptAt &&
+                  e.currentTime < introSegments.Credits.HideSkipPromptAt &&
+                  !creditVisibility &&
+                  !controlsVisibility
+                ) {
+                  setCreditVisibility(true)
+                } else if (
+                  (e.currentTime < introSegments.Credits.ShowSkipPromptAt &&
+                    creditVisibility) ||
+                  (e.currentTime > introSegments.Credits.HideSkipPromptAt &&
+                    creditVisibility)
+                ) {
+                  setCreditVisibility(false)
                 }
               }
             }
@@ -667,7 +695,7 @@ const Player = ({
           style={{ fontSize: 14, color: theme.background }}
           fontWeight={700}
         >
-          Skip Opening
+          {introLabel}
         </Text>
       </Animated.View>
 

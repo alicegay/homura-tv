@@ -28,7 +28,7 @@ const Settings = () => {
     },
     {
       title: 'Use Intro Skipper',
-      subtitle: 'Show skip button during opening sequences',
+      subtitle: 'Show skip button during opening and ending sequences',
       icon: 'skip-next',
       onPress: () => {
         settings.setIntroSkipper(!settings.introSkipper)
