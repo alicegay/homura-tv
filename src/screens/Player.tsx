@@ -62,7 +62,7 @@ const Player = ({
   const TVEventHandler = ({ eventType: button }: HWEvent) => {
     if (introVisibility) {
       if (button == 'select') {
-        videoRef.current.seek(introTimestamps.Introduction.IntroEnd)
+        videoRef.current.seek(introSegments.Introduction.IntroEnd)
       } else if (button == 'up' || button == 'down') {
         setIntroVisibility(false)
         menuY += 1
@@ -238,7 +238,7 @@ const Player = ({
   const [sessionInfo, setSessionInfo] = useState<Session>(null)
   const [showSessionInfo, setShowSessionInfo] = useState(false)
 
-  const [introTimestamps, setIntroTimestamps] = useState<IntroSegments>(null)
+  const [introSegments, setIntroSegments] = useState<IntroSegments>(null)
   const [introVisibility, setIntroVisibility] = useState(false)
   const introAnim = useSharedValue(0.0)
   useEffect(() => {
@@ -297,7 +297,7 @@ const Player = ({
     if (item.Type === 'Episode' && settings.introSkipper) {
       other.introTimestamps(client, item.Id).then(
         (res) => {
-          setIntroTimestamps(res)
+          setIntroSegments(res)
         },
         (error: AxiosError) => {
           console.log('No Intro Skipper data')
@@ -429,22 +429,20 @@ const Player = ({
             if (!seeking) {
               setCurrentTime(e.currentTime)
               setBufferTime(e.playableDuration)
-              if (!!introTimestamps) {
+              if (!!introSegments && introSegments.Introduction?.Valid) {
                 if (
-                  e.currentTime >
-                    introTimestamps.Introduction.ShowSkipPromptAt &&
-                  e.currentTime <
-                    introTimestamps.Introduction.HideSkipPromptAt &&
+                  e.currentTime > introSegments.Introduction.ShowSkipPromptAt &&
+                  e.currentTime < introSegments.Introduction.HideSkipPromptAt &&
                   !introVisibility &&
                   !controlsVisibility
                 ) {
                   setIntroVisibility(true)
                 } else if (
                   (e.currentTime <
-                    introTimestamps.Introduction.ShowSkipPromptAt &&
+                    introSegments.Introduction.ShowSkipPromptAt &&
                     introVisibility) ||
                   (e.currentTime >
-                    introTimestamps.Introduction.HideSkipPromptAt &&
+                    introSegments.Introduction.HideSkipPromptAt &&
                     introVisibility)
                 ) {
                   setIntroVisibility(false)
