@@ -6,6 +6,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native'
+import BootSplash from 'react-native-bootsplash'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import Item from 'jellyfin-api/lib/types/media/Item'
@@ -28,6 +29,12 @@ const Home = ({
   navigation,
   route,
 }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
+  useEffect(() => {
+    BootSplash.isVisible().then(async (visible) => {
+      if (visible) await BootSplash.hide({ fade: true })
+    })
+  }, [])
+
   const client = useClient()
   const theme = useTheme()
   const settings = useSettings()

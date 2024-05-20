@@ -24,6 +24,9 @@ interface ClientStore {
   signout: () => void
   clear: () => void
   setName: (name: string) => void
+
+  hasHydrated: boolean
+  setHasHydrated: (state: boolean) => void
 }
 
 const useClient = create<ClientStore>()(
@@ -80,10 +83,16 @@ const useClient = create<ClientStore>()(
           token: null,
         })),
       setName: (name) => set(() => ({ name: name })),
+
+      hasHydrated: false,
+      setHasHydrated: (state) => set(() => ({ hasHydrated: state })),
     }),
     {
       name: 'client',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        state.setHasHydrated(true)
+      },
     },
   ),
 )

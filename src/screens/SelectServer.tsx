@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
+import BootSplash from 'react-native-bootsplash'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import { system } from 'jellyfin-api'
@@ -60,12 +61,22 @@ const SelectServer = ({
   }
 
   useEffect(() => {
-    if (client.client) {
-      navigation.replace('Home')
+    if (client.hasHydrated) {
+      if (client.client) {
+        navigation.replace('Home')
+      } else if (
+        !client.client &&
+        client.server &&
+        client.user &&
+        client.token
+      ) {
+        resetClient()
+      } else {
+        BootSplash.hide({ fade: true })
+        serverRef.current.focus()
+      }
     }
-    if (!client.client && client.server && client.user && client.token)
-      resetClient()
-  }, [client])
+  }, [client.hasHydrated])
 
   const resetClient = async () => {
     const clientName = DeviceInfo.getApplicationName()
