@@ -107,7 +107,9 @@ const Episodes = ({
                     : undefined
                 }
                 length={ticksToTime(item.RunTimeTicks)}
-                progressPercentage={item.UserData.PlayedPercentage}
+                progressPercentage={
+                  item.UserData.Played ? 100 : item.UserData.PlayedPercentage
+                }
                 onPress={() => {
                   navigation.push('Details', { item: item })
                 }}
