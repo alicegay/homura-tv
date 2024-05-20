@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  DimensionValue,
   GestureResponderEvent,
   Image,
   Pressable,
@@ -76,6 +77,25 @@ const ItemLong = ({
       height: 240 * (1 / 2),
       borderRadius: 16,
       overflow: 'hidden',
+    },
+    length: {
+      flex: 0,
+      position: 'absolute',
+      bottom: 3,
+      right: 6,
+      paddingHorizontal: 6,
+      borderRadius: 6,
+      backgroundColor: theme.background,
+    },
+    progress: {
+      position: 'absolute',
+      bottom: 0,
+      width: !!progressPercentage
+        ? ((progressPercentage.toString() + '%') as DimensionValue)
+        : 0,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: theme.tint,
     },
     details: {
       flex: 1,
@@ -183,6 +203,12 @@ const ItemLong = ({
               }}
             />
           )}
+          {!!length && (
+            <View style={styles.length}>
+              <Text style={[styles.length]}>{length}</Text>
+            </View>
+          )}
+          {!!progressPercentage && <View style={styles.progress} />}
         </View>
         <View style={styles.details}>
           <Text style={{ fontSize: 18 }} fontWeight={700}>

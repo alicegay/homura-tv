@@ -242,6 +242,7 @@ const Home = ({
                           : undefined
                       }
                       length={ticksToTime(item.RunTimeTicks)}
+                      progressPercentage={item.UserData.PlayedPercentage}
                       onFocus={() => {
                         nextupList.current.scrollToIndex({
                           index: index,

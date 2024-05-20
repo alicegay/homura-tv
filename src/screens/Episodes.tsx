@@ -12,6 +12,7 @@ import ItemLong from 'components/ItemLong'
 import CenterLoading from 'components/CenterLoading'
 import { FlashList } from '@shopify/flash-list'
 import useItems from 'api/useItems'
+import ticksToTime from 'lib/ticksToTime'
 
 const Episodes = ({
   navigation,
@@ -105,6 +106,8 @@ const Episodes = ({
                     ? series.ImageBlurHashes.Primary[series.ImageTags.Primary]
                     : undefined
                 }
+                length={ticksToTime(item.RunTimeTicks)}
+                progressPercentage={item.UserData.PlayedPercentage}
                 onPress={() => {
                   navigation.push('Details', { item: item })
                 }}
