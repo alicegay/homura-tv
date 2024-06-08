@@ -13,6 +13,7 @@ import CenterLoading from 'components/CenterLoading'
 import { FlashList } from '@shopify/flash-list'
 import useItems from 'api/useItems'
 import ticksToTime from 'lib/ticksToTime'
+import { useQueryClient } from '@tanstack/react-query'
 
 const Episodes = ({
   navigation,
@@ -21,6 +22,7 @@ const Episodes = ({
   const { season, series, special } = route.params
   const client = useClient()
   const theme = useTheme()
+  const query = useQueryClient()
   const { width, height } = useWindowDimensions()
 
   const seasonDetails = !special ? useItems(season.Id) : null
@@ -36,6 +38,20 @@ const Episodes = ({
   const specials = special
     ? useSpecialFeatures(season ? season.Id : series.Id)
     : null
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (!special) {
+        query.invalidateQueries({ queryKey: ['items', season.Id] })
+        query.invalidateQueries({ queryKey: ['episodes', series.Id, params] })
+      } else {
+        query.invalidateQueries({
+          queryKey: ['seasons', season ? season.Id : series.Id],
+        })
+      }
+    })
+    return unsubscribe
+  }, [navigation])
 
   const [primaryImage, setPrimaryImage] = useState(
     client.server + '/Items/' + series.Id + '/Images/Primary',

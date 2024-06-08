@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
@@ -12,6 +12,7 @@ import Item from 'jellyfin-api/lib/types/media/Item'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
 import { FlashList } from '@shopify/flash-list'
+import { useQueryClient } from '@tanstack/react-query'
 
 const Folder = ({
   navigation,
@@ -19,6 +20,7 @@ const Folder = ({
 }: NativeStackScreenProps<RootStackParamList, 'Folder'>) => {
   const client = useClient()
   const theme = useTheme()
+  const query = useQueryClient()
   const { width } = useWindowDimensions()
 
   const { item, ignoreLengths } = route.params
@@ -28,6 +30,13 @@ const Folder = ({
     Fields: 'OriginalTitle',
     EnableImageTypes: 'Primary,Backdrop,Logo',
   })
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      query.invalidateQueries({ queryKey: ['useritems', item.Id] })
+    })
+    return unsubscribe
+  }, [navigation])
 
   const list = useRef<FlashList<any>>()
   const aspectRatio = findAspectRatio(item.CollectionType)

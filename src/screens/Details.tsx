@@ -51,6 +51,14 @@ const Details = ({
   const [showStreamMenu, setShowStreamMenu] = useState(false)
   const [menu, setMenu] = useState<'Video' | 'Audio' | 'Subtitle'>(null)
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      query.invalidateQueries({ queryKey: ['item', item.Id] })
+      query.invalidateQueries({ queryKey: ['items', item.ParentId] })
+    })
+    return unsubscribe
+  }, [navigation])
+
   const streamMenuList = useRef<FlashList<any>>()
 
   const dismissStreamMenu = () => {
