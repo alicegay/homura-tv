@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  FlatList,
-  Image,
-  ImageBackground,
-  Modal,
-  StyleSheet,
-  View,
-} from 'react-native'
+import { Image, ImageBackground, Modal, StyleSheet, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
@@ -21,9 +14,9 @@ import sortStreams, { sortedStreams } from 'lib/sortStreams'
 import CenterLoading from 'components/CenterLoading'
 import ListButton from 'components/ListButton'
 import { FlashList } from '@shopify/flash-list'
-import { users } from 'jellyfin-api'
 import { useQueryClient } from '@tanstack/react-query'
 import useSeasons from 'api/useSeasons'
+import usePlayedItem from 'api/usePlayedItem'
 
 const Details = ({
   navigation,
@@ -43,6 +36,7 @@ const Details = ({
   const query = useQueryClient()
   const { data, isLoading } = useUserItem(item.Id)
   const seasons = useSeasons(item.Id)
+  const played = usePlayedItem(item.Id)
 
   const [streams, setStreams] = useState<sortedStreams>(null)
   const [videoStream, setVideoStream] = useState<number>(null)
@@ -53,7 +47,7 @@ const Details = ({
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      query.invalidateQueries({ queryKey: ['item', item.Id] })
+      query.invalidateQueries({ queryKey: ['useritem', item.Id] })
       query.invalidateQueries({ queryKey: ['items', item.ParentId] })
     })
     return unsubscribe
@@ -259,25 +253,7 @@ const Details = ({
                   <Button
                     icon={data?.UserData.Played ? 'check-all' : 'check'}
                     onPress={() => {
-                      if (data.UserData.Played) {
-                        users.playedItemsDel(client, data.Id).then(() => {
-                          query.invalidateQueries({
-                            queryKey: ['item', data.Id],
-                          })
-                          query.invalidateQueries({
-                            queryKey: ['items', data.ParentId],
-                          })
-                        })
-                      } else {
-                        users.playedItems(client, data.Id).then(() => {
-                          query.invalidateQueries({
-                            queryKey: ['item', data.Id],
-                          })
-                          query.invalidateQueries({
-                            queryKey: ['items', data.ParentId],
-                          })
-                        })
-                      }
+                      played.mutate(data.UserData.Played)
                     }}
                   />
                   {streams?.videos.length > 1 && (

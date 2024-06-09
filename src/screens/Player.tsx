@@ -393,7 +393,7 @@ const Player = ({
       query.invalidateQueries({ queryKey: ['views'] })
       query.invalidateQueries({ queryKey: ['itemsResume'] })
       query.invalidateQueries({ queryKey: ['showsNextup'] })
-      query.invalidateQueries({ queryKey: ['item', item.Id] })
+      query.invalidateQueries({ queryKey: ['useritem', item.Id] })
       if (item.SeasonId)
         query.invalidateQueries({ queryKey: ['episodes', item.SeasonId] })
     })
