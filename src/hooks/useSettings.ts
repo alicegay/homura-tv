@@ -6,7 +6,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 interface SettingsStore {
   forceStereo: boolean
   introSkipper: boolean
-  classification: string
+  classification: 'au' | 'jp' | 'uk' | 'us'
 
   setForceStereo: (value: boolean) => void
   setIntroSkipper: (value: boolean) => void

@@ -27,59 +27,39 @@ const Classification = ({ rating }: Props) => {
   const height = 20
 
   // Australia
-  if (rating.startsWith('AU-') && split in au && au[split] in auIcons) {
+  if (
+    (rating.startsWith('AU-') && split in au && au[split] in auIcons) ||
+    (settings.classification === 'au' && rating in au && au[rating] in auIcons)
+  ) {
     return <SvgXml xml={auIcons[au[split]]} width={width} height={height} />
   }
 
   // Japan
-  if (rating.startsWith('JP-') && split in jp && jp[split] in jpIcons) {
+  if (
+    (rating.startsWith('JP-') && split in jp && jp[split] in jpIcons) ||
+    (settings.classification === 'jp' && rating in jp && jp[rating] in jpIcons)
+  ) {
     return <SvgXml xml={jpIcons[jp[split]]} width={width} height={height} />
   }
 
   // United Kingdom
   if (
     (rating.startsWith('UK-') && split in uk && uk[split] in ukIcons) ||
-    (rating.startsWith('GB-') && split in uk && uk[split] in ukIcons)
+    (rating.startsWith('GB-') && split in uk && uk[split] in ukIcons) ||
+    (settings.classification === 'uk' &&
+      rating in uk &&
+      uk[split] in ukIcons) ||
+    (settings.classification === 'gb' && rating in uk && uk[split] in ukIcons)
   ) {
     return <SvgXml xml={ukIcons[uk[split]]} width={width} height={height} />
   }
 
   // United States
-  if (rating.startsWith('US-') && split in us && us[split] in usIcons) {
+  if (
+    (rating.startsWith('US-') && split in us && us[split] in usIcons) ||
+    (rating in us && us[rating] in usIcons)
+  ) {
     return <SvgXml xml={usIcons[us[split]]} width={width} height={height} />
-  }
-
-  // Selected Fallback
-  if (
-    settings.classification === 'au' &&
-    rating in au &&
-    au[rating] in auIcons
-  ) {
-    return <SvgXml xml={auIcons[au[rating]]} width={width} height={height} />
-  }
-  if (
-    settings.classification === 'jp' &&
-    rating in jp &&
-    jp[rating] in jpIcons
-  ) {
-    return <SvgXml xml={auIcons[jp[rating]]} width={width} height={height} />
-  }
-  if (
-    (settings.classification === 'uk' &&
-      rating.startsWith('UK-') &&
-      split in uk &&
-      uk[split] in ukIcons) ||
-    (settings.classification === 'gb' &&
-      rating.startsWith('GB-') &&
-      split in uk &&
-      uk[split] in ukIcons)
-  ) {
-    return <SvgXml xml={auIcons[uk[rating]]} width={width} height={height} />
-  }
-
-  // US Fallback
-  if (rating in us && us[rating] in usIcons) {
-    return <SvgXml xml={usIcons[us[rating]]} width={width} height={height} />
   }
 
   // Text Fallback
