@@ -394,6 +394,7 @@ const Player = ({
       query.invalidateQueries({ queryKey: ['itemsResume'] })
       query.invalidateQueries({ queryKey: ['showsNextup'] })
       query.invalidateQueries({ queryKey: ['useritem', item.Id] })
+      query.invalidateQueries({ queryKey: ['useritems', item.ParentId] })
       if (item.SeasonId)
         query.invalidateQueries({ queryKey: ['episodes', item.SeasonId] })
     })

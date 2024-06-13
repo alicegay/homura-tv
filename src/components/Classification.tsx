@@ -1,8 +1,8 @@
 // @ts-nocheck
 
 import Text from 'components/Text'
-import { useEffect, useState } from 'react'
 import { SvgXml } from 'react-native-svg'
+import useSettings from 'hooks/useSettings'
 
 import au from 'classification/au'
 import jp from 'classification/jp'
@@ -19,6 +19,8 @@ interface Props {
 }
 
 const Classification = ({ rating }: Props) => {
+  const settings = useSettings()
+
   const split = rating.substring(rating.indexOf('-') + 1)
 
   const width = 30
@@ -47,12 +49,40 @@ const Classification = ({ rating }: Props) => {
     return <SvgXml xml={usIcons[us[split]]} width={width} height={height} />
   }
 
+  // Selected Fallback
+  if (
+    settings.classification === 'au' &&
+    rating in au &&
+    au[rating] in auIcons
+  ) {
+    return <SvgXml xml={auIcons[au[rating]]} width={width} height={height} />
+  }
+  if (
+    settings.classification === 'jp' &&
+    rating in jp &&
+    jp[rating] in jpIcons
+  ) {
+    return <SvgXml xml={auIcons[jp[rating]]} width={width} height={height} />
+  }
+  if (
+    (settings.classification === 'uk' &&
+      rating.startsWith('UK-') &&
+      split in uk &&
+      uk[split] in ukIcons) ||
+    (settings.classification === 'gb' &&
+      rating.startsWith('GB-') &&
+      split in uk &&
+      uk[split] in ukIcons)
+  ) {
+    return <SvgXml xml={auIcons[uk[rating]]} width={width} height={height} />
+  }
+
   // US Fallback
   if (rating in us && us[rating] in usIcons) {
     return <SvgXml xml={usIcons[us[rating]]} width={width} height={height} />
   }
 
-  // Fallback
+  // Text Fallback
   return <Text>{rating}</Text>
 }
 

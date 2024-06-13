@@ -6,6 +6,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 interface SettingsStore {
   forceStereo: boolean
   introSkipper: boolean
+  classification: string
 
   setForceStereo: (value: boolean) => void
   setIntroSkipper: (value: boolean) => void
@@ -19,6 +20,7 @@ const useSettings = create<SettingsStore>()(
     (set) => ({
       forceStereo: false,
       introSkipper: true,
+      classification: 'au',
 
       setForceStereo: (value) => set(() => ({ forceStereo: value })),
       setIntroSkipper: (value) => set(() => ({ introSkipper: value })),
