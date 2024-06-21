@@ -21,25 +21,22 @@ const sortStreams = (streams: MediaStream[]): sortedStreams => {
   let a = 0
   let s = 0
   let dV = -1
-  let dA = -1
-  let dS = -1
+  let dA = 0
+  let dS = 0
   for (let i = 0; i < streams.length; i++) {
     if (streams[i].Type === 'Video') {
       videos.push({ ...formatStream(streams[i]), index: v })
-      if (streams[i].IsDefault && dV === -1) dV = v
+      if (streams[i].IsDefault === true) dV = v
       v++
     } else if (streams[i].Type === 'Audio') {
       audios.push({ ...formatStream(streams[i]), index: a })
-      if (streams[i].IsDefault && dA === -1) dA = a
+      if (streams[i].IsDefault === true) dA = a
       a++
     } else if (streams[i].Type === 'Subtitle') {
       subtitles.push({ ...formatStream(streams[i]), index: s })
-      if (streams[i].IsDefault && dS === -1) dS = s
+      if (streams[i].IsDefault === true) dS = s
       s++
     }
-
-    if (dV === -1) dV = 0
-    if (dA === -1) dA = 0
   }
 
   return {
