@@ -20,9 +20,9 @@ const sortStreams = (streams: MediaStream[]): sortedStreams => {
   let v = 0
   let a = 0
   let s = 0
-  let dV = -1
+  let dV = 0
   let dA = 0
-  let dS = 0
+  let dS = -1
   for (let i = 0; i < streams.length; i++) {
     if (streams[i].Type === 'Video') {
       videos.push({ ...formatStream(streams[i]), index: v })
