@@ -414,6 +414,7 @@ const Player = ({
           focusable={false}
           paused={seeking ? true : paused}
           resizeMode="contain"
+          showNotificationControls={true}
           selectedVideoTrack={{
             type: SelectedVideoTrackType.INDEX,
             // @ts-ignore
