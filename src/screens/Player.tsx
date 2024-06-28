@@ -409,6 +409,19 @@ const Player = ({
           ref={videoRef}
           source={{
             uri: source,
+            metadata: {
+              title: item.Name,
+              subtitle:
+                'SeriesName' in item
+                  ? item.SeriesName +
+                    ' ' +
+                    (item.ParentIndexNumber === 0
+                      ? 'Special'
+                      : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)
+                  : null,
+              artist: 'Artists' in item ? item.Artists.join(', ') : null,
+              imageUri: client.server + '/Items/' + item.Id + '/Images/Primary',
+            },
           }}
           useTextureView={false}
           focusable={false}
