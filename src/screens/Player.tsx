@@ -422,6 +422,7 @@ const Player = ({
               artist: 'Artists' in item ? item.Artists.join(', ') : null,
               imageUri: client.server + '/Items/' + item.Id + '/Images/Primary',
             },
+            startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
           }}
           useTextureView={false}
           focusable={false}
@@ -501,7 +502,7 @@ const Player = ({
           onLoad={(e) => {
             setDuration(e.duration)
             playingProgress(undefined, e.currentTime)
-            if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
+            //if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
             sessions
               .sessions(client, { deviceId: client.deviceID })
               .then((r) => {
