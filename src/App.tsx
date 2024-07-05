@@ -1,9 +1,9 @@
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import useTheme from 'hooks/useTheme'
-
+import * as Sentry from '@sentry/react-native'
 import RootStackParamList from 'types/RootStackParamList'
+import useTheme from 'hooks/useTheme'
 import Home from 'screens/Home'
 import Folder from 'screens/Folder'
 import Season from 'screens/Season'
@@ -54,4 +54,16 @@ const App = () => {
   )
 }
 
-export default App
+Sentry.init({
+  dsn: 'https://1d2ca083b41f71c960855cbe2cf72ea1@o4507548984016896.ingest.us.sentry.io/4507548989456384',
+  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+  // We recommend adjusting this value in production.
+  tracesSampleRate: 1.0,
+  _experiments: {
+    // profilesSampleRate is relative to tracesSampleRate.
+    // Here, we'll capture profiles for 100% of transactions.
+    profilesSampleRate: 1.0,
+  },
+})
+
+export default Sentry.wrap(App)
