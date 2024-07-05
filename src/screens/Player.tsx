@@ -425,6 +425,7 @@ const Player = ({
             startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
           }}
           useTextureView={false}
+          //viewType={'surfaceView'}
           focusable={false}
           paused={seeking ? true : paused}
           resizeMode="contain"
