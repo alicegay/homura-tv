@@ -5,7 +5,7 @@ import ItemsQuery from 'jellyfin-api/lib/types/queries/ItemsQuery'
 
 const useSpecialFeatures = (itemId: string, params?: ItemsQuery) => {
   return useQuery({
-    queryKey: ['seasons', itemId],
+    queryKey: ['specials', itemId],
     queryFn: () => {
       return users.specialFeatures(useClient.getState().api, itemId, params)
     },
