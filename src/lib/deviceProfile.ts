@@ -135,6 +135,20 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
   })
 
   const hdrSupport = await getHDRSupport()
+  const hdrRangeTypes = addCodecs(
+    [
+      'SDR|DOVIWithSDR',
+      hdrSupport.includes('HDR10') && 'HDR10',
+      hdrSupport.includes('HDR10+') && 'HDR10Plus',
+      hdrSupport.includes('HLG') && 'HLG',
+      hdrSupport.includes('DV') && 'DOVI',
+      (hdrSupport.includes('HDR10') || hdrSupport.includes('DV')) &&
+        'DOVIWithHDR10',
+      (hdrSupport.includes('HLG') || hdrSupport.includes('DV')) &&
+        'DOVIWithHLG',
+    ],
+    '|',
+  )
 
   profile.CodecProfiles.push({
     Type: 'Video',
@@ -181,14 +195,7 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
           Condition: 'EqualsAny',
           Property: 'VideoRangeType',
           IsRequired: true,
-          Value: addCodecs(
-            [
-              'SDR',
-              hdrSupport.includes('HDR10') && 'HDR10',
-              hdrSupport.includes('HLG') && 'HLG',
-            ],
-            '|',
-          ),
+          Value: hdrRangeTypes,
         },
       ],
     })
@@ -203,14 +210,7 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
           Condition: 'EqualsAny',
           Property: 'VideoRangeType',
           IsRequired: true,
-          Value: addCodecs(
-            [
-              'SDR',
-              hdrSupport.includes('HDR10') && 'HDR10',
-              hdrSupport.includes('HLG') && 'HLG',
-            ],
-            '|',
-          ),
+          Value: hdrRangeTypes,
         },
       ],
     })
@@ -225,14 +225,7 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
           Condition: 'EqualsAny',
           Property: 'VideoRangeType',
           IsRequired: true,
-          Value: addCodecs(
-            [
-              'SDR',
-              hdrSupport.includes('HDR10') && 'HDR10',
-              hdrSupport.includes('HLG') && 'HLG',
-            ],
-            '|',
-          ),
+          Value: hdrRangeTypes,
         },
       ],
     })
@@ -261,7 +254,8 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
     { Format: 'ssa', Method: 'Encode' },
   )
 
-  //console.log(JSON.stringify(profile))
+  console.log(JSON.stringify(profile))
+  console.log('hevc_level', support.hevc_level, support.hevc_10level)
   console.log('Set Device Profile')
   return profile
 }
