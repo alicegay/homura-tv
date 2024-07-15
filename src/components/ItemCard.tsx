@@ -22,6 +22,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { Shadow } from 'react-native-shadow-2'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import { FasterImageView } from '@candlefinance/faster-image'
 
 interface Props {
   id: string
@@ -220,8 +221,8 @@ const ItemCard = ({
             />
           )}
           {!!imageURI && (
-            <Image
-              source={{ uri: imageURI }}
+            <FasterImageView
+              source={{ url: imageURI }}
               style={[styles.image, { position: 'absolute' }]}
               onError={() => {
                 if (!!imageFallback && imageURI !== imageFallback)

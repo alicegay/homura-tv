@@ -254,9 +254,6 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
     { Format: 'ssa', Method: 'Encode' },
   )
 
-  console.log(JSON.stringify(profile))
-  console.log('hevc_level', support.hevc_level, support.hevc_10level)
-  console.log('Set Device Profile')
   return profile
 }
 

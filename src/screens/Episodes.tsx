@@ -82,7 +82,7 @@ const Episodes = ({
             keyExtractor={(item: Item) => item.Id}
             ListHeaderComponent={
               !special &&
-              seasonDetails.data.SpecialFeatureCount > 0 && (
+              seasonDetails.data?.SpecialFeatureCount > 0 && (
                 <ItemLong
                   id="specials"
                   title="Special Features"
@@ -139,7 +139,7 @@ const Episodes = ({
                 hasTVPreferredFocus={index === 0}
                 style={[
                   !special &&
-                    seasonDetails.data.SpecialFeatureCount === 0 &&
+                    seasonDetails.data?.SpecialFeatureCount === 0 &&
                     index === 0 && { paddingTop: 48 },
                   !!special && index === 0 && { paddingTop: 48 },
                   !special &&
