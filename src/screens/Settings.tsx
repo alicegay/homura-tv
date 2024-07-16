@@ -1,4 +1,4 @@
-import { Linking, View } from 'react-native'
+import { Linking, ToastAndroid, View } from 'react-native'
 import useSettings from 'hooks/useSettings'
 import useTheme from 'hooks/useTheme'
 import { FlashList } from '@shopify/flash-list'
@@ -6,6 +6,7 @@ import ListButton from 'components/ListButton'
 import Text from 'components/Text'
 import Switch from 'components/Switch'
 import { useRef } from 'react'
+import { clearCache } from '@candlefinance/faster-image'
 
 const Settings = () => {
   const settings = useSettings()
@@ -41,6 +42,18 @@ const Settings = () => {
       icon: 'subtitles',
       onPress: () => {
         Linking.sendIntent('android.settings.CAPTIONING_SETTINGS')
+      },
+    },
+    {
+      title: 'Other',
+      separator: true,
+    },
+    {
+      title: 'Clear Image Cache',
+      icon: 'notification-clear-all',
+      onPress: async () => {
+        await clearCache()
+        ToastAndroid.show('Cleared Image Cache', ToastAndroid.SHORT)
       },
     },
     {

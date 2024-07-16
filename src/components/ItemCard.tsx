@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import {
   DimensionValue,
   GestureResponderEvent,
-  Image,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -200,9 +199,9 @@ const ItemCard = ({
           />
         </Animated.View> */}
         <Animated.View style={[styles.selector, { opacity: opacity }]} />
-        <View style={styles.fallback}>
+        {/* <View style={styles.fallback}>
           <Icon name="movie" size={48} />
-        </View>
+        </View> */}
         <View
           style={[
             styles.image,
@@ -210,19 +209,19 @@ const ItemCard = ({
               position: 'absolute',
               top: numberOfLines > 1 ? 8 : 16,
               left: 16,
-              backgroundColor: 'transparent',
+              backgroundColor: '#000',
             },
           ]}
         >
-          {!!blurhash && (
+          {/* {!!blurhash && (
             <Blurhash
               blurhash={blurhash}
               style={[styles.image, { position: 'absolute' }]}
             />
-          )}
+          )} */}
           {!!imageURI && (
             <FasterImageView
-              source={{ url: imageURI }}
+              source={{ url: imageURI, resizeMode: 'cover' }}
               style={[styles.image, { position: 'absolute' }]}
               onError={() => {
                 if (!!imageFallback && imageURI !== imageFallback)

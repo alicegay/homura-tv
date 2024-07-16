@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Image, ImageBackground, Modal, StyleSheet, View } from 'react-native'
+import { ImageBackground, Modal, StyleSheet, View } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
@@ -17,6 +17,7 @@ import { FlashList } from '@shopify/flash-list'
 import { useQueryClient } from '@tanstack/react-query'
 import useSeasons from 'api/useSeasons'
 import usePlayedItem from 'api/usePlayedItem'
+import { FasterImageView } from '@candlefinance/faster-image'
 
 const Details = ({
   navigation,
@@ -74,27 +75,11 @@ const Details = ({
     }
   }, [streams])
 
-  const primaryExists = 'Primary' in item.ImageBlurHashes
-  const backdropExists = 'Backdrop' in item.ImageBlurHashes
-  const logoExists = 'Logo' in item.ImageBlurHashes
-  const primaryImage =
-    client.server +
-    '/Items/' +
-    item.Id +
-    '/Images/Primary?' +
-    (primaryExists ? item.ImageBlurHashes.Primary[0] : '')
+  const primaryImage = client.server + '/Items/' + item.Id + '/Images/Primary'
   const backdropImage =
-    client.server +
-    '/Items/' +
-    item.Id +
-    '/Images/Backdrop/0?' +
-    (backdropExists ? item.ImageBlurHashes.Backdrop[0] : '')
+    client.server + '/Items/' + item.Id + '/Images/Backdrop/0'
   const logoImage =
-    client.server +
-    '/Items/' +
-    item.Id +
-    '/Images/Logo?' +
-    (logoExists ? item.ImageBlurHashes.Logo[0] : '')
+    client.server + '/Items/' + item.Id + '/Images/Logo?format=png'
 
   return (
     <>
@@ -120,11 +105,12 @@ const Details = ({
             ]}
           >
             <View style={styles.backdropImage}>
-              <Image
-                source={{ uri: logoImage }}
-                width={600}
-                height={200}
-                resizeMode="contain"
+              <FasterImageView
+                source={{
+                  url: logoImage,
+                  resizeMode: 'contain',
+                }}
+                style={{ width: 600, height: 200 }}
               />
             </View>
           </View>
