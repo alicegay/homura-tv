@@ -612,10 +612,11 @@ const Player = ({
               style={{ flex: 1, flexDirection: 'row', gap: 16, flexGrow: 1 }}
             >
               <PlayerButton
-                icon={paused ? 'play' : 'pause'}
+                icon={paused ? 'play_arrow' : 'pause'}
+                filled
                 focus={playPauseButton}
               />
-              <PlayerButton icon="information" focus={infoButton} />
+              <PlayerButton icon="info" filled focus={infoButton} />
             </View>
             {!!streams && (
               <>

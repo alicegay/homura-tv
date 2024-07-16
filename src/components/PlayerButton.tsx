@@ -1,14 +1,14 @@
-import { forwardRef, useImperativeHandle, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import useTheme from 'hooks/useTheme'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import { Icon, IconFilled } from './Icon'
 
 interface Props {
   focus: boolean
   icon: string
+  filled?: boolean
 }
 
-const PlayerButton = ({ focus, icon }: Props) => {
+const PlayerButton = ({ focus, icon, filled = false }: Props) => {
   const theme = useTheme()
 
   const styles = StyleSheet.create({
@@ -36,7 +36,14 @@ const PlayerButton = ({ focus, icon }: Props) => {
 
   return (
     <View style={[styles.view, focus && styles.focus]}>
-      <Icon name={icon} style={[styles.icon, focus && styles.iconFocus]} />
+      {filled ? (
+        <IconFilled
+          name={icon}
+          style={[styles.icon, focus && styles.iconFocus]}
+        />
+      ) : (
+        <Icon name={icon} style={[styles.icon, focus && styles.iconFocus]} />
+      )}
     </View>
   )
 }

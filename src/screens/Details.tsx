@@ -195,7 +195,8 @@ const Details = ({
                 >
                   {data.UserData.PlaybackPositionTicks > 0 && (
                     <Button
-                      icon="play"
+                      icon="play_arrow"
+                      filled
                       hasTVPreferredFocus={true}
                       onPress={() => {
                         navigation.push('Player', {
@@ -216,9 +217,10 @@ const Details = ({
                   <Button
                     icon={
                       data.UserData.PlaybackPositionTicks > 0
-                        ? 'reload'
-                        : 'play'
+                        ? 'resume'
+                        : 'play_arrow'
                     }
+                    filled
                     hasTVPreferredFocus={
                       data.UserData.PlaybackPositionTicks > 0 ? false : true
                     }
@@ -237,7 +239,7 @@ const Details = ({
                   </Button>
                   {/* <Button icon="information" /> */}
                   <Button
-                    icon={data?.UserData.Played ? 'check-all' : 'check'}
+                    icon={data?.UserData.Played ? 'done_all' : 'check'}
                     onPress={() => {
                       played.mutate(data.UserData.Played)
                     }}
@@ -252,7 +254,7 @@ const Details = ({
                   )}
                   {streams?.audios.length > 1 && (
                     <Button
-                      icon="volume-high"
+                      icon="volume_up"
                       onPress={() => {
                         showMenu('Audio')
                       }}
@@ -277,7 +279,7 @@ const Details = ({
                 >
                   {data?.ChildCount > 1 ? (
                     <Button
-                      icon="television"
+                      icon="tv"
                       hasTVPreferredFocus={true}
                       onPress={() => {
                         navigation.push('Season', { series: data })
@@ -288,7 +290,7 @@ const Details = ({
                   ) : (
                     data?.ChildCount > 0 && (
                       <Button
-                        icon="television"
+                        icon="tv"
                         hasTVPreferredFocus={true}
                         onPress={() => {
                           navigation.push('Episodes', {
@@ -304,6 +306,7 @@ const Details = ({
                   {data?.SpecialFeatureCount > 0 && (
                     <Button
                       icon="star"
+                      filled
                       onPress={() => {
                         navigation.push('Episodes', {
                           series: data,
@@ -314,7 +317,7 @@ const Details = ({
                       Special Features
                     </Button>
                   )}
-                  <Button icon="information" />
+                  <Button icon="info" filled />
                 </View>
               )}
             </LinearGradient>

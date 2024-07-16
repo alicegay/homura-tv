@@ -7,14 +7,15 @@ import {
   View,
   ViewStyle,
 } from 'react-native'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import useTheme from 'hooks/useTheme'
 import Text from './Text'
+import { Icon, IconFilled } from './Icon'
 
 interface Props {
   children?: ReactNode
   type?: 'primary'
   icon?: string
+  filled?: boolean
   onPress?: (e: GestureResponderEvent) => void
   onLongPress?: (e: GestureResponderEvent) => void
   style?: StyleProp<ViewStyle>
@@ -31,6 +32,7 @@ const Button = forwardRef<View, Props>(
       children,
       type = 'primary',
       icon,
+      filled = false,
       onPress,
       onLongPress,
       style,
@@ -108,16 +110,26 @@ const Button = forwardRef<View, Props>(
         nextFocusLeft={nextFocusLeft}
         nextFocusRight={nextFocusRight}
       >
-        {icon && (
-          <Icon
-            name={icon}
-            style={[
-              styles.icon,
-              focus && styles.iconFocus,
-              children && styles.iconWithLabel,
-            ]}
-          />
-        )}
+        {icon &&
+          (filled ? (
+            <IconFilled
+              name={icon}
+              style={[
+                styles.icon,
+                focus && styles.iconFocus,
+                children && styles.iconWithLabel,
+              ]}
+            />
+          ) : (
+            <Icon
+              name={icon}
+              style={[
+                styles.icon,
+                focus && styles.iconFocus,
+                children && styles.iconWithLabel,
+              ]}
+            />
+          ))}
         {children && (
           <Text
             numberOfLines={1}

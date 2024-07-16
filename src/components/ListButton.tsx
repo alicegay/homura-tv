@@ -9,12 +9,13 @@ import {
 } from 'react-native'
 import Text from './Text'
 import useTheme from 'hooks/useTheme'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import { Icon, IconFilled } from './Icon'
 
 interface Props {
   title: string
   subtitle?: string
   icon?: string
+  filled?: boolean
   right?: () => ReactNode
   onPress?: (e: GestureResponderEvent) => void
   onLongPress?: (e: GestureResponderEvent) => void
@@ -34,6 +35,7 @@ const ListButton = forwardRef<View, Props>(
       title,
       subtitle,
       icon,
+      filled = false,
       right,
       onPress,
       onLongPress,
@@ -104,9 +106,18 @@ const ListButton = forwardRef<View, Props>(
         nextFocusLeft={nextFocusLeft}
         nextFocusRight={nextFocusRight}
       >
-        {!!icon && (
-          <Icon name={icon} style={[styles.icon, focus && styles.labelFocus]} />
-        )}
+        {!!icon &&
+          (filled ? (
+            <IconFilled
+              name={icon}
+              style={[styles.icon, focus && styles.labelFocus]}
+            />
+          ) : (
+            <Icon
+              name={icon}
+              style={[styles.icon, focus && styles.labelFocus]}
+            />
+          ))}
         <View style={{ flex: 1, flexDirection: 'column', flexGrow: 1 }}>
           <Text
             style={[styles.title, focus && styles.labelFocus]}

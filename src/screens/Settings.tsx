@@ -20,7 +20,7 @@ const Settings = () => {
     {
       title: 'Force Stereo',
       subtitle: 'Transcode surround sound into stereo',
-      icon: 'volume-high',
+      icon: 'volume_up',
       onPress: () => {
         settings.setForceStereo(!settings.forceStereo)
       },
@@ -30,7 +30,8 @@ const Settings = () => {
     {
       title: 'Use Intro Skipper',
       subtitle: 'Show skip button during opening and ending sequences',
-      icon: 'skip-next',
+      icon: 'skip_next',
+      filled: true,
       onPress: () => {
         settings.setIntroSkipper(!settings.introSkipper)
       },
@@ -50,7 +51,7 @@ const Settings = () => {
     },
     {
       title: 'Clear Image Cache',
-      icon: 'notification-clear-all',
+      icon: 'clear_all',
       onPress: async () => {
         await clearCache()
         ToastAndroid.show('Cleared Image Cache', ToastAndroid.SHORT)
@@ -100,6 +101,7 @@ const Settings = () => {
               title={item.title}
               subtitle={item.subtitle}
               icon={item.icon}
+              filled={item.filled}
               onPress={item.onPress}
               right={item.right}
               onFocus={() => {

@@ -143,7 +143,7 @@ const Home = ({
             >
               {/* <Button icon="update">Update</Button> */}
               <Button
-                icon="cog"
+                icon="settings"
                 onPress={() => {
                   navigation.push('Settings')
                 }}
