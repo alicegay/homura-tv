@@ -12,6 +12,7 @@ import Video, {
   SelectedTrackType,
   SelectedVideoTrackType,
   VideoRef,
+  ViewType,
 } from 'react-native-video'
 import { useBackHandler } from '@react-native-community/hooks'
 import { useQueryClient } from '@tanstack/react-query'
@@ -424,15 +425,13 @@ const Player = ({
             },
             startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
           }}
-          useTextureView={false}
-          //viewType={'surfaceView'}
+          viewType={ViewType.SURFACE}
           focusable={false}
           paused={seeking ? true : paused}
           resizeMode="contain"
           showNotificationControls={true}
           selectedVideoTrack={{
             type: SelectedVideoTrackType.INDEX,
-            // @ts-ignore
             value: playMethod !== 'DirectPlay' ? '0' : videoStream.toString(),
           }}
           selectedAudioTrack={{
