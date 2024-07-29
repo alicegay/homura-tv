@@ -195,7 +195,7 @@ const Details = ({
                 >
                   {data.UserData.PlaybackPositionTicks > 0 && (
                     <Button
-                      icon="play_arrow"
+                      icon="resume"
                       filled
                       hasTVPreferredFocus={true}
                       onPress={() => {
@@ -217,7 +217,7 @@ const Details = ({
                   <Button
                     icon={
                       data.UserData.PlaybackPositionTicks > 0
-                        ? 'resume'
+                        ? 'replay'
                         : 'play_arrow'
                     }
                     filled
