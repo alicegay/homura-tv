@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { View, useWindowDimensions } from 'react-native'
+import { FlatList, View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
@@ -11,7 +11,6 @@ import findAspectRatio from 'lib/findAspectRatio'
 import Item from 'jellyfin-api/lib/types/media/Item'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
-import { FlashList } from '@shopify/flash-list'
 import { useQueryClient } from '@tanstack/react-query'
 
 const Folder = ({
@@ -38,14 +37,14 @@ const Folder = ({
     return unsubscribe
   }, [navigation])
 
-  const list = useRef<FlashList<any>>()
+  const list = useRef<FlatList>()
   const aspectRatio = findAspectRatio(item.CollectionType)
   const columns = aspectRatio === 'wide' ? 4 : 6
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       {!isLoading && (
-        <FlashList
+        <FlatList
           ref={list}
           data={data.Items}
           keyExtractor={(item: Item) => item.Id}
@@ -80,8 +79,8 @@ const Folder = ({
               }
               onFocus={() =>
                 list.current.scrollToIndex({
-                  //index: Math.floor(index / columns), // FlatList
-                  index: Math.floor(index / columns) * columns, // FlashList
+                  index: Math.floor(index / columns), // FlatList
+                  //index: Math.floor(index / columns) * columns, // FlashList
                   viewPosition: 0.5,
                   animated: true,
                 })
@@ -99,7 +98,7 @@ const Folder = ({
           numColumns={columns}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
-          estimatedItemSize={columns === 4 ? 178 : 253}
+          //estimatedItemSize={columns === 4 ? 178 : 253}
         />
       )}
       <Text

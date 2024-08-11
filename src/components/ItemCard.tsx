@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DimensionValue,
   GestureResponderEvent,
@@ -9,7 +9,6 @@ import {
   ViewStyle,
 } from 'react-native'
 import Text from './Text'
-import { Blurhash } from 'react-native-blurhash'
 import averageBlurhash from 'lib/averageBlurhash'
 import tinycolor from 'tinycolor2'
 import useTheme from 'hooks/useTheme'
@@ -19,8 +18,6 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import { Shadow } from 'react-native-shadow-2'
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { FasterImageView } from '@candlefinance/faster-image'
 
 interface Props {
@@ -64,17 +61,11 @@ const ItemCard = ({
   style,
   hasTVPreferredFocus,
 }: Props) => {
-  const lastID = useRef(id)
   const theme = useTheme()
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
   const color = !!blurhash ? averageBlurhash(blurhash) : theme.tint
   const shadowColor = strongShadow ? color + '80' : color + '40'
   const [imageURI, setImageURI] = useState(image)
-
-  if (id !== lastID.current) {
-    lastID.current = id
-    setImageURI(image)
-  }
 
   const aspectRatioMultiplier =
     aspectRatio === 'wide' ? 9 / 16 : aspectRatio === 'tall' ? 3 / 2 : 1
@@ -221,7 +212,10 @@ const ItemCard = ({
           )} */}
           {!!imageURI && (
             <FasterImageView
-              source={{ url: imageURI, resizeMode: 'cover' }}
+              source={{
+                url: !!imageFallback ? imageURI : image,
+                resizeMode: 'cover',
+              }}
               style={[styles.image, { position: 'absolute' }]}
               onError={() => {
                 if (!!imageFallback && imageURI !== imageFallback)

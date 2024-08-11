@@ -10,7 +10,6 @@ import useSpecialFeatures from 'api/useSpecialFeatures'
 import Text from 'components/Text'
 import ItemLong from 'components/ItemLong'
 import CenterLoading from 'components/CenterLoading'
-import { FlashList } from '@shopify/flash-list'
 import useItems from 'api/useItems'
 import ticksToTime from 'lib/ticksToTime'
 import { useQueryClient } from '@tanstack/react-query'
@@ -60,7 +59,7 @@ const Episodes = ({
     client.server + '/Items/' + series.Id + '/Images/Backdrop/0',
   )
 
-  const episodeList = useRef<FlashList<any>>(null)
+  const episodeList = useRef<FlatList>(null)
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -76,7 +75,7 @@ const Episodes = ({
       <View style={{ position: 'absolute', width: width, height: height }}>
         {((!special && !episodes.isLoading && !seasonDetails.isLoading) ||
           (special && !specials.isLoading)) && (
-          <FlashList
+          <FlatList
             ref={episodeList}
             data={special ? specials.data : episodes.data.Items}
             keyExtractor={(item: Item) => item.Id}
@@ -154,7 +153,7 @@ const Episodes = ({
               />
             )}
             showsVerticalScrollIndicator={false}
-            estimatedItemSize={138}
+            //estimatedItemSize={138}
           />
         )}
         <Text
