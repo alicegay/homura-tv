@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Linking, ToastAndroid, View } from 'react-native'
 import useSettings from 'hooks/useSettings'
 import useTheme from 'hooks/useTheme'
@@ -5,12 +6,20 @@ import { FlashList } from '@shopify/flash-list'
 import ListButton from 'components/ListButton'
 import Text from 'components/Text'
 import Switch from 'components/Switch'
-import { useRef } from 'react'
 import { clearCache } from '@candlefinance/faster-image'
+import deviceProfile from 'lib/deviceProfile'
 
 const Settings = () => {
   const settings = useSettings()
   const theme = useTheme()
+
+  const setDeviceProfile = async () => {
+    const profile = await deviceProfile()
+    settings.setDeviceProfile(profile)
+  }
+  useEffect(() => {
+    setDeviceProfile()
+  }, [settings.nativeAss])
 
   const data = [
     {
@@ -36,6 +45,16 @@ const Settings = () => {
         settings.setIntroSkipper(!settings.introSkipper)
       },
       right: () => <Switch state={settings.introSkipper} />,
+    },
+    {
+      title: 'Treat SSA/ASS as SRT',
+      subtitle: 'Attempt to render SSA/ASS subtitles as SRT subtitles',
+      icon: 'subtitles',
+      filled: true,
+      onPress: () => {
+        settings.setNativeAss(!settings.nativeAss)
+      },
+      right: () => <Switch state={settings.nativeAss} />,
     },
     {
       title: 'Caption Settings',

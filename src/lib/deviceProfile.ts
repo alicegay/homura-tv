@@ -250,8 +250,14 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
     { Format: 'pgs', Method: 'Embed' },
     { Format: 'pgssub', Method: 'Embed' },
     { Format: 'dvdsub', Method: 'Embed' },
-    { Format: 'ass', Method: 'Encode' },
-    { Format: 'ssa', Method: 'Encode' },
+    {
+      Format: 'ass',
+      Method: useSettings.getState().nativeAss ? 'Embed' : 'Encode',
+    },
+    {
+      Format: 'ssa',
+      Method: useSettings.getState().nativeAss ? 'Embed' : 'Encode',
+    },
   )
 
   return profile

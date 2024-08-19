@@ -7,9 +7,11 @@ interface SettingsStore {
   forceStereo: boolean
   introSkipper: boolean
   classification: 'au' | 'jp' | 'uk' | 'us'
+  nativeAss: boolean
 
   setForceStereo: (value: boolean) => void
   setIntroSkipper: (value: boolean) => void
+  setNativeAss: (value: boolean) => void
 
   deviceProfile: DeviceProfile | null
   setDeviceProfile: (profile: DeviceProfile) => void
@@ -21,9 +23,11 @@ const useSettings = create<SettingsStore>()(
       forceStereo: false,
       introSkipper: true,
       classification: 'au',
+      nativeAss: false,
 
       setForceStereo: (value) => set(() => ({ forceStereo: value })),
       setIntroSkipper: (value) => set(() => ({ introSkipper: value })),
+      setNativeAss: (value) => set(() => ({ nativeAss: value })),
 
       deviceProfile: null,
       setDeviceProfile: (profile) => set(() => ({ deviceProfile: profile })),
