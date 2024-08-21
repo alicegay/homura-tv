@@ -20,9 +20,6 @@ const Season = ({
 
   const { data, isLoading } = useSeasons(series.Id)
 
-  const [primaryImage, setPrimaryImage] = useState(
-    client.server + '/Items/' + series.Id + '/Images/Primary',
-  )
   const [backdropImage, setBackdropImage] = useState(
     client.server + '/Items/' + series.Id + '/Images/Backdrop/0',
   )
@@ -52,9 +49,17 @@ const Season = ({
                 title={item.Name}
                 aspectRatio="tall"
                 width={192}
-                image={client.server + '/Items/' + item.Id + '/Images/Primary'}
+                image={
+                  client.server +
+                  '/Items/' +
+                  item.Id +
+                  '/Images/Primary?maxWidth=512&maxHeight=512'
+                }
                 imageFallback={
-                  client.server + '/Items/' + series.Id + '/Images/Primary'
+                  client.server +
+                  '/Items/' +
+                  series.Id +
+                  '/Images/Primary?maxWidth=512&maxHeight=512'
                 }
                 blurhash={
                   !!item.ImageBlurHashes.Primary

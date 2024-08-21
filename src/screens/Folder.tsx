@@ -58,9 +58,7 @@ const Folder = ({
                 client.server +
                 '/Items/' +
                 item.Id +
-                '/Images/Primary?fillWidth=' +
-                ((width / columns) * 2).toString() +
-                '&quality=96'
+                '/Images/Primary?maxWidth=384&maxHeight=384'
               }
               blurhash={
                 !!item.ImageBlurHashes.Primary

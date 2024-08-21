@@ -87,7 +87,10 @@ const Home = ({
                     id={item.Id}
                     title={item.Name}
                     image={
-                      client.server + '/Items/' + item.Id + '/Images/Primary'
+                      client.server +
+                      '/Items/' +
+                      item.Id +
+                      '/Images/Primary?maxWidth=384&maxHeight=384'
                     }
                     blurhash={
                       !!item.ImageBlurHashes.Primary
@@ -172,7 +175,10 @@ const Home = ({
                       }
                       subtitle={cardSubtitle(item)}
                       image={
-                        client.server + '/Items/' + item.Id + '/Images/Primary'
+                        client.server +
+                        '/Items/' +
+                        item.Id +
+                        '/Images/Primary?maxWidth=384&maxHeight=384'
                       }
                       blurhash={
                         !!item.ImageBlurHashes.Primary
@@ -234,7 +240,10 @@ const Home = ({
                       title={item.SeriesName}
                       subtitle={cardSubtitle(item)}
                       image={
-                        client.server + '/Items/' + item.Id + '/Images/Primary'
+                        client.server +
+                        '/Items/' +
+                        item.Id +
+                        '/Images/Primary?maxWidth=384&maxHeight=384'
                       }
                       blurhash={
                         !!item.ImageBlurHashes.Primary

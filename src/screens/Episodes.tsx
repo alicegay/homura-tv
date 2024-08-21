@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FlatList, Image, View, useWindowDimensions } from 'react-native'
+import { Image, View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import Item from 'jellyfin-api/lib/types/media/Item'
@@ -13,6 +13,7 @@ import CenterLoading from 'components/CenterLoading'
 import useItems from 'api/useItems'
 import ticksToTime from 'lib/ticksToTime'
 import { useQueryClient } from '@tanstack/react-query'
+import { FlashList } from '@shopify/flash-list'
 
 const Episodes = ({
   navigation,
@@ -59,7 +60,7 @@ const Episodes = ({
     client.server + '/Items/' + series.Id + '/Images/Backdrop/0',
   )
 
-  const episodeList = useRef<FlatList>(null)
+  const episodeList = useRef<FlashList<any>>(null)
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -75,7 +76,7 @@ const Episodes = ({
       <View style={{ position: 'absolute', width: width, height: height }}>
         {((!special && !episodes.isLoading && !seasonDetails.isLoading) ||
           (special && !specials.isLoading)) && (
-          <FlatList
+          <FlashList
             ref={episodeList}
             data={special ? specials.data : episodes.data.Items}
             keyExtractor={(item: Item) => item.Id}
@@ -110,10 +111,18 @@ const Episodes = ({
                     : 'Special: ' + item.Name
                 }
                 description={!special && item.Overview}
-                image={client.server + '/Items/' + item.Id + '/Images/Primary'}
-                imageFallback={
-                  client.server + '/Items/' + series.Id + '/Images/Primary'
+                image={
+                  client.server +
+                  '/Items/' +
+                  item.Id +
+                  '/Images/Primary?maxWidth=384&maxHeight=384'
                 }
+                // imageFallback={
+                //   client.server +
+                //   '/Items/' +
+                //   series.Id +
+                //   '/Images/Primary?maxWidth=384&maxHeight=384'
+                // }
                 blurhash={
                   !!item.ImageBlurHashes.Primary
                     ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
@@ -153,7 +162,7 @@ const Episodes = ({
               />
             )}
             showsVerticalScrollIndicator={false}
-            //estimatedItemSize={138}
+            estimatedItemSize={138}
           />
         )}
         <Text
