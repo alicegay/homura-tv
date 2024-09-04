@@ -430,6 +430,7 @@ const Player = ({
           paused={seeking ? true : paused}
           resizeMode="contain"
           showNotificationControls={true}
+          subtitleStyle={{ subtitlesFollowVideo: true }}
           selectedVideoTrack={{
             type: SelectedVideoTrackType.INDEX,
             value: playMethod !== 'DirectPlay' ? '0' : videoStream.toString(),
