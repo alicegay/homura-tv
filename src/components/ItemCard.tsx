@@ -39,6 +39,10 @@ interface Props {
   onBlur?: () => void
   style?: StyleProp<ViewStyle>
   hasTVPreferredFocus?: boolean
+  nextFocusUp?: number
+  nextFocusDown?: number
+  nextFocusLeft?: number
+  nextFocusRight?: number
 }
 
 const ItemCard = ({
@@ -60,6 +64,10 @@ const ItemCard = ({
   onBlur,
   style,
   hasTVPreferredFocus,
+  nextFocusUp,
+  nextFocusDown,
+  nextFocusLeft,
+  nextFocusRight,
 }: Props) => {
   const theme = useTheme()
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
@@ -177,6 +185,10 @@ const ItemCard = ({
         !!onBlur && onBlur()
       }}
       style={style}
+      nextFocusUp={nextFocusUp}
+      nextFocusDown={nextFocusDown}
+      nextFocusLeft={nextFocusLeft}
+      nextFocusRight={nextFocusRight}
     >
       <View style={[styles.view]}>
         <View style={styles.padding} />

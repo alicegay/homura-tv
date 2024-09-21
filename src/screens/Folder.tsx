@@ -1,10 +1,17 @@
-import { useEffect, useRef } from 'react'
-import { FlatList, View, useWindowDimensions } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import {
+  FlatList,
+  Modal,
+  ScrollView,
+  View,
+  findNodeHandle,
+  useWindowDimensions,
+} from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
-import useSort, { defaultSort } from 'hooks/useSort'
+import useSort, { By, defaultSort, Order, sortNames } from 'hooks/useSort'
 import useUserItems from 'api/useUserItems'
 import ItemCard from 'components/ItemCard'
 import Text from 'components/Text'
@@ -13,6 +20,8 @@ import Item from 'jellyfin-api/lib/types/media/Item'
 import ticksToTime from 'lib/ticksToTime'
 import CenterLoading from 'components/CenterLoading'
 import { useQueryClient } from '@tanstack/react-query'
+import Button from 'components/Button'
+import ListButton from 'components/ListButton'
 
 const Folder = ({
   navigation,
@@ -33,6 +42,10 @@ const Folder = ({
     Fields: 'OriginalTitle',
     EnableImageTypes: 'Primary,Backdrop,Logo',
   })
+
+  const [showSortMenu, setShowSortMenu] = useState(false)
+  const sortButtonRef = useRef(null)
+  const sortButtonNode = findNodeHandle(sortButtonRef.current)
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -92,9 +105,10 @@ const Folder = ({
                   ? navigation.push('Folder', { item })
                   : navigation.push('Details', { item })
               }}
-              hasTVPreferredFocus={index === 0}
               width={width / columns - 32}
               style={[index < columns && { paddingTop: 48 }]}
+              hasTVPreferredFocus={index === 0}
+              nextFocusUp={index < columns ? sortButtonNode : undefined}
             />
           )}
           numColumns={columns}
@@ -103,18 +117,178 @@ const Folder = ({
           //estimatedItemSize={columns === 4 ? 178 : 253}
         />
       )}
-      <Text
+      <View
         style={{
-          fontSize: 28,
+          width: width,
           paddingTop: 12,
           paddingHorizontal: 32,
           position: 'absolute',
+          flex: 1,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
         }}
-        fontWeight={700}
       >
-        {item.Name}
-      </Text>
+        <Text style={{ fontSize: 28 }} fontWeight={700}>
+          {item.Name}
+        </Text>
+        <Button
+          ref={sortButtonRef}
+          icon={sortOrder === Order.Asc ? 'north' : 'south'}
+          hasTVPreferredFocus={false}
+          onPress={() => {
+            setShowSortMenu(true)
+          }}
+        >
+          Sort by {sortNames[sortBy]}
+        </Button>
+      </View>
       {isLoading && <CenterLoading />}
+      <Modal
+        visible={showSortMenu}
+        onRequestClose={() => {
+          setShowSortMenu(false)
+        }}
+        transparent={true}
+      >
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row-reverse',
+            backgroundColor: '#00000080',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: theme.background,
+              width: 400,
+              paddingHorizontal: 16,
+            }}
+          >
+            <ScrollView>
+              <Text
+                style={{
+                  fontSize: 24,
+                  paddingLeft: 24,
+                  paddingVertical: 16,
+                }}
+                fontWeight={700}
+              >
+                Sort by
+              </Text>
+              <ListButton
+                title="Sort Name"
+                icon="north"
+                hasTVPreferredFocus={
+                  sortBy === By.SortName && sortOrder === Order.Asc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.SortName, Order.Asc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Sort Name"
+                icon="south"
+                hasTVPreferredFocus={
+                  sortBy === By.SortName && sortOrder === Order.Desc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.SortName, Order.Desc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Unsorted Name"
+                icon="north"
+                hasTVPreferredFocus={
+                  sortBy === By.Name && sortOrder === Order.Asc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.Name, Order.Asc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Unsorted Name"
+                icon="south"
+                hasTVPreferredFocus={
+                  sortBy === By.Name && sortOrder === Order.Desc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.Name, Order.Desc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Release Date"
+                icon="north"
+                hasTVPreferredFocus={
+                  sortBy === By.ReleaseDate && sortOrder === Order.Asc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.ReleaseDate, Order.Asc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Release Date"
+                icon="south"
+                hasTVPreferredFocus={
+                  sortBy === By.ReleaseDate && sortOrder === Order.Desc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.ReleaseDate, Order.Desc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Date Added"
+                icon="north"
+                hasTVPreferredFocus={
+                  sortBy === By.DateAdded && sortOrder === Order.Asc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.DateAdded, Order.Asc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Date Added"
+                icon="south"
+                hasTVPreferredFocus={
+                  sortBy === By.DateAdded && sortOrder === Order.Desc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.DateAdded, Order.Desc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Runtime"
+                icon="north"
+                hasTVPreferredFocus={
+                  sortBy === By.Runtime && sortOrder === Order.Asc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.Runtime, Order.Asc)
+                  setShowSortMenu(false)
+                }}
+              />
+              <ListButton
+                title="Runtime"
+                icon="south"
+                hasTVPreferredFocus={
+                  sortBy === By.Runtime && sortOrder === Order.Desc
+                }
+                onPress={() => {
+                  sort.set(item.Id, By.Runtime, Order.Desc)
+                  setShowSortMenu(false)
+                }}
+              />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }

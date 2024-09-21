@@ -15,6 +15,14 @@ export enum Order {
   Desc = 'Descending',
 }
 
+export const sortNames: { [name: string]: string } = {
+  [By.SortName]: 'Name',
+  [By.Name]: 'Unsorted Name',
+  [By.ReleaseDate]: 'Release Date',
+  [By.DateAdded]: 'Date Added',
+  [By.Runtime]: 'Runtime',
+}
+
 type Sort = [By, Order]
 export const defaultSort: Sort = [By.SortName, Order.Asc]
 
