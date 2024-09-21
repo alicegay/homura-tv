@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import useClient from 'hooks/useClient'
 import useTheme from 'hooks/useTheme'
+import useSort, { defaultSort } from 'hooks/useSort'
 import useUserItems from 'api/useUserItems'
 import ItemCard from 'components/ItemCard'
 import Text from 'components/Text'
@@ -21,11 +22,14 @@ const Folder = ({
   const theme = useTheme()
   const query = useQueryClient()
   const { width } = useWindowDimensions()
+  const sort = useSort()
 
   const { item, ignoreLengths } = route.params
+  const sortBy = item.Id in sort.ids ? sort.ids[item.Id][0] : defaultSort[0]
+  const sortOrder = item.Id in sort.ids ? sort.ids[item.Id][1] : defaultSort[1]
   const { data, isLoading, isRefetching } = useUserItems(item.Id, {
-    SortBy: 'IsFolder,SortName',
-    SortOrder: 'Ascending',
+    SortBy: sortBy,
+    SortOrder: sortOrder,
     Fields: 'OriginalTitle',
     EnableImageTypes: 'Primary,Backdrop,Logo',
   })

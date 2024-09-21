@@ -5,7 +5,7 @@ import ItemsQuery from 'jellyfin-api/lib/types/queries/ItemsQuery'
 
 const useUserItems = (itemId: string, params?: ItemsQuery) => {
   return useQuery({
-    queryKey: ['useritems', itemId],
+    queryKey: ['useritems', itemId, params],
     queryFn: () => {
       return users.items(useClient.getState().api, {
         ...params,
