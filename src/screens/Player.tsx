@@ -439,14 +439,10 @@ const Player = ({
             type: SelectedTrackType.INDEX,
             value: playMethod !== 'DirectPlay' ? '0' : audioStream.toString(),
           }}
-          selectedTextTrack={
-            subtitleStream === -1 || playMethod !== 'DirectPlay'
-              ? { type: SelectedTrackType.INDEX, value: '-1' }
-              : {
-                  type: SelectedTrackType.INDEX,
-                  value: subtitleStream.toString(),
-                }
-          }
+          selectedTextTrack={{
+            type: SelectedTrackType.INDEX,
+            value: subtitleStream.toString(),
+          }}
           bufferConfig={{
             minBufferMs: 5000,
           }}

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  FlatList,
   Modal,
   ScrollView,
   View,
@@ -22,6 +21,7 @@ import CenterLoading from 'components/CenterLoading'
 import { useQueryClient } from '@tanstack/react-query'
 import Button from 'components/Button'
 import ListButton from 'components/ListButton'
+import { FlashList } from '@shopify/flash-list'
 
 const Folder = ({
   navigation,
@@ -54,14 +54,14 @@ const Folder = ({
     return unsubscribe
   }, [navigation])
 
-  const list = useRef<FlatList>()
+  const list = useRef<FlashList<any>>()
   const aspectRatio = findAspectRatio(item.CollectionType)
   const columns = aspectRatio === 'wide' ? 4 : 6
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       {!isLoading && (
-        <FlatList
+        <FlashList
           ref={list}
           data={data.Items}
           keyExtractor={(item: Item) => item.Id}
@@ -94,8 +94,8 @@ const Folder = ({
               }
               onFocus={() =>
                 list.current.scrollToIndex({
-                  index: Math.floor(index / columns), // FlatList
-                  //index: Math.floor(index / columns) * columns, // FlashList
+                  // index: Math.floor(index / columns), // FlatList
+                  index: Math.floor(index / columns) * columns, // FlashList
                   viewPosition: 0.5,
                   animated: true,
                 })
