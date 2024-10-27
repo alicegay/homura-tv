@@ -59,6 +59,7 @@ const Home = ({
   const setDeviceProfile = async () => {
     const profile = await deviceProfile()
     settings.setDeviceProfile(profile)
+    //console.log(JSON.stringify(profile))
   }
 
   const scrollView = useRef<ScrollView>()

@@ -69,3 +69,4 @@ yarn-error.log
 install.sh
 .vscode/
 sentry.properties
+profile.*.json
