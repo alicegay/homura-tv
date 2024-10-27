@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "android": "react-native-tvos run-android",
-    "tvos": "react-native-tvos run-ios --scheme Homura-tvOS --simulator \"Apple TV\"",
+    "android": "react-native run-android",
+    "tvos": "react-native run-ios --scheme Homura-tvOS --simulator \"Apple TV\"",
     "lint": "eslint .",
-    "start": "react-native-tvos start",
+    "start": "react-native start",
     "test": "jest",
     "build": "cd android && ./gradlew assembleRelease",
     "adb": "adb install ./android/app/build/outputs/apk/release/app-release.apk",
