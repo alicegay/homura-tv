@@ -249,25 +249,6 @@ const Player = ({
   const [introVisibility, setIntroVisibility] = useState(false)
   const [creditVisibility, setCreditVisibility] = useState(false)
   const [introLabel, setIntroLabel] = useState('Skip Opening')
-  // const introAnim = useSharedValue(0.0)
-  // useEffect(() => {
-  //   if (introVisibility || creditVisibility) {
-  //     if (introVisibility) {
-  //       setIntroLabel('Skip Opening')
-  //     } else {
-  //       setIntroLabel('Skip Ending')
-  //     }
-  //     introAnim.value = withTiming(1.0, {
-  //       duration: 200,
-  //       easing: Easing.out(Easing.quad),
-  //     })
-  //   } else {
-  //     introAnim.value = withTiming(0.0, {
-  //       duration: 200,
-  //       easing: Easing.in(Easing.quad),
-  //     })
-  //   }
-  // }, [introVisibility, creditVisibility])
 
   useEffect(() => {
     menuX = 0
