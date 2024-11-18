@@ -177,9 +177,8 @@ const Details = ({
                   subtitleStream !== null && (
                     <>
                       <Text>{streams.videos[videoStream]?.title}</Text>
-                      <Text>{streams.audios[audioStream]?.title}</Text>
-                      {subtitleStream !== -1 && (
-                        <Text>{streams.subtitles[subtitleStream].title}</Text>
+                      {streams?.audios.length === 1 && (
+                        <Text>{streams.audios[audioStream]?.title}</Text>
                       )}
                     </>
                   )}
@@ -258,7 +257,9 @@ const Details = ({
                       onPress={() => {
                         showMenu('Audio')
                       }}
-                    />
+                    >
+                      {streams.audios[audioStream]?.title}
+                    </Button>
                   )}
                   {streams?.subtitles.length > 0 && (
                     <Button
@@ -266,7 +267,11 @@ const Details = ({
                       onPress={() => {
                         showMenu('Subtitle')
                       }}
-                    />
+                    >
+                      {subtitleStream === -1
+                        ? 'None'
+                        : streams.subtitles[subtitleStream]?.title}
+                    </Button>
                   )}
                 </View>
               ) : (
@@ -370,7 +375,7 @@ const Details = ({
                     </Text>
                     {menu === 'Subtitle' && (
                       <ListButton
-                        title="No Subtitles"
+                        title="None"
                         hasTVPreferredFocus={subtitleStream === -1}
                         onPress={() => {
                           setSubtitleStream(-1)

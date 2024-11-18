@@ -1,4 +1,4 @@
-import { NavigationContainer } from '@react-navigation/native'
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as Sentry from '@sentry/react-native'
@@ -30,6 +30,7 @@ const App = () => {
       border: theme.background,
       notification: theme.background,
     },
+    fonts: DefaultTheme.fonts,
   }
 
   return (

@@ -114,7 +114,7 @@ const Folder = ({
           numColumns={columns}
           showsVerticalScrollIndicator={false}
           refreshing={isRefetching}
-          //estimatedItemSize={columns === 4 ? 178 : 253}
+          estimatedItemSize={columns === 4 ? 178 : 253}
         />
       )}
       <View

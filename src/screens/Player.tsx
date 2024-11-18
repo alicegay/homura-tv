@@ -41,6 +41,8 @@ import SessionInfo from 'components/SessionInfo'
 import PlayerTime from 'components/PlayerTime'
 import Animated, {
   Easing,
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -247,25 +249,6 @@ const Player = ({
   const [introVisibility, setIntroVisibility] = useState(false)
   const [creditVisibility, setCreditVisibility] = useState(false)
   const [introLabel, setIntroLabel] = useState('Skip Opening')
-  const introAnim = useSharedValue(0.0)
-  useEffect(() => {
-    if (introVisibility || creditVisibility) {
-      if (introVisibility) {
-        setIntroLabel('Skip Opening')
-      } else {
-        setIntroLabel('Skip Ending')
-      }
-      introAnim.value = withTiming(1.0, {
-        duration: 200,
-        easing: Easing.out(Easing.quad),
-      })
-    } else {
-      introAnim.value = withTiming(0.0, {
-        duration: 200,
-        easing: Easing.in(Easing.quad),
-      })
-    }
-  }, [introVisibility, creditVisibility])
 
   useEffect(() => {
     menuX = 0
@@ -350,8 +333,8 @@ const Player = ({
       PositionTicks: position
         ? secsToTicks(position)
         : currentTime === 0 && !!startFrom
-        ? startFrom
-        : secsToTicks(currentTime),
+          ? startFrom
+          : secsToTicks(currentTime),
       PlayMethod: playMethod,
       RepeatMode: 'RepeatNone',
       AudioStreamIndex: streams.audios[initStreams.audio].id,
@@ -685,33 +668,36 @@ const Player = ({
         </LinearGradient>
       </Animated.View>
 
-      <Animated.View
-        style={{
-          opacity: introAnim,
-          position: 'absolute',
-          bottom: 32,
-          right: 64,
-          width: 160,
-          height: 36,
-          backgroundColor: theme.foreground,
-          borderRadius: 20,
-          overflow: 'hidden',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Icon
-          style={{ fontSize: 14, color: theme.background, paddingRight: 4 }}
-          name="skip-next"
-        />
-        <Text
-          style={{ fontSize: 14, color: theme.background }}
-          fontWeight={700}
+      {(introVisibility || creditVisibility) && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={{
+            position: 'absolute',
+            bottom: 32,
+            right: 64,
+            width: 160,
+            height: 36,
+            backgroundColor: theme.foreground,
+            borderRadius: 20,
+            overflow: 'hidden',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          {introLabel}
-        </Text>
-      </Animated.View>
+          <Icon
+            style={{ fontSize: 14, color: theme.background, paddingRight: 4 }}
+            name="skip-next"
+          />
+          <Text
+            style={{ fontSize: 14, color: theme.background }}
+            fontWeight={700}
+          >
+            {introLabel}
+          </Text>
+        </Animated.View>
+      )}
 
       <View style={{ position: 'absolute', top: 16, left: 64 }}>
         {showSessionInfo && !!sessionInfo && (
