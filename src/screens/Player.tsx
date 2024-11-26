@@ -249,6 +249,15 @@ const Player = ({
   const [introVisibility, setIntroVisibility] = useState(false)
   const [creditVisibility, setCreditVisibility] = useState(false)
   const [introLabel, setIntroLabel] = useState('Skip Opening')
+  useEffect(() => {
+    if (introVisibility || creditVisibility) {
+      if (introVisibility) {
+        setIntroLabel('Skip Opening')
+      } else {
+        setIntroLabel('Skip Ending')
+      }
+    }
+  }, [introVisibility, creditVisibility])
 
   useEffect(() => {
     menuX = 0
