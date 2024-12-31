@@ -237,6 +237,20 @@ const Details = ({
                     Play
                   </Button>
                   {/* <Button icon="information" /> */}
+                  {data?.SpecialFeatureCount > 0 && (
+                    <Button
+                      icon="star"
+                      filled
+                      onPress={() => {
+                        navigation.push('Episodes', {
+                          series: data,
+                          special: true,
+                        })
+                      }}
+                    >
+                      Special Features
+                    </Button>
+                  )}
                   <Button
                     icon={data?.UserData.Played ? 'done_all' : 'check'}
                     onPress={() => {
@@ -357,8 +371,8 @@ const Details = ({
                   menu === 'Video'
                     ? streams.videos
                     : menu === 'Audio'
-                    ? streams.audios
-                    : streams.subtitles
+                      ? streams.audios
+                      : streams.subtitles
                 }
                 keyExtractor={(item) => item.id.toString()}
                 ListHeaderComponent={
