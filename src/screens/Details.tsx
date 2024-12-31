@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import useSeasons from 'api/useSeasons'
 import usePlayedItem from 'api/usePlayedItem'
 import { FasterImageView } from '@candlefinance/faster-image'
+import useLocalTrailers from 'api/useLocalTrailers'
 
 const Details = ({
   navigation,
@@ -38,6 +39,7 @@ const Details = ({
   const { data, isLoading } = useUserItem(item.Id)
   const seasons = useSeasons(item.Id)
   const played = usePlayedItem(item.Id)
+  const trailers = useLocalTrailers(item.Id)
 
   const [streams, setStreams] = useState<sortedStreams>(null)
   const [videoStream, setVideoStream] = useState<number>(null)
@@ -237,6 +239,25 @@ const Details = ({
                     Play
                   </Button>
                   {/* <Button icon="information" /> */}
+                  {data?.LocalTrailerCount > 0 && trailers.data && (
+                    <Button
+                      icon="theaters"
+                      filled
+                      onPress={() => {
+                        const s = sortStreams(trailers.data[0].MediaStreams)
+                        navigation.push('Player', {
+                          item: trailers.data[0],
+                          streams: {
+                            video: s.defaults.video,
+                            audio: s.defaults.audio,
+                            subtitle: s.defaults.subtitle,
+                          },
+                        })
+                      }}
+                    >
+                      Trailer
+                    </Button>
+                  )}
                   {data?.SpecialFeatureCount > 0 && (
                     <Button
                       icon="star"

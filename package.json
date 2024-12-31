@@ -24,7 +24,7 @@
     "babel-plugin-react-compiler": "^0.0.0-experimental-938cd9a-20240601",
     "babel-plugin-wildcard": "7.0.0",
     "eslint-plugin-react-compiler": "^0.0.0-experimental-51a85ea-20240601",
-    "jellyfin-api": "github:alicegay/jellyfin-api#ee77057",
+    "jellyfin-api": "github:alicegay/jellyfin-api#51d35a9",
     "react": "18.3.1",
     "react-compiler-runtime": "file:./lib/react-compiler-runtime",
     "react-native": "npm:react-native-tvos@0.76.2-0",
