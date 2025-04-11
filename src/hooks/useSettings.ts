@@ -6,11 +6,13 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 interface SettingsStore {
   forceStereo: boolean
   introSkipper: boolean
+  introSkipperPrompt: number
   classification: 'au' | 'jp' | 'uk' | 'us'
   nativeAss: boolean
 
   setForceStereo: (value: boolean) => void
   setIntroSkipper: (value: boolean) => void
+  setIntroSkipperPrompt: (value: number) => void
   setNativeAss: (value: boolean) => void
 
   deviceProfile: DeviceProfile | null
@@ -22,11 +24,14 @@ const useSettings = create<SettingsStore>()(
     (set) => ({
       forceStereo: false,
       introSkipper: true,
+      introSkipperPrompt: 5,
       classification: 'au',
       nativeAss: false,
 
       setForceStereo: (value) => set(() => ({ forceStereo: value })),
       setIntroSkipper: (value) => set(() => ({ introSkipper: value })),
+      setIntroSkipperPrompt: (value) =>
+        set(() => ({ introSkipperPrompt: value })),
       setNativeAss: (value) => set(() => ({ nativeAss: value })),
 
       deviceProfile: null,

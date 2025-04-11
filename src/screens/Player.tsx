@@ -448,7 +448,9 @@ const Player = ({
               if (!!introSegments && introSegments.Introduction?.Valid) {
                 if (
                   e.currentTime > introSegments.Introduction.ShowSkipPromptAt &&
-                  e.currentTime < introSegments.Introduction.HideSkipPromptAt &&
+                  e.currentTime <
+                    introSegments.Introduction.ShowSkipPromptAt +
+                      settings.introSkipperPrompt &&
                   !introVisibility &&
                   !controlsVisibility
                 ) {
@@ -458,7 +460,8 @@ const Player = ({
                     introSegments.Introduction.ShowSkipPromptAt &&
                     introVisibility) ||
                   (e.currentTime >
-                    introSegments.Introduction.HideSkipPromptAt &&
+                    introSegments.Introduction.ShowSkipPromptAt +
+                      settings.introSkipperPrompt &&
                     introVisibility)
                 ) {
                   setIntroVisibility(false)
@@ -467,7 +470,9 @@ const Player = ({
               if (!!introSegments && introSegments.Credits?.Valid) {
                 if (
                   e.currentTime > introSegments.Credits.ShowSkipPromptAt &&
-                  e.currentTime < introSegments.Credits.HideSkipPromptAt &&
+                  e.currentTime <
+                    introSegments.Credits.ShowSkipPromptAt +
+                      settings.introSkipperPrompt &&
                   !creditVisibility &&
                   !controlsVisibility
                 ) {
@@ -475,7 +480,9 @@ const Player = ({
                 } else if (
                   (e.currentTime < introSegments.Credits.ShowSkipPromptAt &&
                     creditVisibility) ||
-                  (e.currentTime > introSegments.Credits.HideSkipPromptAt &&
+                  (e.currentTime >
+                    introSegments.Credits.ShowSkipPromptAt +
+                      settings.introSkipperPrompt &&
                     creditVisibility)
                 ) {
                   setCreditVisibility(false)

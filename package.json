@@ -20,11 +20,11 @@
     "@sentry/react-native": "5.34.0",
     "@shopify/flash-list": "1.7.2",
     "@tanstack/react-query": "5.60.5",
-    "axios": "^1.8.3",
+    "axios": "1.8.4",
     "babel-plugin-react-compiler": "^0.0.0-experimental-938cd9a-20240601",
     "babel-plugin-wildcard": "7.0.0",
     "eslint-plugin-react-compiler": "^0.0.0-experimental-51a85ea-20240601",
-    "jellyfin-api": "github:alicegay/jellyfin-api#51d35a9",
+    "jellyfin-api": "github:alicegay/jellyfin-api#e4ee4ae",
     "react": "18.3.1",
     "react-compiler-runtime": "file:./lib/react-compiler-runtime",
     "react-native": "npm:react-native-tvos@0.76.2-0",
@@ -39,9 +39,9 @@
     "react-native-svg": "15.9.0",
     "react-native-system-navigation-bar": "^2.6.4",
     "react-native-vector-icons": "10.2.0",
-    "react-native-video": "6.8.0",
+    "react-native-video": "6.12.0",
     "tinycolor2": "1.6.0",
-    "zustand": "5.0.1"
+    "zustand": "5.0.3"
   },
   "devDependencies": {
     "@babel/core": "7.26.0",
