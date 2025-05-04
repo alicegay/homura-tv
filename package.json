@@ -39,7 +39,7 @@
     "react-native-svg": "15.9.0",
     "react-native-system-navigation-bar": "^2.6.4",
     "react-native-vector-icons": "10.2.0",
-    "react-native-video": "6.12.0",
+    "react-native-video": "6.13.0",
     "tinycolor2": "1.6.0",
     "zustand": "5.0.3"
   },

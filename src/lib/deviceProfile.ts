@@ -106,7 +106,7 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
   })
 
   profile.TranscodingProfiles.push({
-    Container: 'ts',
+    Container: 'mp4',
     Type: 'Video',
     Context: 'Streaming',
     Protocol: 'hls',
@@ -120,17 +120,17 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
     ]),
     AudioCodec: addCodecs([
       add('aac', support.aac),
-      // add('flac', support.flac),
-      // add('mp3', support.mp3),
-      // add('vorbis', support.vorbis),
-      // add('opus', support.opus),
-      // await addAudio('ac3', support.ac3, 'AC3', directAudio),
-      // await addAudio('eac3', support.eac3, 'EAC3', directAudio),
-      // await addAudio('truehd', support.truehd, 'TRUEHD', directAudio),
-      // await addAudio('dts', support.dts, 'DTS', directAudio),
-      // await addAudio('dts_hd', support.dtshd, 'DTSHD', directAudio),
-      // await addAudio('dts_x', support.dtshd, 'DTSX', directAudio),
-      // await addAudio('pcm_s24le', support.pcm, 'PCM24LE', directAudio),
+      add('flac', support.flac),
+      add('mp3', support.mp3),
+      add('vorbis', support.vorbis),
+      add('opus', support.opus),
+      await addAudio('ac3', support.ac3, 'AC3', directAudio),
+      await addAudio('eac3', support.eac3, 'EAC3', directAudio),
+      await addAudio('truehd', support.truehd, 'TRUEHD', directAudio),
+      await addAudio('dts', support.dts, 'DTS', directAudio),
+      await addAudio('dts_hd', support.dtshd, 'DTSHD', directAudio),
+      await addAudio('dts_x', support.dtshd, 'DTSX', directAudio),
+      await addAudio('pcm_s24le', support.pcm, 'PCM24LE', directAudio),
     ]),
   })
 
