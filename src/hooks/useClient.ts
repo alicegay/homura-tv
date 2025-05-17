@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import axios, { AxiosInstance } from 'axios'
+import { v4 as uuidv4 } from 'uuid'
 import { Client } from 'jellyfin-api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
@@ -24,6 +25,7 @@ interface ClientStore {
   signout: () => void
   clear: () => void
   setName: (name: string) => void
+  setDeviceID: (ID: string) => void
 
   hasHydrated: boolean
   setHasHydrated: (state: boolean) => void
@@ -83,6 +85,7 @@ const useClient = create<ClientStore>()(
           token: null,
         })),
       setName: (name) => set(() => ({ name: name })),
+      setDeviceID: (ID) => set(() => ({ deviceID: ID })),
 
       hasHydrated: false,
       setHasHydrated: (state) => set(() => ({ hasHydrated: state })),
@@ -92,6 +95,9 @@ const useClient = create<ClientStore>()(
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         state.setHasHydrated(true)
+        if (!state.deviceID) {
+          state.setDeviceID('homura-tv_' + uuidv4())
+        }
       },
     },
   ),

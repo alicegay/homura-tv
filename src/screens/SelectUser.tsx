@@ -43,7 +43,7 @@ const SelectUser = ({
     setError('')
     const clientName = DeviceInfo.getApplicationName()
     const deviceName = await DeviceInfo.getDeviceName()
-    const deviceID = await DeviceInfo.getUniqueId()
+    const deviceID = client.deviceID
     const clientVer = DeviceInfo.getVersion()
     users
       .authenticateByName(
