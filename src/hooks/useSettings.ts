@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import DeviceProfile from 'jellyfin-api/lib/types/queries/DeviceProfile'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import DeviceProfile from 'jellyfin-api/lib/types/queries/DeviceProfile'
+import { storage } from 'lib/storage'
 
 interface SettingsStore {
   forceStereo: boolean
@@ -39,7 +39,7 @@ const useSettings = create<SettingsStore>()(
     }),
     {
       name: 'settings',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
     },
   ),
 )

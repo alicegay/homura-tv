@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import axios, { AxiosInstance } from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import { Client } from 'jellyfin-api'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { storage } from 'lib/storage'
 
 interface ClientStore {
   client: AxiosInstance | null
@@ -92,7 +92,7 @@ const useClient = create<ClientStore>()(
     }),
     {
       name: 'client',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
       onRehydrateStorage: () => (state) => {
         state.setHasHydrated(true)
         if (!state.deviceID) {
