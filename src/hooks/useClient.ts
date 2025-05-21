@@ -87,7 +87,7 @@ const useClient = create<ClientStore>()(
       setName: (name) => set(() => ({ name: name })),
       setDeviceID: (ID) => set(() => ({ deviceID: ID })),
 
-      hasHydrated: false,
+      hasHydrated: true,
       setHasHydrated: (state) => set(() => ({ hasHydrated: state })),
     }),
     {

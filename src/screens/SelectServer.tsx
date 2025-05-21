@@ -24,7 +24,7 @@ const SelectServer = ({
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const serverRef = useRef<any>()
+  const serverRef = useRef<any>(null)
 
   const submit = () => {
     setIsLoading(true)
@@ -61,6 +61,7 @@ const SelectServer = ({
   }
 
   useEffect(() => {
+    console.log('client.hasHydrated', client.hasHydrated)
     if (client.hasHydrated) {
       if (client.client) {
         navigation.replace('Home')
