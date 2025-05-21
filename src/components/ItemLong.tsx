@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   DimensionValue,
   GestureResponderEvent,
@@ -11,14 +11,9 @@ import {
 import Text from './Text'
 import averageBlurhash from 'lib/averageBlurhash'
 import useTheme from 'hooks/useTheme'
-import tinycolor from 'tinycolor2'
-import Animated, {
-  Easing,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { FasterImageView } from '@candlefinance/faster-image'
+import cardColor from 'lib/cardColor'
 
 interface Props {
   id: string
@@ -53,7 +48,8 @@ const ItemLong = ({
 }: Props) => {
   const theme = useTheme()
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
-  const color = !!blurhash ? averageBlurhash(blurhash) : theme.tint
+  const colorAverage = !!blurhash ? averageBlurhash(blurhash) : theme.tint
+  const color = cardColor(colorAverage)
   const [imageURI, setImageURI] = useState(image)
 
   const styles = StyleSheet.create({
@@ -66,7 +62,7 @@ const ItemLong = ({
     image: {
       width: 240,
       height: 240 * (1 / 2),
-      borderRadius: 16,
+      borderRadius: 8,
       overflow: 'hidden',
     },
     length: {
@@ -102,12 +98,10 @@ const ItemLong = ({
       position: 'absolute',
       top: 8 - 4,
       left: 32 - 4,
-      width: 240 + 8,
+      width: 240 + 8 + 656,
       height: 240 * (1 / 2) + 8,
-      backgroundColor: tinycolor(color)
-        .lighten((1.0 - tinycolor(color).getLuminance()) * 40)
-        .toHex8String(),
-      borderRadius: 16 + 4,
+      backgroundColor: color,
+      borderRadius: 8 + 4,
       overflow: 'hidden',
       opacity: 0,
     },
@@ -126,28 +120,6 @@ const ItemLong = ({
     },
   })
 
-  // const radius = useSharedValue(0.0)
-  const opacity = useSharedValue(0.0)
-
-  useEffect(() => {
-    if (focus) {
-      // radius.value = withTiming(1.0, {
-      //   duration: 400,
-      //   easing: Easing.out(Easing.quad),
-      // })
-      opacity.value = withRepeat(withTiming(1.0, { duration: 400 }), 0, true)
-    } else {
-      // radius.value = withTiming(0.0, {
-      //   duration: 100,
-      //   easing: Easing.in(Easing.quad),
-      // })
-      opacity.value = withTiming(0.0, {
-        duration: 400,
-        easing: Easing.in(Easing.quad),
-      })
-    }
-  }, [focus])
-
   return (
     <Pressable
       hasTVPreferredFocus={hasTVPreferredFocus}
@@ -162,21 +134,14 @@ const ItemLong = ({
       }}
       style={style}
     >
-      {/* <View style={[styles.view, focus && { backgroundColor: color + '60' }]}> */}
       <View style={[styles.view]}>
-        {/* <Animated.View style={[styles.glow, { opacity: radius }]}>
-          <Shadow
-            distance={40}
-            startColor={tinycolor(color + '80')
-              .lighten((1.0 - tinycolor(color).getLuminance()) * 40)
-              .toHex8String()}
-            style={[styles.image]}
+        {focus && (
+          <Animated.View
+            style={styles.selector}
+            entering={FadeIn.duration(100)}
+            exiting={FadeOut.duration(100)}
           />
-        </Animated.View> */}
-        <Animated.View style={[styles.selector, { opacity: opacity }]} />
-        {/* <View style={styles.fallback}>
-          <Icon name="movie" size={48} />
-        </View> */}
+        )}
         <View style={[styles.image, { backgroundColor: '#000' }]}>
           {/* {!!blurhash && (
             <Blurhash

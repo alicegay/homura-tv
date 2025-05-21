@@ -1,0 +1,22 @@
+diff --git a/node_modules/react-native-linear-gradient/index.android.js b/node_modules/react-native-linear-gradient/index.android.js
+index 63d5981..11fe896 100644
+--- a/node_modules/react-native-linear-gradient/index.android.js
++++ b/node_modules/react-native-linear-gradient/index.android.js
+@@ -3,7 +3,7 @@
+  * @flow
+  */
+ import React, { Component, createRef } from 'react';
+-import { processColor, StyleSheet, View } from 'react-native';
++import { StyleSheet, View } from 'react-native';
+ 
+ import NativeLinearGradient, { type Props } from './src';
+ 
+@@ -85,7 +85,7 @@ export default class LinearGradient extends Component<Props> {
+       <View ref={this.gradientRef} {...otherProps} style={style}>
+         <NativeLinearGradient
+           style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}
+-          colors={colors.map(processColor)}
++          colors={colors}
+           startPoint={convertPoint('start', start)}
+           endPoint={convertPoint('end', end)}
+           locations={locations ? locations.slice(0, colors.length) : null}

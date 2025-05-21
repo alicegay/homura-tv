@@ -62,10 +62,10 @@ const Home = ({
     //console.log(JSON.stringify(profile))
   }
 
-  const scrollView = useRef<ScrollView>()
-  const viewsList = useRef<FlatList>()
-  const resumeList = useRef<FlatList>()
-  const nextupList = useRef<FlatList>()
+  const scrollView = useRef<ScrollView>(null)
+  const viewsList = useRef<FlatList>(null)
+  const resumeList = useRef<FlatList>(null)
+  const nextupList = useRef<FlatList>(null)
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>

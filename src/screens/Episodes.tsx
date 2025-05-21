@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Image, View, useWindowDimensions } from 'react-native'
+import { FlatList, Image, View, useWindowDimensions } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
 import Item from 'jellyfin-api/lib/types/media/Item'
@@ -13,7 +13,6 @@ import CenterLoading from 'components/CenterLoading'
 import useItems from 'api/useItems'
 import ticksToTime from 'lib/ticksToTime'
 import { useQueryClient } from '@tanstack/react-query'
-import { FlashList } from '@shopify/flash-list'
 
 const Episodes = ({
   navigation,
@@ -60,7 +59,7 @@ const Episodes = ({
     client.server + '/Items/' + series.Id + '/Images/Backdrop/0',
   )
 
-  const episodeList = useRef<FlashList<any>>(null)
+  const episodeList = useRef<FlatList>(null)
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -76,7 +75,7 @@ const Episodes = ({
       <View style={{ position: 'absolute', width: width, height: height }}>
         {((!special && !episodes.isLoading && !seasonDetails.isLoading) ||
           (special && !specials.isLoading)) && (
-          <FlashList
+          <FlatList
             ref={episodeList}
             data={special ? specials.data : episodes.data.Items}
             keyExtractor={(item: Item) => item.Id}
@@ -107,8 +106,8 @@ const Episodes = ({
                   special
                     ? item.Name
                     : item.ParentIndexNumber !== 0
-                    ? item.IndexNumber + '. ' + item.Name
-                    : 'Special: ' + item.Name
+                      ? item.IndexNumber + '. ' + item.Name
+                      : 'Special: ' + item.Name
                 }
                 description={!special && item.Overview}
                 image={
@@ -127,8 +126,8 @@ const Episodes = ({
                   !!item.ImageBlurHashes.Primary
                     ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
                     : !!series.ImageBlurHashes.Primary
-                    ? series.ImageBlurHashes.Primary[series.ImageTags.Primary]
-                    : undefined
+                      ? series.ImageBlurHashes.Primary[series.ImageTags.Primary]
+                      : undefined
                 }
                 length={ticksToTime(item.RunTimeTicks)}
                 progressPercentage={
@@ -162,7 +161,7 @@ const Episodes = ({
               />
             )}
             showsVerticalScrollIndicator={false}
-            estimatedItemSize={138}
+            // estimatedItemSize={138}
           />
         )}
         <Text
@@ -177,8 +176,8 @@ const Episodes = ({
           {!!special
             ? 'Special Features'
             : !!season
-            ? season.Name
-            : series.Name}
+              ? season.Name
+              : series.Name}
         </Text>
       </View>
 

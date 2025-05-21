@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { storage } from 'lib/storage'
 
 export enum By {
   SortName = 'IsFolder,SortName',
@@ -50,7 +50,7 @@ const useSort = create<SortStore>()(
     }),
     {
       name: 'settings',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
     },
   ),
 )
