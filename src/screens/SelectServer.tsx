@@ -61,7 +61,6 @@ const SelectServer = ({
   }
 
   useEffect(() => {
-    console.log('client.hasHydrated', client.hasHydrated)
     if (client.hasHydrated) {
       if (client.client) {
         navigation.replace('Home')

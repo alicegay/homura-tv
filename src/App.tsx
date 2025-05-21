@@ -14,6 +14,7 @@ import Player from 'screens/Player'
 import SelectServer from 'screens/SelectServer'
 import SelectUser from 'screens/SelectUser'
 import Settings from 'screens/Settings'
+import Test from 'screens/Test'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 const queryClient = new QueryClient()
@@ -54,6 +55,8 @@ const App = () => {
           <Stack.Screen name="Settings" component={Settings} />
           <Stack.Screen name="SelectServer" component={SelectServer} />
           <Stack.Screen name="SelectUser" component={SelectUser} />
+
+          <Stack.Screen name="Test" component={Test} />
         </Stack.Navigator>
       </NavigationContainer>
     </QueryClientProvider>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="subtitles-octopus.js"></script>
+  </head>
+  <body
+    style="
+      flex: 1;
+      margin: 0;
+      height: 100vh;
+      background-color: transparent;
+      overflow: hidden;
+    "
+  >
+    <canvas
+      id="canvas"
+      style="flex: 1; width: 100%; height: 100%"
+      width="1920"
+      height="1080"
+    />
+    <script>
+      const consoleLog = (type, log) =>
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: 'Console', data: { type: type, log: log } }),
+        )
+      console = {
+        log: (log) => consoleLog('log', log),
+        debug: (log) => consoleLog('debug', log),
+        info: (log) => consoleLog('info', log),
+        warn: (log) => consoleLog('warn', log),
+        error: (log, log2) => consoleLog('error', log + JSON.stringify(log2)),
+      }
+      function handleEvent({ data }) {
+        console.log(data)
+      }
+      document.addEventListener('message', handleEvent)
+      let t = 0.0
+      const options = {
+        canvas: document.getElementById('canvas'),
+        workerUrl: 'subtitles-octopus-worker.js',
+        fallbackFont: 'default.woff2',
+        onReady: () => console.log('READY'),
+        onError: (e) => console.log(e),
+        subUrl: 'test.ass',
+        fonts: [],
+      }
+      const instance = new SubtitlesOctopus(options)
+      instance.setCurrentTime(t)
+      setInterval(() => {
+        t += 0.1
+        instance.setCurrentTime(t)
+      }, 100)
+      console.log('test')
+    </script>
+  </body>
+</html>
