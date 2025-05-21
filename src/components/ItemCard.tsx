@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import {
   DimensionValue,
   GestureResponderEvent,
+  NativeSyntheticEvent,
   Pressable,
   StyleProp,
   StyleSheet,
+  TextLayoutEventData,
   View,
   ViewStyle,
 } from 'react-native'
@@ -14,11 +16,14 @@ import tinycolor from 'tinycolor2'
 import useTheme from 'hooks/useTheme'
 import Animated, {
   Easing,
+  FadeIn,
+  FadeOut,
   useSharedValue,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
 import { FasterImageView } from '@candlefinance/faster-image'
+import cardColor from 'lib/cardColor'
 
 interface Props {
   id: string
@@ -71,9 +76,10 @@ const ItemCard = ({
 }: Props) => {
   const theme = useTheme()
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
-  const color = !!blurhash ? averageBlurhash(blurhash) : theme.tint
-  const shadowColor = strongShadow ? color + '80' : color + '40'
+  const colorAverage = !!blurhash ? averageBlurhash(blurhash) : theme.tint
+  const color = cardColor(colorAverage)
   const [imageURI, setImageURI] = useState(image)
+  const [titleLines, setTitleLines] = useState(1)
 
   const aspectRatioMultiplier =
     aspectRatio === 'wide' ? 9 / 16 : aspectRatio === 'tall' ? 3 / 2 : 1
@@ -100,13 +106,14 @@ const ItemCard = ({
       left: 16 - 4,
       top: topPadding - 4,
       width: width + 8,
-      height: width * aspectRatioMultiplier + 8,
-      backgroundColor: tinycolor(color)
-        .lighten((1.0 - tinycolor(color).getLuminance()) * 40)
-        .toHex8String(),
-      borderRadius: 16 + 4,
+      height:
+        width * aspectRatioMultiplier +
+        8 +
+        22 * titleLines +
+        (subtitle ? 22 : 0),
+      backgroundColor: color,
+      borderRadius: 8 + 4,
       overflow: 'hidden',
-      opacity: 0,
     },
     fallback: {
       position: 'absolute',
@@ -124,7 +131,7 @@ const ItemCard = ({
     image: {
       width: width,
       height: width * aspectRatioMultiplier,
-      borderRadius: 16,
+      borderRadius: 8,
       marginBottom: 2,
       overflow: 'hidden',
     },
@@ -149,28 +156,6 @@ const ItemCard = ({
     },
   })
 
-  // const radius = useSharedValue(0.0)
-  const opacity = useSharedValue(0.0)
-
-  useEffect(() => {
-    if (focus) {
-      // radius.value = withTiming(1.0, {
-      //   duration: 400,
-      //   easing: Easing.out(Easing.quad),
-      // })
-      opacity.value = withRepeat(withTiming(1.0, { duration: 400 }), 0, true)
-    } else {
-      // radius.value = withTiming(0.0, {
-      //   duration: 100,
-      //   easing: Easing.in(Easing.quad),
-      // })
-      opacity.value = withTiming(0.0, {
-        duration: 400,
-        easing: Easing.in(Easing.quad),
-      })
-    }
-  }, [focus])
-
   return (
     <Pressable
       hasTVPreferredFocus={hasTVPreferredFocus}
@@ -192,16 +177,13 @@ const ItemCard = ({
     >
       <View style={[styles.view]}>
         <View style={styles.padding} />
-        {/* <Animated.View style={[styles.glow, { opacity: radius }]}>
-          <Shadow
-            distance={40}
-            startColor={tinycolor(shadowColor)
-              .lighten((1.0 - tinycolor(color).getLuminance()) * 40)
-              .toHex8String()}
-            style={styles.image}
+        {focus && (
+          <Animated.View
+            style={styles.selector}
+            entering={FadeIn.duration(100)}
+            exiting={FadeOut.duration(100)}
           />
-        </Animated.View> */}
-        <Animated.View style={[styles.selector, { opacity: opacity }]} />
+        )}
         {/* <View style={styles.fallback}>
           <Icon name="movie" size={48} />
         </View> */}
@@ -246,11 +228,18 @@ const ItemCard = ({
           style={{ fontSize: 16, width: width }}
           fontWeight={500}
           numberOfLines={numberOfLines}
+          onTextLayout={({ nativeEvent }) => {
+            setTitleLines(Math.min(nativeEvent.lines.length, numberOfLines))
+          }}
         >
           {title}
         </Text>
         {!!subtitle && (
-          <Text style={{ fontSize: 14, width: width }} fontWeight={400}>
+          <Text
+            style={{ fontSize: 14, width: width }}
+            fontWeight={400}
+            numberOfLines={1}
+          >
             {subtitle}
           </Text>
         )}
