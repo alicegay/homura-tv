@@ -1,27 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   DimensionValue,
   GestureResponderEvent,
-  NativeSyntheticEvent,
   Pressable,
   StyleProp,
   StyleSheet,
-  TextLayoutEventData,
   View,
   ViewStyle,
 } from 'react-native'
 import Text from './Text'
 import averageBlurhash from 'lib/averageBlurhash'
-import tinycolor from 'tinycolor2'
 import useTheme from 'hooks/useTheme'
-import Animated, {
-  Easing,
-  FadeIn,
-  FadeOut,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { FasterImageView } from '@candlefinance/faster-image'
 import cardColor from 'lib/cardColor'
 
@@ -184,9 +174,6 @@ const ItemCard = ({
             exiting={FadeOut.duration(100)}
           />
         )}
-        {/* <View style={styles.fallback}>
-          <Icon name="movie" size={48} />
-        </View> */}
         <View
           style={[
             styles.image,
