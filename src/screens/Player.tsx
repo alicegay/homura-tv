@@ -50,6 +50,7 @@ import Animated, {
 import { IntroSegments } from 'jellyfin-api/lib/types/other/IntroTimestamps'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { AxiosError } from 'axios'
+import WebView, { WebViewMessageEvent } from 'react-native-webview'
 
 let menuX = 0
 let menuY = 0
@@ -218,6 +219,7 @@ const Player = ({
   const query = useQueryClient()
 
   const videoRef = useRef<VideoRef>(null)
+  const webviewRef = useRef<WebView>(null)
   const [source, setSource] = useState<string>(null)
   const [buffering, setBuffering] = useState(true)
   const [paused, setPaused] = useState(false)
@@ -227,10 +229,29 @@ const Player = ({
   const [seekTimeState, setSeekTime] = useState(0)
   const [duration, setDuration] = useState(0)
 
-  const [streams, setStreams] = useState<sortedStreams>(null)
-  const [videoStream, setVideoStream] = useState(initStreams.video)
-  const [audioStream, setAudioStream] = useState(initStreams.audio)
-  const [subtitleStream, setSubtitleStream] = useState(initStreams.subtitle)
+  const streams = sortStreams(item.MediaStreams)
+  const videoStream = initStreams.video
+  const audioStream = initStreams.audio
+  const subtitleStream = initStreams.subtitle
+  const subtitleIndex =
+    subtitleStream === -1
+      ? -1
+      : sortStreams(item.MediaStreams).subtitles[subtitleStream].id
+  const subtitleCodecs = {
+    srt: 'srt',
+    vtt: 'srt',
+    subrip: 'srt',
+    ssa: 'ass',
+    ass: 'ass',
+    pgs: 'pgs',
+    pgssub: 'pgs',
+    dvdsubs: 'pgs',
+  }
+  const subtitleCodec: 'srt' | 'ass' | 'pgs' =
+    subtitleStream === -1
+      ? null
+      : subtitleCodecs[streams.subtitles[subtitleStream].codec.toLowerCase()]
+  const useLibass = subtitleCodec === 'ass' && !settings.burninASS
 
   const [currentVideoCodec, setCurrentVideoCodec] = useState<string>(null)
   const [currentVideoResolution, setCurrentVideoResolution] =
@@ -264,38 +285,51 @@ const Player = ({
     menuY = 0
     setControlsTimeout()
 
-    const s = sortStreams(item.MediaStreams)
-    setStreams(s)
     const playbackInfo: PlaybackInfoQuery = {
       DeviceProfile: settings.deviceProfile,
       MediaSourceId: item.Id,
       MaxStreamingBitrate: 50000000,
       MaxAudioChannels: 8,
-      AudioStreamIndex: s.audios[initStreams.audio].id,
-      SubtitleStreamIndex:
-        initStreams.subtitle === -1 ? -1 : s.subtitles[initStreams.subtitle].id,
+      AudioStreamIndex: streams.audios[initStreams.audio].id,
+      SubtitleStreamIndex: subtitleIndex,
       EnableDirectPlay: true,
       EnableDirectStream: true,
       EnableTranscoding: true,
     }
     items.playbackInfo(client, item.Id, playbackInfo).then((res) => {
+      console.log(res)
+      const mediaSource = res.MediaSources[0]
       setPlaySession(res.PlaySessionId)
-      setBitrate(res.MediaSources[0].Bitrate)
-      if (res.MediaSources[0].SupportsDirectPlay) {
-        //console.log('DIRECT PLAY')
+      setBitrate(mediaSource.Bitrate)
+      if (mediaSource.SupportsDirectPlay) {
         setPlayMethod('DirectPlay')
         setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
       } else {
-        if (res.MediaSources[0].SupportsDirectStream) {
-          //console.log('DIRECT STREAM')
+        if (mediaSource.SupportsDirectStream) {
           setPlayMethod('DirectStream')
         } else {
-          //console.log('TRANSCODING')
           setPlayMethod('Transcode')
         }
-        setSource(client.server + res.MediaSources[0].TranscodingUrl)
-        // console.log(res)
-        // console.log(res.MediaSources[0].MediaStreams)
+        setSource(client.server + mediaSource.TranscodingUrl)
+      }
+      if (useLibass) {
+        const subtitle =
+          client.server + mediaSource.MediaStreams[subtitleIndex].DeliveryUrl
+        let attachments = []
+        for (let i = 0; i < mediaSource.MediaAttachments.length; i++) {
+          const attachment = mediaSource.MediaAttachments[i]
+          const allowedCodecs = ['otf', 'ttf', 'woff', 'woff2']
+          if (allowedCodecs.includes(attachment.Codec.toLowerCase())) {
+            attachments.push(client.server + attachment.DeliveryUrl)
+          }
+        }
+        console.log('subtitles: ' + subtitle)
+        console.log(attachments)
+        sendMessage({
+          event: 'files',
+          subtitle: subtitle,
+          attachments: attachments,
+        })
       }
     })
     if (item.Type === 'Episode' && settings.introSkipper) {
@@ -315,13 +349,11 @@ const Player = ({
     if (!firstPause) {
       setFirstPause(true)
     } else {
-      //console.log('PAUSE/UNPAUSE: ' + secsToTime(currentTime))
       playingProgress(paused ? 'pause' : 'unpause')
     }
   }, [paused])
 
   useInterval(() => {
-    //console.log('PROGRESS: ' + secsToTime(currentTime))
     playingProgress('timeupdate')
   }, 10_0000)
 
@@ -365,7 +397,6 @@ const Player = ({
       resetControlsTimeout()
       return true
     } else {
-      //console.log('PLAYBACK END: ' + secsToTime(currentTime))
       playingStopped()
       clearControlsTimeout()
       return false
@@ -393,6 +424,30 @@ const Player = ({
     })
   }
 
+  const sendMessage = (payload: any) => {
+    webviewRef.current?.injectJavaScript(
+      `(function() {
+        document.dispatchEvent(new MessageEvent('message', {
+          data: ${JSON.stringify(payload)}
+        }));
+      })();`,
+    )
+  }
+  const onMessage = (payload: WebViewMessageEvent) => {
+    let data: any
+    try {
+      data = JSON.parse(payload.nativeEvent.data)
+    } catch (e) {}
+
+    if (data) {
+      if (data.type === 'Console') {
+        console.info(`[Console] ${JSON.stringify(data.data)}`)
+      } else {
+        console.log(data)
+      }
+    }
+  }
+
   return (
     <View style={{ backgroundColor: '#000', width: '100%', height: '100%' }}>
       <Pressable style={{ width: 0, height: 0 }} hasTVPreferredFocus={true} />
@@ -415,6 +470,7 @@ const Player = ({
               artist: 'Artists' in item ? item.Artists.join(', ') : null,
               imageUri: client.server + '/Items/' + item.Id + '/Images/Primary',
             },
+            bufferConfig: { minBufferMs: 5000 },
             startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
           }}
           viewType={ViewType.SURFACE}
@@ -433,10 +489,17 @@ const Player = ({
           }}
           selectedTextTrack={{
             type: SelectedTrackType.INDEX,
-            value: subtitleStream.toString(),
-          }}
-          bufferConfig={{
-            minBufferMs: 5000,
+            value: subtitleCodec
+              ? subtitleCodec === 'srt'
+                ? settings.burninSRT
+                  ? '-1'
+                  : subtitleStream.toString()
+                : subtitleCodec === 'pgs'
+                  ? settings.burninPGS
+                    ? '-1'
+                    : subtitleStream.toString()
+                  : '-1' // ASS
+              : '-1',
           }}
           onBuffer={(e) => {
             setBuffering(e.isBuffering)
@@ -491,14 +554,12 @@ const Player = ({
             }
           }}
           onSeek={(e) => {
-            //console.log('SEEK: ' + secsToTime(e.currentTime))
             setCurrentTime(e.currentTime)
             playingProgress('timeupdate', e.currentTime)
           }}
           onLoad={(e) => {
             setDuration(e.duration)
             playingProgress(undefined, e.currentTime)
-            //if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
             sessions
               .sessions(client, { deviceId: client.deviceID })
               .then((r) => {
@@ -516,7 +577,6 @@ const Player = ({
               })
           }}
           onVideoTracks={(e) => {
-            //console.log(e)
             if (e.videoTracks.length > 0) {
               setCurrentVideoCodec(formatPlayerCodec(e.videoTracks[0].codecs))
               setCurrentVideoResolution(
@@ -525,11 +585,9 @@ const Player = ({
             }
           }}
           onAudioTracks={(e) => {
-            //console.log(e)
             setCurrentAudioCodec(formatPlayerCodec(e.audioTracks[0].type))
           }}
           onEnd={() => {
-            //console.log('PLAYBACK END: ' + secsToTime(currentTime))
             playingStopped()
             clearControlsTimeout()
             navigation.pop()
@@ -550,6 +608,31 @@ const Player = ({
             right: 0,
           }}
         />
+      )}
+
+      {useLibass && (
+        <View
+          style={{
+            flex: 1,
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <WebView
+            ref={webviewRef}
+            onMessage={onMessage}
+            originWhitelist={['*']}
+            allowFileAccess={true}
+            allowFileAccessFromFileURLs={true}
+            allowUniversalAccessFromFileURLs={true}
+            source={{
+              uri: 'file:///android_asset/libass/index.html',
+              // uri: 'http://192.168.8.145:8080/index.html?26',
+            }}
+            style={{ flex: 1, backgroundColor: 'transparent' }}
+          />
+        </View>
       )}
 
       <Animated.View

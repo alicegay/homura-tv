@@ -40,10 +40,12 @@ const Test = () => {
         ref={webviewRef}
         onMessage={onMessage}
         originWhitelist={['*']}
+        allowFileAccess={true}
+        allowFileAccessFromFileURLs={true}
         allowUniversalAccessFromFileURLs={true}
         source={{
           uri: 'file:///android_asset/libass/index.html',
-          // uri: 'http://192.168.8.145:8080/index.html?21',
+          // uri: 'http://192.168.8.145:8080/index.html?24',
         }}
         style={{ flex: 1, backgroundColor: 'transparent' }}
       />

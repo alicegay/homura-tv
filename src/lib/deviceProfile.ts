@@ -244,19 +244,37 @@ const deviceProfile = async (): Promise<DeviceProfile> => {
   })
 
   profile.SubtitleProfiles.push(
-    { Format: 'vtt', Method: 'Embed' },
-    { Format: 'srt', Method: 'Embed' },
-    { Format: 'subrip', Method: 'Embed' },
-    { Format: 'pgs', Method: 'Embed' },
-    { Format: 'pgssub', Method: 'Embed' },
-    { Format: 'dvdsub', Method: 'Embed' },
+    {
+      Format: 'vtt',
+      Method: useSettings.getState().burninSRT ? 'Encode' : 'Embed',
+    },
+    {
+      Format: 'srt',
+      Method: useSettings.getState().burninSRT ? 'Encode' : 'Embed',
+    },
+    {
+      Format: 'subrip',
+      Method: useSettings.getState().burninSRT ? 'Encode' : 'Embed',
+    },
+    {
+      Format: 'pgs',
+      Method: useSettings.getState().burninPGS ? 'Encode' : 'Embed',
+    },
+    {
+      Format: 'pgssub',
+      Method: useSettings.getState().burninPGS ? 'Encode' : 'Embed',
+    },
+    {
+      Format: 'dvdsub',
+      Method: useSettings.getState().burninPGS ? 'Encode' : 'Embed',
+    },
     {
       Format: 'ass',
-      Method: useSettings.getState().nativeAss ? 'Embed' : 'Encode',
+      Method: useSettings.getState().burninASS ? 'Encode' : 'External',
     },
     {
       Format: 'ssa',
-      Method: useSettings.getState().nativeAss ? 'Embed' : 'Encode',
+      Method: useSettings.getState().burninASS ? 'Encode' : 'External',
     },
   )
 

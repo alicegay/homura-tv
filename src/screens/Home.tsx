@@ -73,9 +73,6 @@ const Home = ({
         <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
           <View>
             <TVFocusGuideView trapFocusLeft trapFocusRight>
-              <Button onPress={() => navigation.push('Test')}>
-                Test Screen
-              </Button>
               <FlatList
                 ref={viewsList}
                 data={views.data}

@@ -47,14 +47,34 @@ const Settings = () => {
       right: () => <Switch state={settings.introSkipper} />,
     },
     {
-      title: 'Treat SSA/ASS as SRT',
-      subtitle: 'Attempt to render SSA/ASS subtitles as SRT subtitles',
+      title: 'Burn in SRT/VTT subtitles',
+      subtitle: 'Transcode video with SRT/VTT subtitles burnt in',
       icon: 'subtitles',
       filled: true,
       onPress: () => {
-        settings.setNativeAss(!settings.nativeAss)
+        settings.setBurninSRT(!settings.burninSRT)
       },
-      right: () => <Switch state={settings.nativeAss} />,
+      right: () => <Switch state={settings.burninSRT} />,
+    },
+    {
+      title: 'Burn in SSA/ASS subtitles',
+      subtitle: 'Transcode video with SSA/ASS subtitles burnt in',
+      icon: 'subtitles',
+      filled: true,
+      onPress: () => {
+        settings.setBurninASS(!settings.burninASS)
+      },
+      right: () => <Switch state={settings.burninASS} />,
+    },
+    {
+      title: 'Burn in PGS/DVDSUB subtitles',
+      subtitle: 'Transcode video with picture subtitles burnt in',
+      icon: 'subtitles',
+      filled: true,
+      onPress: () => {
+        settings.setBurninPGS(!settings.burninPGS)
+      },
+      right: () => <Switch state={settings.burninPGS} />,
     },
     {
       title: 'Caption Settings',

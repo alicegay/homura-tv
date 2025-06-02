@@ -8,12 +8,16 @@ interface SettingsStore {
   introSkipper: boolean
   introSkipperPrompt: number
   classification: 'au' | 'jp' | 'uk' | 'us'
-  nativeAss: boolean
+  burninSRT: boolean
+  burninASS: boolean
+  burninPGS: boolean
 
   setForceStereo: (value: boolean) => void
   setIntroSkipper: (value: boolean) => void
   setIntroSkipperPrompt: (value: number) => void
-  setNativeAss: (value: boolean) => void
+  setBurninSRT: (value: boolean) => void
+  setBurninASS: (value: boolean) => void
+  setBurninPGS: (value: boolean) => void
 
   deviceProfile: DeviceProfile | null
   setDeviceProfile: (profile: DeviceProfile) => void
@@ -26,13 +30,17 @@ const useSettings = create<SettingsStore>()(
       introSkipper: true,
       introSkipperPrompt: 5,
       classification: 'au',
-      nativeAss: false,
+      burninSRT: false,
+      burninASS: false,
+      burninPGS: false,
 
       setForceStereo: (value) => set(() => ({ forceStereo: value })),
       setIntroSkipper: (value) => set(() => ({ introSkipper: value })),
       setIntroSkipperPrompt: (value) =>
         set(() => ({ introSkipperPrompt: value })),
-      setNativeAss: (value) => set(() => ({ nativeAss: value })),
+      setBurninSRT: (value) => set(() => ({ burninSRT: value })),
+      setBurninASS: (value) => set(() => ({ burninASS: value })),
+      setBurninPGS: (value) => set(() => ({ burninPGS: value })),
 
       deviceProfile: null,
       setDeviceProfile: (profile) => set(() => ({ deviceProfile: profile })),

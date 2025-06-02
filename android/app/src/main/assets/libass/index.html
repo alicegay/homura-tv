@@ -19,7 +19,7 @@
       style="flex: 1; width: 100%; height: 100%"
       width="1920"
       height="1080"
-    />
+    ></canvas>
     <script>
       const consoleLog = (type, log) =>
         window.ReactNativeWebView.postMessage(
@@ -32,27 +32,51 @@
         warn: (log) => consoleLog('warn', log),
         error: (log, log2) => consoleLog('error', log + JSON.stringify(log2)),
       }
-      function handleEvent({ data }) {
+      handleEvent = ({ data }) => {
         console.log(data)
+        if (data.event === 'files') {
+          const options = {
+            canvas: document.getElementById('canvas'),
+            workerUrl: 'subtitles-octopus-worker.js',
+            fallbackFont: 'default.woff2',
+            onReady: () => console.log('READY'),
+            onError: (e) => {
+              console.log('ERROR:')
+              console.log(e)
+            },
+            subUrl: data.subtitle,
+            fonts: data.attachments,
+            debug: true,
+          }
+          const instance = new SubtitlesOctopus(options)
+          instance.setCurrentTime(1)
+        }
       }
       document.addEventListener('message', handleEvent)
-      let t = 0.0
-      const options = {
-        canvas: document.getElementById('canvas'),
-        workerUrl: 'subtitles-octopus-worker.js',
-        fallbackFont: 'default.woff2',
-        onReady: () => console.log('READY'),
-        onError: (e) => console.log(e),
-        subUrl: 'test.ass',
-        fonts: [],
-      }
-      const instance = new SubtitlesOctopus(options)
-      instance.setCurrentTime(t)
-      setInterval(() => {
-        t += 0.1
-        instance.setCurrentTime(t)
-      }, 100)
-      console.log('test')
+      // let t = 0 .0
+      // const options = {
+      //   canvas: document.getElementById('canvas'),
+      //   workerUrl: 'subtitles-octopus-worker.js',
+      //   fallbackFont: 'default.woff2',
+      //   onReady: () => console.log('READY'),
+      //   onError: (e) => {
+      //     console.log('ERROR:')
+      //     console.log(e)
+      //   },
+      //   subUrl: 'test.ass',
+      //   fonts: [
+      //     // 'https://github.com/libass/JavascriptSubtitlesOctopus/raw/refs/heads/gh-pages/fonts/Arial.woff2',
+      //     'Arial.woff2',
+      //   ],
+      //   debug: true,
+      // }
+      // const instance = new SubtitlesOctopus(options)
+      // instance.setCurrentTime(1)
+      // setInterval(() => {
+      //   t += 0.1
+      //   instance.setCurrentTime(t)
+      // }, 100)
+      console.log('eof')
     </script>
   </body>
 </html>
