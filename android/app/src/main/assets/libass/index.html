@@ -23,7 +23,7 @@
     <script>
       const consoleLog = (type, log) =>
         window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: 'Console', data: { type: type, log: log } }),
+          JSON.stringify({ event: 'console', data: { type: type, log: log } }),
         )
       console = {
         log: (log) => consoleLog('log', log),
@@ -32,6 +32,10 @@
         warn: (log) => consoleLog('warn', log),
         error: (log, log2) => consoleLog('error', log + JSON.stringify(log2)),
       }
+
+      let instance
+      let t = 0.0
+      let playing = false
       handleEvent = ({ data }) => {
         console.log(data)
         if (data.event === 'files') {
@@ -39,44 +43,31 @@
             canvas: document.getElementById('canvas'),
             workerUrl: 'subtitles-octopus-worker.js',
             fallbackFont: 'default.woff2',
-            onReady: () => console.log('READY'),
             onError: (e) => {
               console.log('ERROR:')
               console.log(e)
             },
             subUrl: data.subtitle,
             fonts: data.attachments,
-            debug: true,
+            debug: false,
           }
-          const instance = new SubtitlesOctopus(options)
-          instance.setCurrentTime(1)
+          instance = new SubtitlesOctopus(options)
+        } else if (data.event === 'play' || data.event === 'pause') {
+          playing = data.event === 'play'
+          if (data.time) t = data.time
         }
       }
       document.addEventListener('message', handleEvent)
-      // let t = 0 .0
-      // const options = {
-      //   canvas: document.getElementById('canvas'),
-      //   workerUrl: 'subtitles-octopus-worker.js',
-      //   fallbackFont: 'default.woff2',
-      //   onReady: () => console.log('READY'),
-      //   onError: (e) => {
-      //     console.log('ERROR:')
-      //     console.log(e)
-      //   },
-      //   subUrl: 'test.ass',
-      //   fonts: [
-      //     // 'https://github.com/libass/JavascriptSubtitlesOctopus/raw/refs/heads/gh-pages/fonts/Arial.woff2',
-      //     'Arial.woff2',
-      //   ],
-      //   debug: true,
-      // }
-      // const instance = new SubtitlesOctopus(options)
-      // instance.setCurrentTime(1)
-      // setInterval(() => {
-      //   t += 0.1
-      //   instance.setCurrentTime(t)
-      // }, 100)
-      console.log('eof')
+
+      const setTime = () => {
+        if (playing) t += 0.1
+        if (instance) {
+          instance.setCurrentTime(t)
+        }
+        // if (playing && instance) console.log('TIME= ' + t)
+      }
+      setInterval(setTime, 100)
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ready' }))
     </script>
   </body>
 </html>

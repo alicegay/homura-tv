@@ -228,6 +228,12 @@ const Player = ({
   const [bufferTime, setBufferTime] = useState(0)
   const [seekTimeState, setSeekTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [webviewRendered, setWebviewRendered] = useState(false)
+  const [webviewReady, setWebviewReady] = useState(false)
+  const [subtitleFiles, setSubtitleFiles] = useState<{
+    subtitle: string
+    attachments: string[]
+  }>(null)
 
   const streams = sortStreams(item.MediaStreams)
   const videoStream = initStreams.video
@@ -313,23 +319,35 @@ const Player = ({
         setSource(client.server + mediaSource.TranscodingUrl)
       }
       if (useLibass) {
+        console.log('LIBASS ENABLED')
+        console.log('subIndex: ' + subtitleIndex)
         const subtitle =
           client.server + mediaSource.MediaStreams[subtitleIndex].DeliveryUrl
         let attachments = []
-        for (let i = 0; i < mediaSource.MediaAttachments.length; i++) {
-          const attachment = mediaSource.MediaAttachments[i]
-          const allowedCodecs = ['otf', 'ttf', 'woff', 'woff2']
-          if (allowedCodecs.includes(attachment.Codec.toLowerCase())) {
-            attachments.push(client.server + attachment.DeliveryUrl)
+        try {
+          for (let i = 0; i < mediaSource.MediaAttachments.length; i++) {
+            const attachment = mediaSource.MediaAttachments[i]
+            const allowedMimes = [
+              'font/otf',
+              'font/ttf',
+              'font/woff',
+              'font/woff2',
+              'application/vnd.ms-opentype',
+              'application/vnd.ms-fontobject',
+              'application/x-truetype-font',
+              'application/x-font-truetype',
+              'application/x-font-ttf',
+              'application/x-font-opentype',
+              'application/font-woff',
+              'application/font-woff2',
+              'application/font-sfnt',
+            ]
+            if (allowedMimes.includes(attachment.MimeType.toLowerCase())) {
+              attachments.push(client.server + attachment.DeliveryUrl)
+            }
           }
-        }
-        console.log('subtitles: ' + subtitle)
-        console.log(attachments)
-        sendMessage({
-          event: 'files',
-          subtitle: subtitle,
-          attachments: attachments,
-        })
+        } catch {}
+        setSubtitleFiles({ subtitle: subtitle, attachments: attachments })
       }
     })
     if (item.Type === 'Episode' && settings.introSkipper) {
@@ -343,6 +361,18 @@ const Player = ({
       )
     }
   }, [])
+
+  useEffect(() => {
+    if (webviewReady && subtitleFiles) {
+      console.log('subtitles: ' + subtitleFiles.subtitle)
+      console.log(subtitleFiles.attachments)
+      sendMessage({
+        event: 'files',
+        subtitle: subtitleFiles.subtitle,
+        attachments: subtitleFiles.attachments,
+      })
+    }
+  }, [webviewReady, subtitleFiles])
 
   const [firstPause, setFirstPause] = useState(false)
   useEffect(() => {
@@ -440,8 +470,11 @@ const Player = ({
     } catch (e) {}
 
     if (data) {
-      if (data.type === 'Console') {
+      if (data.event === 'console') {
         console.info(`[Console] ${JSON.stringify(data.data)}`)
+      } else if (data.event === 'ready') {
+        console.log('WEBVIEW READY')
+        setWebviewReady(true)
       } else {
         console.log(data)
       }
@@ -475,7 +508,7 @@ const Player = ({
           }}
           viewType={ViewType.SURFACE}
           focusable={false}
-          paused={seeking ? true : paused}
+          paused={useLibass && !webviewReady ? false : seeking ? true : paused}
           resizeMode="contain"
           showNotificationControls={true}
           subtitleStyle={{ subtitlesFollowVideo: true }}
@@ -503,6 +536,12 @@ const Player = ({
           }}
           onBuffer={(e) => {
             setBuffering(e.isBuffering)
+            if (useLibass) {
+              sendMessage({
+                event: e.isBuffering ? 'pause' : 'play',
+                time: currentTime,
+              })
+            }
           }}
           onProgress={(e) => {
             if (!seeking) {
@@ -556,6 +595,20 @@ const Player = ({
           onSeek={(e) => {
             setCurrentTime(e.currentTime)
             playingProgress('timeupdate', e.currentTime)
+            if (useLibass) {
+              sendMessage({
+                event: paused ? 'pause' : 'play',
+                time: e.currentTime,
+              })
+            }
+          }}
+          onPlaybackStateChanged={(e) => {
+            if (useLibass) {
+              sendMessage({
+                event: e.isPlaying ? 'play' : 'pause',
+                time: currentTime,
+              })
+            }
           }}
           onLoad={(e) => {
             setDuration(e.duration)
@@ -626,11 +679,25 @@ const Player = ({
             allowFileAccess={true}
             allowFileAccessFromFileURLs={true}
             allowUniversalAccessFromFileURLs={true}
-            source={{
-              uri: 'file:///android_asset/libass/index.html',
-              // uri: 'http://192.168.8.145:8080/index.html?26',
-            }}
+            mixedContentMode="always"
+            source={
+              setWebviewRendered
+                ? {
+                    // uri: 'file:///android_asset/libass/index.html',
+                    uri: 'http://192.168.8.145:8080/index.html',
+                  }
+                : { html: '<div><div/>' }
+            }
             style={{ flex: 1, backgroundColor: 'transparent' }}
+            overScrollMode="never"
+            setBuiltInZoomControls={false}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            cacheEnabled={false}
+            cacheMode="LOAD_NO_CACHE"
+            onLoad={() => {
+              setWebviewRendered(true)
+            }}
           />
         </View>
       )}
