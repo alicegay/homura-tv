@@ -3,28 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="subtitles-octopus.js"></script>
+    <script src="./subtitles-octopus.js"></script>
   </head>
-  <body
-    style="
-      flex: 1;
-      margin: 0;
-      height: 100vh;
-      background-color: transparent;
-      overflow: hidden;
-    "
-  >
-    <canvas
-      id="canvas"
-      style="flex: 1; width: 100%; height: 100%"
-      width="1920"
-      height="1080"
-    ></canvas>
+  <body style="margin: 0; background-color: transparent; overflow: hidden">
+    <canvas id="canvas" style="position: absolute"></canvas>
     <script>
+      const sendMessage = (payload) => {
+        window.ReactNativeWebView.postMessage(JSON.stringify(payload))
+      }
       const consoleLog = (type, log) =>
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ event: 'console', data: { type: type, log: log } }),
-        )
+        sendMessage({ event: 'console', data: { type: type, log: log } })
       console = {
         log: (log) => consoleLog('log', log),
         debug: (log) => consoleLog('debug', log),
@@ -33,25 +21,70 @@
         error: (log, log2) => consoleLog('error', log + JSON.stringify(log2)),
       }
 
+      const canvas = document.getElementById('canvas')
+
+      const setSize = (width, height) => {
+        const windowWidth = window.innerWidth
+        const windowHeight = window.innerHeight
+        const windowAspect = windowWidth / windowHeight
+        const wide = width / height > windowAspect
+        const canvasWidth = wide ? windowWidth : (windowHeight / height) * width
+        const canvasHeight = wide
+          ? (windowWidth / width) * height
+          : windowHeight
+        const canvasTop = wide ? windowHeight / 2 - canvasHeight / 2 : 0
+        const canvasLeft = wide ? 0 : windowWidth / 2 - canvasWidth / 2
+        canvas.setAttribute('width', (canvasWidth * 2).toString())
+        canvas.setAttribute('height', (canvasHeight * 2).toString())
+        canvas.style.setProperty('width', canvasWidth.toString() + 'px')
+        canvas.style.setProperty('height', canvasHeight.toString() + 'px')
+        canvas.style.setProperty('top', canvasTop.toString() + 'px')
+        canvas.style.setProperty('left', canvasLeft.toString() + 'px')
+      }
+
+      let fonts = []
+      const loadFonts = async (fontList) => {
+        for (let i = 0; i < fontList.length; i++) {
+          sendMessage({
+            event: 'progress',
+            progress:
+              'Loading font ' +
+              (i + 1).toString() +
+              ' / ' +
+              fontList.length.toString(),
+          })
+          const url = fontList[i]
+          const font = await fetch(url)
+          const blob = await font.blob()
+          fonts.push(URL.createObjectURL(blob))
+        }
+      }
+
       let instance
       let t = 0.0
       let playing = false
-      handleEvent = ({ data }) => {
-        console.log(data)
-        if (data.event === 'files') {
+      handleEvent = async ({ data }) => {
+        if (data.event === 'load') {
+          setSize(data.width, data.height)
+          sendMessage({ event: 'progress', progress: 'Loading subtitles' })
+          const subFile = await fetch(data.subtitle)
+          const subBlob = await subFile.blob()
+          const fontList = ['./NotoSansJP-Regular.woff2', ...data.attachments]
+          await loadFonts(fontList)
+          sendMessage({ event: 'subsready' })
           const options = {
-            canvas: document.getElementById('canvas'),
-            workerUrl: 'subtitles-octopus-worker.js',
-            fallbackFont: 'default.woff2',
-            onError: (e) => {
-              console.log('ERROR:')
-              console.log(e)
-            },
-            subUrl: data.subtitle,
-            fonts: data.attachments,
+            canvas: canvas,
+            workerUrl: './subtitles-octopus-worker.js',
+            legacyWorkerUrl: './subtitles-octopus-worker-legacy.js',
+            fallbackFont: fonts[0],
+            lazyFileLoading: true,
+            subUrl: URL.createObjectURL(subBlob),
+            fonts: fonts,
             debug: false,
           }
           instance = new SubtitlesOctopus(options)
+          // setInterval(setTime, 1000 / data.framerate, data.framerate)
+          setInterval(setTime, 1000 / 10, 10)
         } else if (data.event === 'play' || data.event === 'pause') {
           playing = data.event === 'play'
           if (data.time) t = data.time
@@ -59,15 +92,14 @@
       }
       document.addEventListener('message', handleEvent)
 
-      const setTime = () => {
-        if (playing) t += 0.1
+      const setTime = (framerate) => {
+        if (playing) t += 1.0 / framerate
         if (instance) {
           instance.setCurrentTime(t)
         }
-        // if (playing && instance) console.log('TIME= ' + t)
       }
-      setInterval(setTime, 100)
-      window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'ready' }))
+
+      sendMessage({ event: 'ready' })
     </script>
   </body>
 </html>

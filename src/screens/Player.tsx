@@ -228,11 +228,13 @@ const Player = ({
   const [bufferTime, setBufferTime] = useState(0)
   const [seekTimeState, setSeekTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [webviewRendered, setWebviewRendered] = useState(false)
   const [webviewReady, setWebviewReady] = useState(false)
-  const [subtitleFiles, setSubtitleFiles] = useState<{
+  const [subtitleLoad, setSubtitleLoad] = useState<{
     subtitle: string
     attachments: string[]
+    width: number
+    height: number
+    framerate: number
   }>(null)
 
   const streams = sortStreams(item.MediaStreams)
@@ -240,9 +242,7 @@ const Player = ({
   const audioStream = initStreams.audio
   const subtitleStream = initStreams.subtitle
   const subtitleIndex =
-    subtitleStream === -1
-      ? -1
-      : sortStreams(item.MediaStreams).subtitles[subtitleStream].id
+    subtitleStream === -1 ? -1 : streams.subtitles[subtitleStream].id
   const subtitleCodecs = {
     srt: 'srt',
     vtt: 'srt',
@@ -258,6 +258,8 @@ const Player = ({
       ? null
       : subtitleCodecs[streams.subtitles[subtitleStream].codec.toLowerCase()]
   const useLibass = subtitleCodec === 'ass' && !settings.burninASS
+  const [fontsReady, setFontsReady] = useState(useLibass ? false : true)
+  const [fontProgress, setFontProgress] = useState<string>(null)
 
   const [currentVideoCodec, setCurrentVideoCodec] = useState<string>(null)
   const [currentVideoResolution, setCurrentVideoResolution] =
@@ -320,7 +322,6 @@ const Player = ({
       }
       if (useLibass) {
         console.log('LIBASS ENABLED')
-        console.log('subIndex: ' + subtitleIndex)
         const subtitle =
           client.server + mediaSource.MediaStreams[subtitleIndex].DeliveryUrl
         let attachments = []
@@ -347,7 +348,14 @@ const Player = ({
             }
           }
         } catch {}
-        setSubtitleFiles({ subtitle: subtitle, attachments: attachments })
+        const videoIndex = streams.videos[videoStream].id
+        setSubtitleLoad({
+          subtitle: subtitle,
+          attachments: attachments,
+          width: mediaSource.MediaStreams[videoIndex].Width,
+          height: mediaSource.MediaStreams[videoIndex].Height,
+          framerate: mediaSource.MediaStreams[videoIndex].AverageFrameRate,
+        })
       }
     })
     if (item.Type === 'Episode' && settings.introSkipper) {
@@ -363,16 +371,13 @@ const Player = ({
   }, [])
 
   useEffect(() => {
-    if (webviewReady && subtitleFiles) {
-      console.log('subtitles: ' + subtitleFiles.subtitle)
-      console.log(subtitleFiles.attachments)
+    if (webviewReady && subtitleLoad) {
       sendMessage({
-        event: 'files',
-        subtitle: subtitleFiles.subtitle,
-        attachments: subtitleFiles.attachments,
+        event: 'load',
+        ...subtitleLoad,
       })
     }
-  }, [webviewReady, subtitleFiles])
+  }, [webviewReady, subtitleLoad])
 
   const [firstPause, setFirstPause] = useState(false)
   useEffect(() => {
@@ -473,8 +478,11 @@ const Player = ({
       if (data.event === 'console') {
         console.info(`[Console] ${JSON.stringify(data.data)}`)
       } else if (data.event === 'ready') {
-        console.log('WEBVIEW READY')
         setWebviewReady(true)
+      } else if (data.event === 'progress') {
+        setFontProgress(data.progress)
+      } else if (data.event === 'subsready') {
+        setFontsReady(true)
       } else {
         console.log(data)
       }
@@ -508,10 +516,18 @@ const Player = ({
           }}
           viewType={ViewType.SURFACE}
           focusable={false}
-          paused={useLibass && !webviewReady ? false : seeking ? true : paused}
+          paused={
+            (useLibass && !webviewReady) || (useLibass && !fontsReady)
+              ? true
+              : seeking
+                ? true
+                : paused
+          }
           resizeMode="contain"
           showNotificationControls={true}
-          subtitleStyle={{ subtitlesFollowVideo: true }}
+          subtitleStyle={{
+            subtitlesFollowVideo: subtitleCodec === 'pgs' ? false : true,
+          }}
           selectedVideoTrack={{
             type: SelectedVideoTrackType.INDEX,
             value: playMethod !== 'DirectPlay' ? '0' : videoStream.toString(),
@@ -680,14 +696,10 @@ const Player = ({
             allowFileAccessFromFileURLs={true}
             allowUniversalAccessFromFileURLs={true}
             mixedContentMode="always"
-            source={
-              setWebviewRendered
-                ? {
-                    // uri: 'file:///android_asset/libass/index.html',
-                    uri: 'http://192.168.8.145:8080/index.html',
-                  }
-                : { html: '<div><div/>' }
-            }
+            source={{
+              // uri: 'file:///android_asset/libass/index.html',
+              uri: 'http://192.168.8.145:8080/index.html',
+            }}
             style={{ flex: 1, backgroundColor: 'transparent' }}
             overScrollMode="never"
             setBuiltInZoomControls={false}
@@ -695,9 +707,6 @@ const Player = ({
             showsVerticalScrollIndicator={false}
             cacheEnabled={false}
             cacheMode="LOAD_NO_CACHE"
-            onLoad={() => {
-              setWebviewRendered(true)
-            }}
           />
         </View>
       )}
@@ -871,7 +880,25 @@ const Player = ({
         )}
       </View>
 
-      {buffering && <CenterLoading />}
+      {(buffering || (useLibass && !fontsReady)) && <CenterLoading />}
+
+      {useLibass && !fontsReady && fontProgress && (
+        <View
+          style={{
+            position: 'absolute',
+            flex: 1,
+            justifyContent: 'center',
+            alignContent: 'center',
+            width: '100%',
+            height: '100%',
+            top: 64,
+          }}
+        >
+          <Text style={{ textAlign: 'center' }} fontWeight={500}>
+            {fontProgress}
+          </Text>
+        </View>
+      )}
     </View>
   )
 }
