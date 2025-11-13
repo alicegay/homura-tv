@@ -191,12 +191,12 @@ class CodecModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaM
 
   @ReactMethod fun getHDRSupport(promise: Promise) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-      val display = currentActivity?.display?.mode
+      val display = reactApplicationContext.currentActivity?.display?.mode
       promise.resolve(
         display?.supportedHdrTypes.contentToString()
       )
     } else {
-      val display = currentActivity?.display
+      val display = reactApplicationContext.currentActivity?.display
       promise.resolve(
           display?.hdrCapabilities?.supportedHdrTypes.contentToString()
       )

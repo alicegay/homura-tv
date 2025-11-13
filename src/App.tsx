@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import SystemNavigationBar from 'react-native-system-navigation-bar'
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -34,9 +33,9 @@ const App = () => {
     fonts: DefaultTheme.fonts,
   }
 
-  useEffect(() => {
-    SystemNavigationBar.leanBack(true)
-  }, [])
+  // useEffect(() => {
+  //   SystemNavigationBar.leanBack(true)
+  // }, [])
 
   return (
     <QueryClientProvider client={queryClient}>
