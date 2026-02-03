@@ -30,9 +30,13 @@ const Home = ({
   route,
 }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
   useEffect(() => {
-    BootSplash.isVisible().then(async (visible) => {
-      if (visible) await BootSplash.hide({ fade: true })
-    })
+    const hideSplash = async () => {
+      await BootSplash.hide({ fade: true })
+    }
+
+    if (BootSplash.isVisible()) {
+      hideSplash()
+    }
   }, [])
 
   const client = useClient()
