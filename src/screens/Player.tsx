@@ -425,15 +425,18 @@ const Player = ({
           subtitleStyle={{ subtitlesFollowVideo: true }}
           selectedVideoTrack={{
             type: SelectedVideoTrackType.INDEX,
-            value: playMethod !== 'DirectPlay' ? '0' : videoStream.toString(),
+            value: playMethod !== 'DirectPlay' ? 0 : videoStream,
           }}
           selectedAudioTrack={{
             type: SelectedTrackType.INDEX,
-            value: playMethod !== 'DirectPlay' ? '0' : audioStream.toString(),
+            value: playMethod !== 'DirectPlay' ? 0 : audioStream,
           }}
           selectedTextTrack={{
-            type: SelectedTrackType.INDEX,
-            value: subtitleStream.toString(),
+            type:
+              subtitleStream !== -1
+                ? SelectedTrackType.INDEX
+                : SelectedTrackType.DISABLED,
+            value: subtitleStream,
           }}
           bufferConfig={{
             minBufferMs: 5000,
