@@ -284,7 +284,6 @@ const Player = ({
           uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
           startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
         })
-        console.log('SET SOURCE (DIRECT)')
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
           //console.log('DIRECT STREAM')
@@ -294,7 +293,10 @@ const Player = ({
           setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
-        console.log('SET SOURCE (TRANSCODE)')
+        videoRef.current.setSource({
+          uri: client.server + res.MediaSources[0].TranscodingUrl,
+          startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
+        })
         // console.log(res)
         // console.log(res.MediaSources[0].MediaStreams)
       }
@@ -400,17 +402,11 @@ const Player = ({
 
       <VideoMPV
         ref={videoRef}
-        // initialSource={{
-        //   uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
-        //   startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
-        // }}
         paused={seeking ? true : paused}
-        // paused={false}
         langsPref={{
           subMatchingAudio: false,
         }}
         onBuffer={(e) => {
-          console.log('BUFFERING:' + e.isBuffering)
           setBuffering(e.isBuffering)
         }}
         onProgress={(e) => {
@@ -419,10 +415,18 @@ const Player = ({
           }
         }}
         onLoadStart={() => {
-          console.log('LOADSTART')
+          videoRef.current.setStringOption('vo', 'gpu-next')
+          videoRef.current.setStringOption('target-colorspace-hint', 'yes')
+          videoRef.current.setStringOption('sub-use-margins', 'no')
+          videoRef.current.setAudioTrackID(
+            playMethod !== 'DirectPlay' ? 1 : audioStream + 1,
+          )
+          videoRef.current.setSubtitleTrackID(
+            subtitleStream === -1 ? -1 : subtitleStream + 1,
+          )
         }}
         onLoad={(e) => {
-          console.log('LOADED')
+          setCurrentTime(e.currentTime)
           setDuration(e.duration)
           sessions.sessions(client, { deviceId: client.deviceID }).then((r) => {
             if (r.length > 0) {
@@ -446,11 +450,12 @@ const Player = ({
         onStop={(e) => {
           console.log('STOPPED', e.reason)
         }}
-        onPlaybackStateChanged={(e) => {
-          console.log('CHANGE, isPlaying', e.isPlaying)
-        }}
         onError={(e) => {
-          console.log('ERROR', e.error)
+          console.log('ERROR', e.error.errorString)
+          ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
+          playingStopped(true)
+          clearControlsTimeout()
+          navigation.pop()
         }}
         style={{
           position: 'absolute',
