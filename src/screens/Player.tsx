@@ -282,7 +282,7 @@ const Player = ({
         setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
         videoRef.current.setSource({
           uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
-          startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
+          startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
         })
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
@@ -295,7 +295,7 @@ const Player = ({
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
         videoRef.current.setSource({
           uri: client.server + res.MediaSources[0].TranscodingUrl,
-          startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
+          startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
         })
         // console.log(res)
         // console.log(res.MediaSources[0].MediaStreams)
