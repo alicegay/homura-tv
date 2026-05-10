@@ -7,6 +7,7 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 import android.os.Bundle
 import com.zoontek.rnbootsplash.RNBootSplash
+import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory
 
 class MainActivity : ReactActivity() {
 
@@ -25,7 +26,8 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     RNBootSplash.init(this, R.style.BootTheme)
-    super.onCreate(null);
-    getWindow().setFlags(512, 512);
+    supportFragmentManager.fragmentFactory = RNScreensFragmentFactory()
+    super.onCreate(savedInstanceState)
+    getWindow().setFlags(512, 512)
   }
 }

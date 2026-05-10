@@ -1,8 +1,7 @@
 module.exports = {
   root: true,
   extends: '@react-native',
-  plugins: ['eslint-plugin-react-compiler'],
+  plugins: [],
   rules: {
-    'react-compiler/react-compiler': 'error',
   },
 }

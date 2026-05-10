@@ -25,7 +25,7 @@ const SelectUser = ({
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const passwordRef = useRef<any>()
+  const passwordRef = useRef<any>(null)
 
   const styles = StyleSheet.create({
     view: {

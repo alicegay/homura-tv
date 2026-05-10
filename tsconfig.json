@@ -6,6 +6,7 @@
     "types": ["react-native"],
     "skipLibCheck": true,
     "baseUrl": "./src",
-    "strict": false
+    "strict": false,
+    "ignoreDeprecations": "6.0"
   }
 }
