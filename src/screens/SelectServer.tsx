@@ -12,6 +12,7 @@ import Text from 'components/Text'
 import TextInput from 'components/TextInput'
 import Button from 'components/Button'
 import CenterLoading from 'components/CenterLoading'
+import { v4 as uuidv4 } from 'uuid'
 
 const SelectServer = ({
   navigation,
@@ -80,10 +81,12 @@ const SelectServer = ({
   }, [client.hasHydrated])
 
   const resetClient = async () => {
-    const clientName = DeviceInfo.getApplicationName()
-    const deviceName = await DeviceInfo.getDeviceName()
-    const deviceID = client.deviceID
-    const clientVer = DeviceInfo.getVersion()
+    const clientName = encodeURIComponent(DeviceInfo.getApplicationName())
+    const deviceName = encodeURIComponent(await DeviceInfo.getDeviceName())
+    const deviceID = encodeURIComponent(
+      client.deviceID ?? 'homura-tv  _' + uuidv4(),
+    )
+    const clientVer = encodeURIComponent(DeviceInfo.getVersion())
     client.setClient({
       server: client.server,
       clientName: clientName,
