@@ -45,6 +45,12 @@ import { IntroSegments } from 'jellyfin-api/lib/types/other/IntroTimestamps'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { AxiosError } from 'axios'
 import VideoMPV, { VideoMPVRef } from 'react-native-video-mpv'
+import Video, {
+  SelectedTrackType,
+  SelectedVideoTrackType,
+  VideoRef,
+  ViewType,
+} from 'react-native-video'
 
 let menuX = 0
 let menuY = 0
@@ -60,9 +66,9 @@ const Player = ({
     if (introVisibility || creditVisibility) {
       if (button == 'select') {
         if (creditVisibility) {
-          videoRef.current.seek(introSegments.Credits.IntroEnd)
+          mpvRef.current.seek(introSegments.Credits.IntroEnd)
         } else {
-          videoRef.current.seek(introSegments.Introduction.IntroEnd)
+          mpvRef.current.seek(introSegments.Introduction.IntroEnd)
         }
       } else if (button == 'up' || button == 'down') {
         setIntroVisibility(false)
@@ -146,7 +152,7 @@ const Player = ({
     }
     if (button == 'select' && seeking) {
       setSeeking(false)
-      videoRef.current.seek(seekTime)
+      mpvRef.current.seek(seekTime)
       resetControlsTimeout()
     }
 
@@ -169,8 +175,8 @@ const Player = ({
   }
   useTVEventHandler(TVEventHandler)
 
-  const [playPauseButton, setPlayPauseButton] = useState(true)
-  const [infoButton, setInfoButton] = useState(false)
+  const [playPauseButton, setPlayPauseButton] = useState<boolean>(true)
+  const [infoButton, setInfoButton] = useState<boolean>(false)
 
   const controlsTimeout = useRef(null)
   const setControlsTimeout = () => {
@@ -187,7 +193,7 @@ const Player = ({
     setControlsTimeout()
   }
 
-  const [controlsVisibility, setControlsVisibility] = useState(true)
+  const [controlsVisibility, setControlsVisibility] = useState<boolean>(true)
   const controlsAnim = useSharedValue(1)
   const controlsView = useAnimatedStyle(() => ({
     bottom: 0 - (1 - controlsAnim.value) * 32,
@@ -206,13 +212,17 @@ const Player = ({
     }
   }, [controlsVisibility])
 
-  const { item, startFrom, streams: initStreams } = route.params
+  const { item, startFrom, streams: initStreams, fallback } = route.params
+  const [fallbackPlayer, setFallbackPlayer] = useState<boolean>(
+    fallback ?? false,
+  )
   const client = useClient()
   const theme = useTheme()
   const settings = useSettings()
   const query = useQueryClient()
 
-  const videoRef = useRef<VideoMPVRef>(null)
+  const mpvRef = useRef<VideoMPVRef>(null)
+  const videoRef = useRef<VideoRef>(null)
   const [source, setSource] = useState<string>(null)
   const [buffering, setBuffering] = useState(true)
   const [paused, setPaused] = useState(false)
@@ -264,7 +274,7 @@ const Player = ({
     const playbackInfo: PlaybackInfoQuery = {
       DeviceProfile: settings.deviceProfile,
       MediaSourceId: item.Id,
-      MaxStreamingBitrate: 50000000,
+      MaxStreamingBitrate: 500_000_000,
       MaxAudioChannels: 8,
       AudioStreamIndex: s.audios[initStreams.audio].id,
       SubtitleStreamIndex:
@@ -280,7 +290,14 @@ const Player = ({
         //console.log('DIRECT PLAY')
         setPlayMethod('DirectPlay')
         setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
-        videoRef.current.setSource({
+        if (
+          res.MediaSources[0].MediaStreams.filter((s) => s.Type === 'Video')[0]
+            .VideoRange === 'HDR'
+        ) {
+          console.log('Using Fallback Player for HDR')
+          setFallbackPlayer(true)
+        }
+        mpvRef.current.setSource({
           uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
           startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
         })
@@ -293,7 +310,7 @@ const Player = ({
           setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
-        videoRef.current.setSource({
+        mpvRef.current.setSource({
           uri: client.server + res.MediaSources[0].TranscodingUrl,
           startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
         })
@@ -400,71 +417,168 @@ const Player = ({
     <View style={{ backgroundColor: '#000', width: '100%', height: '100%' }}>
       <Pressable style={{ width: 0, height: 0 }} hasTVPreferredFocus={true} />
 
-      <VideoMPV
-        ref={videoRef}
-        paused={seeking ? true : paused}
-        langsPref={{
-          subMatchingAudio: false,
-        }}
-        onBuffer={(e) => {
-          setBuffering(e.isBuffering)
-        }}
-        onProgress={(e) => {
-          if (!seeking) {
-            setCurrentTime(e.currentTime)
-          }
-        }}
-        onLoadStart={() => {
-          videoRef.current.setStringOption('vo', 'gpu-next')
-          videoRef.current.setStringOption('target-colorspace-hint', 'yes')
-          videoRef.current.setStringOption('sub-use-margins', 'no')
-          videoRef.current.setAudioTrackID(
-            playMethod !== 'DirectPlay' ? 1 : audioStream + 1,
-          )
-          videoRef.current.setSubtitleTrackID(
-            subtitleStream === -1 ? -1 : subtitleStream + 1,
-          )
-        }}
-        onLoad={(e) => {
-          setCurrentTime(e.currentTime)
-          setDuration(e.duration)
-          sessions.sessions(client, { deviceId: client.deviceID }).then((r) => {
-            if (r.length > 0) {
-              setSessionInfo(r[0])
-              if (
-                r[0].PlayState.PlayMethod !== 'DirectPlay' &&
-                'TranscodingInfo' in r[0] &&
-                r[0].TranscodingInfo.IsVideoDirect
-              )
-                setPlayMethod('DirectStream')
-              if ('TranscodingInfo' in r[0])
-                setBitrate(r[0].TranscodingInfo.Bitrate)
+      {!fallbackPlayer ? (
+        <VideoMPV
+          ref={mpvRef}
+          paused={seeking ? true : paused}
+          langsPref={{
+            subMatchingAudio: false,
+          }}
+          onBuffer={(e) => {
+            setBuffering(e.isBuffering)
+          }}
+          onProgress={(e) => {
+            if (!seeking) {
+              setCurrentTime(e.currentTime)
             }
-          })
-        }}
-        onEndReached={() => {
-          playingStopped()
-          clearControlsTimeout()
-          navigation.pop()
-        }}
-        onStop={(e) => {
-          console.log('STOPPED', e.reason)
-        }}
-        onError={(e) => {
-          console.log('ERROR', e.error.errorString)
-          ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
-          playingStopped(true)
-          clearControlsTimeout()
-          navigation.pop()
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-        }}
-      />
+          }}
+          onLoadStart={() => {
+            // for HDR if MPV on Android ever supports HDR:
+            // mpvRef.current.setStringOption('vo', 'gpu-next')
+            // mpvRef.current.setStringOption('target-colorspace-hint', 'yes')
+            mpvRef.current.setStringOption('sub-use-margins', 'no')
+            mpvRef.current.setAudioTrackID(
+              playMethod !== 'DirectPlay' ? 1 : audioStream + 1,
+            )
+            mpvRef.current.setSubtitleTrackID(
+              subtitleStream === -1 ? -1 : subtitleStream + 1,
+            )
+          }}
+          onLoad={(e) => {
+            setCurrentTime(e.currentTime)
+            setDuration(e.duration)
+            sessions
+              .sessions(client, { deviceId: client.deviceID })
+              .then((r) => {
+                if (r.length > 0) {
+                  setSessionInfo(r[0])
+                  if (
+                    r[0].PlayState.PlayMethod !== 'DirectPlay' &&
+                    'TranscodingInfo' in r[0] &&
+                    r[0].TranscodingInfo.IsVideoDirect
+                  )
+                    setPlayMethod('DirectStream')
+                  if ('TranscodingInfo' in r[0])
+                    setBitrate(r[0].TranscodingInfo.Bitrate)
+                }
+              })
+          }}
+          onEndReached={() => {
+            playingStopped()
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          onStop={(e) => {
+            console.log('STOPPED', e.reason)
+          }}
+          onError={(e) => {
+            console.log('ERROR', e.error.errorString)
+            ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
+            playingStopped(true)
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+          }}
+        />
+      ) : (
+        <Video
+          ref={videoRef}
+          source={{
+            uri: source,
+            startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
+          }}
+          viewType={ViewType.SURFACE}
+          focusable={false}
+          paused={seeking ? true : paused}
+          resizeMode="contain"
+          showNotificationControls={true}
+          subtitleStyle={{ subtitlesFollowVideo: true }}
+          selectedVideoTrack={{
+            type: SelectedVideoTrackType.INDEX,
+            value: playMethod !== 'DirectPlay' ? 0 : videoStream,
+          }}
+          selectedAudioTrack={{
+            type: SelectedTrackType.INDEX,
+            value: playMethod !== 'DirectPlay' ? 0 : audioStream,
+          }}
+          selectedTextTrack={{
+            type:
+              subtitleStream !== -1
+                ? SelectedTrackType.INDEX
+                : SelectedTrackType.DISABLED,
+            value: subtitleStream,
+          }}
+          onBuffer={(e) => {
+            setBuffering(e.isBuffering)
+          }}
+          onProgress={(e) => {
+            if (!seeking) {
+              setCurrentTime(e.currentTime)
+              setBufferTime(e.playableDuration)
+            }
+          }}
+          onSeek={(e) => {
+            setCurrentTime(e.currentTime)
+            playingProgress('timeupdate', e.currentTime)
+          }}
+          onLoad={(e) => {
+            setDuration(e.duration)
+            playingProgress(undefined, e.currentTime)
+            sessions
+              .sessions(client, { deviceId: client.deviceID })
+              .then((r) => {
+                if (r.length > 0) {
+                  setSessionInfo(r[0])
+                  if (
+                    r[0].PlayState.PlayMethod !== 'DirectPlay' &&
+                    'TranscodingInfo' in r[0] &&
+                    r[0].TranscodingInfo.IsVideoDirect
+                  )
+                    setPlayMethod('DirectStream')
+                  if ('TranscodingInfo' in r[0])
+                    setBitrate(r[0].TranscodingInfo.Bitrate)
+                }
+              })
+          }}
+          onVideoTracks={(e) => {
+            if (e.videoTracks.length > 0) {
+              setCurrentVideoCodec(formatPlayerCodec(e.videoTracks[0].codecs))
+              setCurrentVideoResolution(
+                getVideoSize(e.videoTracks[0].width, e.videoTracks[0].height),
+              )
+            }
+          }}
+          onAudioTracks={(e) => {
+            setCurrentAudioCodec(formatPlayerCodec(e.audioTracks[0].type))
+          }}
+          onEnd={() => {
+            playingStopped()
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          onError={(e) => {
+            console.log(e.error.errorString)
+            console.log(e.error.errorException)
+            ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
+            playingStopped(true)
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+          }}
+        />
+      )}
 
       <Animated.View
         style={[

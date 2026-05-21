@@ -26,7 +26,7 @@ const useSettings = create<SettingsStore>()(
       introSkipper: true,
       introSkipperPrompt: 5,
       classification: 'au',
-      nativeAss: false,
+      nativeAss: true,
 
       setForceStereo: (value) => set(() => ({ forceStereo: value })),
       setIntroSkipper: (value) => set(() => ({ introSkipper: value })),

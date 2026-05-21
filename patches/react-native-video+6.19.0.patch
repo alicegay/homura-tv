@@ -1,0 +1,288 @@
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/api/SideLoadedTextTrack.kt b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/api/SideLoadedTextTrack.kt
+index 59408c7..05aa050 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/api/SideLoadedTextTrack.kt
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/api/SideLoadedTextTrack.kt
+@@ -13,6 +13,12 @@ class SideLoadedTextTrack {
+     var title: String? = null
+     var uri: Uri = Uri.EMPTY
+     var type: String? = null
++
++    override fun equals(other: Any?): Boolean {
++        if (other == null || other !is SideLoadedTextTrack) return false
++        return language == other.language && title == other.title && uri == other.uri && type == other.type
++    }
++
+     companion object {
+         val SIDELOAD_TEXT_TRACK_LANGUAGE = "language"
+         val SIDELOAD_TEXT_TRACK_TITLE = "title"
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+index e16ac96..f643c6b 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
+@@ -42,6 +42,7 @@ import androidx.media3.common.C;
+ import androidx.media3.common.Format;
+ import androidx.media3.common.MediaItem;
+ import androidx.media3.common.MediaMetadata;
++import androidx.media3.common.MimeTypes;
+ import androidx.media3.common.Metadata;
+ import androidx.media3.common.PlaybackException;
+ import androidx.media3.common.PlaybackParameters;
+@@ -99,6 +100,11 @@ import androidx.media3.exoplayer.trackselection.TrackSelection;
+ import androidx.media3.exoplayer.trackselection.TrackSelectionArray;
+ import androidx.media3.exoplayer.upstream.BandwidthMeter;
+ import androidx.media3.exoplayer.upstream.CmcdConfiguration;
++import androidx.media3.extractor.Extractor;
++import androidx.media3.extractor.ExtractorsFactory;
++import androidx.media3.extractor.text.SubtitleExtractor;
++import androidx.media3.extractor.text.SubtitleParser;
++import androidx.media3.extractor.text.DefaultSubtitleParserFactory;
+ import androidx.media3.exoplayer.upstream.DefaultAllocator;
+ import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
+ import androidx.media3.exoplayer.util.EventLogger;
+@@ -867,6 +873,16 @@ public class ReactExoplayerView extends FrameLayout implements
+         MediaSource mediaSourceWithAds = initializeAds(videoSource, runningSource);
+         MediaSource mediaSource = Objects.requireNonNullElse(mediaSourceWithAds, videoSource);
+ 
++        List<MediaSource> subtitlesSource = buildSubtitleConfigurations();
++        if (subtitlesSource != null) { // null if empty
++            MediaSource[] mediaSources = new MediaSource[subtitlesSource.size() + 1];
++            mediaSources[0] = mediaSource;
++            for (int i = 0; i < subtitlesSource.size(); i++) {
++                mediaSources[i + 1] = subtitlesSource.get(i);
++            }
++            mediaSource = new MergingMediaSource(mediaSources);
++        }
++
+         // wait for player to be set
+         while (player == null) {
+             try {
+@@ -1009,8 +1025,9 @@ public class ReactExoplayerView extends FrameLayout implements
+         if ("rtsp".equals(overrideExtension)) {
+             type = CONTENT_TYPE_RTSP;
+         } else {
+-            type = Util.inferContentType(!TextUtils.isEmpty(overrideExtension) ? "." + overrideExtension
+-                    : uri.getLastPathSegment());
++            type = TextUtils.isEmpty(overrideExtension)
++                    ? Util.inferContentType(uri)
++                    : Util.inferContentTypeForExtension(overrideExtension);
+         }
+         config.setDisableDisconnectError(this.disableDisconnectError);
+ 
+@@ -1023,12 +1040,6 @@ public class ReactExoplayerView extends FrameLayout implements
+             mediaItemBuilder.setMediaMetadata(customMetadata);
+         }
+         
+-        // Add external subtitles to MediaItem
+-        List<MediaItem.SubtitleConfiguration> subtitleConfigurations = buildSubtitleConfigurations();
+-        if (subtitleConfigurations != null) {
+-            mediaItemBuilder.setSubtitleConfigurations(subtitleConfigurations);
+-        }
+-        
+         if (source.getAdsProps() != null) {
+             Uri adTagUrl = source.getAdsProps().getAdTagUrl();
+             if (adTagUrl != null) {
+@@ -1163,14 +1174,16 @@ public class ReactExoplayerView extends FrameLayout implements
+     }
+ 
+     @Nullable
+-    private List<MediaItem.SubtitleConfiguration> buildSubtitleConfigurations() {
++    private List<MediaSource> buildSubtitleConfigurations() {
+         if (source.getSideLoadedTextTracks() == null || source.getSideLoadedTextTracks().getTracks().isEmpty()) {
+             return null;
+         }
+ 
+-        List<MediaItem.SubtitleConfiguration> subtitleConfigurations = new ArrayList<>();
++        List<MediaSource> sourcesToMerge = new ArrayList<>();
+         int trackIndex = 0;
+ 
++        SubtitleParser.Factory subtitleParserFactory = new DefaultSubtitleParserFactory();
++
+         for (SideLoadedTextTrack track : source.getSideLoadedTextTracks().getTracks()) {
+             try {
+                 // Create a more descriptive ID that PlayerView can use
+@@ -1183,26 +1196,37 @@ public class ReactExoplayerView extends FrameLayout implements
+                     }
+                 }
+                 
+-                MediaItem.SubtitleConfiguration.Builder configBuilder = new MediaItem.SubtitleConfiguration.Builder(track.getUri())
+-                        .setId(trackId)
+-                        .setMimeType(track.getType())
+-                        .setLabel(label)
+-                        .setRoleFlags(C.ROLE_FLAG_SUBTITLE);
++                Format.Builder formatBuilder = new Format.Builder()
++                    .setSampleMimeType(track.getType())
++                    .setId(trackId)
++                    .setLabel(label)
++                    .setRoleFlags(C.ROLE_FLAG_SUBTITLE);
+                 
+                 // Set language if available
+                 if (track.getLanguage() != null && !track.getLanguage().isEmpty()) {
+-                    configBuilder.setLanguage(track.getLanguage());
++                    formatBuilder.setLanguage(track.getLanguage());
+                 }
+                 
+                 // Set selection flags - make first track default if no specific track is selected
+                 if (trackIndex == 0 && (textTrackType == null || "disabled".equals(textTrackType))) {
+-                    configBuilder.setSelectionFlags(C.SELECTION_FLAG_DEFAULT);
++                    formatBuilder.setSelectionFlags(C.SELECTION_FLAG_DEFAULT);
+                 } else {
+-                    configBuilder.setSelectionFlags(0);
++                    formatBuilder.setSelectionFlags(0);
+                 }
+                 
+-                MediaItem.SubtitleConfiguration subtitleConfiguration = configBuilder.build();
+-                subtitleConfigurations.add(subtitleConfiguration);
++                Format format = formatBuilder.build();
++                ExtractorsFactory extractorsFactory =
++                    () ->
++                        new Extractor[] {
++                            subtitleParserFactory.supportsFormat(format)
++                                ? new SubtitleExtractor(subtitleParserFactory.create(format), format)
++                                : new UnknownSubtitlesExtractor(format)
++                        };
++
++                ProgressiveMediaSource.Factory progressiveMediaSourceFactory =
++                    new ProgressiveMediaSource.Factory(mediaDataSourceFactory, extractorsFactory);
++
++                sourcesToMerge.add(progressiveMediaSourceFactory.createMediaSource(MediaItem.fromUri(track.getUri().toString())));
+                 
+                 DebugLog.d(TAG, "Created subtitle configuration: " + trackId + " - " + label + " (" + track.getType() + ")");
+                 trackIndex++;
+@@ -1211,11 +1235,11 @@ public class ReactExoplayerView extends FrameLayout implements
+             }
+         }
+ 
+-        if (!subtitleConfigurations.isEmpty()) {
+-            DebugLog.d(TAG, "Built " + subtitleConfigurations.size() + " external subtitle configurations");
++        if (sourcesToMerge.isEmpty()) {
++            return null;
+         }
+ 
+-        return subtitleConfigurations.isEmpty() ? null : subtitleConfigurations;
++        return sourcesToMerge;
+     }
+ 
+     private void releasePlayer() {
+@@ -1709,19 +1733,16 @@ public class ReactExoplayerView extends FrameLayout implements
+         for (int groupIndex = 0; groupIndex < groups.length; ++groupIndex) {
+             TrackGroup group = groups.get(groupIndex);
+             for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
++                int realIndex = textTracks.size();
+                 Format format = group.getFormat(trackIndex);
+-                Track textTrack = exoplayerTrackToGenericTrack(format, trackIndex, selection, group);
+-                
+-                boolean isExternal = format.id != null && format.id.startsWith("external-subtitle-");
+-                boolean isSelected = isTrackSelected(selection, group, trackIndex);
+-                
+-                textTrack.setIndex(textTracks.size());
++                Track textTrack = exoplayerTrackToGenericTrack(format, realIndex, selection, group);
+                 
+                 if (textTrack.getTitle() == null || textTrack.getTitle().isEmpty()) {
++                    boolean isExternal = format.id != null && format.id.startsWith("external-subtitle-");
+                     if (isExternal) {
+-                        textTrack.setTitle("External " + (trackIndex + 1));
++                        textTrack.setTitle("External " + (realIndex + 1));
+                     } else {
+-                        textTrack.setTitle("Track " + (textTracks.size() + 1));
++                        textTrack.setTitle("Track " + (realIndex + 1));
+                     }
+                 }
+                 
+@@ -1789,11 +1810,9 @@ public class ReactExoplayerView extends FrameLayout implements
+                 if (format.sampleMimeType != null) textTrack.setMimeType(format.sampleMimeType);
+                 if (format.language != null) textTrack.setLanguage(format.language);
+                 
+-                boolean isExternal = format.id != null && format.id.startsWith("external-subtitle-");
+-                
+                 if (format.label != null && !format.label.isEmpty()) {
+                     textTrack.setTitle(format.label);
+-                } else if (isExternal) {
++                } else if (format.id != null && format.id.startsWith("external-subtitle-")) {
+                     textTrack.setTitle("External " + (trackIndex + 1));
+                 } else {
+                     textTrack.setTitle("Track " + (textTracks.size() + 1));
+@@ -2146,6 +2165,7 @@ public class ReactExoplayerView extends FrameLayout implements
+                 if (textRendererIndex != C.INDEX_UNSET) {
+                     TrackGroupArray groups = info.getTrackGroups(textRendererIndex);
+                     boolean trackFound = false;
++                    int realIndex = 0;
+                     
+                     for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
+                         TrackGroup group = groups.get(groupIndex);
+@@ -2159,7 +2179,7 @@ public class ReactExoplayerView extends FrameLayout implements
+                                 isMatch = true;
+                             } else if ("index".equals(type)) {
+                                 int targetIndex = ReactBridgeUtils.safeParseInt(value, -1);
+-                                if (targetIndex == trackIndex) {
++                                if (targetIndex == realIndex) {
+                                     isMatch = true;
+                                 }
+                             }
+@@ -2173,6 +2193,7 @@ public class ReactExoplayerView extends FrameLayout implements
+                             }
+                         }
+                         if (trackFound) break;
++                        realIndex++;
+                     }
+                     
+                     if (!trackFound) {
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/UnknownSubtitlesExtractor.java b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/UnknownSubtitlesExtractor.java
+new file mode 100644
+index 0000000..39eaeaf
+--- /dev/null
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/UnknownSubtitlesExtractor.java
+@@ -0,0 +1,54 @@
++package com.brentvatne.exoplayer;
++
++import androidx.media3.common.Format;
++import androidx.media3.common.MimeTypes;
++import androidx.media3.common.C;
++import androidx.media3.extractor.Extractor;
++import androidx.media3.extractor.ExtractorInput;
++import androidx.media3.extractor.ExtractorOutput;
++import androidx.media3.extractor.PositionHolder;
++import androidx.media3.extractor.SeekMap;
++import androidx.media3.extractor.TrackOutput;
++
++import java.io.IOException;
++
++public final class UnknownSubtitlesExtractor implements Extractor {
++    private final Format format;
++
++    public UnknownSubtitlesExtractor(Format format) {
++      this.format = format;
++    }
++
++    @Override
++    public boolean sniff(ExtractorInput input) {
++      return true;
++    }
++
++    @Override
++    public void init(ExtractorOutput output) {
++      TrackOutput trackOutput = output.track(/* id= */ 0, C.TRACK_TYPE_TEXT);
++      output.seekMap(new SeekMap.Unseekable(C.TIME_UNSET));
++      output.endTracks();
++      trackOutput.format(
++          format
++              .buildUpon()
++              .setSampleMimeType(MimeTypes.TEXT_UNKNOWN)
++              .setCodecs(format.sampleMimeType)
++              .build());
++    }
++
++    @Override
++    public int read(ExtractorInput input, PositionHolder seekPosition) throws IOException {
++      int skipResult = input.skip(Integer.MAX_VALUE);
++      if (skipResult == C.RESULT_END_OF_INPUT) {
++        return RESULT_END_OF_INPUT;
++      }
++      return RESULT_CONTINUE;
++    }
++
++    @Override
++    public void seek(long position, long timeUs) {}
++
++    @Override
++    public void release() {}
++  }
