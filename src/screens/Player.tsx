@@ -66,9 +66,9 @@ const Player = ({
     if (introVisibility || creditVisibility) {
       if (button == 'select') {
         if (creditVisibility) {
-          mpvRef.current.seek(introSegments.Credits.IntroEnd)
+          seek(introSegments.Credits.IntroEnd)
         } else {
-          mpvRef.current.seek(introSegments.Introduction.IntroEnd)
+          seek(introSegments.Introduction.IntroEnd)
         }
       } else if (button == 'up' || button == 'down') {
         setIntroVisibility(false)
@@ -152,7 +152,7 @@ const Player = ({
     }
     if (button == 'select' && seeking) {
       setSeeking(false)
-      mpvRef.current.seek(seekTime)
+      seek(seekTime)
       resetControlsTimeout()
     }
 
@@ -413,6 +413,60 @@ const Player = ({
     })
   }
 
+  const introSkipper = (current: number) => {
+    if (introSegments) {
+      if (introSegments.Introduction?.Valid) {
+        if (
+          !introVisibility &&
+          !controlsVisibility &&
+          current > introSegments.Introduction.ShowSkipPromptAt &&
+          current <
+            introSegments.Introduction.ShowSkipPromptAt +
+              settings.introSkipperPrompt
+        ) {
+          setIntroVisibility(true)
+        } else if (
+          (introVisibility &&
+            current < introSegments.Introduction.ShowSkipPromptAt) ||
+          (introVisibility &&
+            current >
+              introSegments.Introduction.ShowSkipPromptAt +
+                settings.introSkipperPrompt)
+        ) {
+          setIntroVisibility(false)
+        }
+      }
+      if (introSegments.Credits?.Valid) {
+        if (
+          !introVisibility &&
+          !controlsVisibility &&
+          current > introSegments.Credits.ShowSkipPromptAt &&
+          current <
+            introSegments.Credits.ShowSkipPromptAt + settings.introSkipperPrompt
+        ) {
+          setCreditVisibility(true)
+        } else if (
+          (introVisibility &&
+            current < introSegments.Credits.ShowSkipPromptAt) ||
+          (introVisibility &&
+            current >
+              introSegments.Credits.ShowSkipPromptAt +
+                settings.introSkipperPrompt)
+        ) {
+          setCreditVisibility(false)
+        }
+      }
+    }
+  }
+
+  const seek = (time: number) => {
+    if (fallbackPlayer) {
+      videoRef.current.seek(time)
+    } else {
+      mpvRef.current.seek(time)
+    }
+  }
+
   return (
     <View style={{ backgroundColor: '#000', width: '100%', height: '100%' }}>
       <Pressable style={{ width: 0, height: 0 }} hasTVPreferredFocus={true} />
@@ -428,8 +482,10 @@ const Player = ({
             setBuffering(e.isBuffering)
           }}
           onProgress={(e) => {
+            console.log(e.currentTime + e.progress)
             if (!seeking) {
               setCurrentTime(e.currentTime)
+              introSkipper(e.currentTime)
             }
           }}
           onLoadStart={() => {
@@ -521,6 +577,7 @@ const Player = ({
             if (!seeking) {
               setCurrentTime(e.currentTime)
               setBufferTime(e.playableDuration)
+              introSkipper(e.currentTime)
             }
           }}
           onSeek={(e) => {
