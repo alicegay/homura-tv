@@ -446,9 +446,9 @@ const Player = ({
         ) {
           setCreditVisibility(true)
         } else if (
-          (introVisibility &&
+          (creditVisibility &&
             current < introSegments.Credits.ShowSkipPromptAt) ||
-          (introVisibility &&
+          (creditVisibility &&
             current >
               introSegments.Credits.ShowSkipPromptAt +
                 settings.introSkipperPrompt)
