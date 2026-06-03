@@ -290,17 +290,18 @@ const Player = ({
         //console.log('DIRECT PLAY')
         setPlayMethod('DirectPlay')
         setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
-        if (
-          res.MediaSources[0].MediaStreams.filter((s) => s.Type === 'Video')[0]
-            .VideoRange === 'HDR'
-        ) {
-          console.log('Using Fallback Player for HDR')
+        const stream = res.MediaSources[0].MediaStreams.filter(
+          (s) => s.Type === 'Video',
+        )[0]
+        if (stream.VideoRange === 'HDR' || stream.ColorPrimaries === 'bt2020') {
+          console.log('Using Fallback Player for HDR/BT2020')
           setFallbackPlayer(true)
+        } else {
+          mpvRef.current.setSource({
+            uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
+            startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
+          })
         }
-        mpvRef.current.setSource({
-          uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
-          startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
-        })
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
           //console.log('DIRECT STREAM')
