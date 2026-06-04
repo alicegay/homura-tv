@@ -103,7 +103,6 @@ const ItemLong = ({
       backgroundColor: color,
       borderRadius: 8 + 4,
       overflow: 'hidden',
-      opacity: 0,
     },
     fallback: {
       position: 'absolute',
@@ -143,17 +142,12 @@ const ItemLong = ({
           />
         )}
         <View style={[styles.image, { backgroundColor: '#000' }]}>
-          {/* {!!blurhash && (
-            <Blurhash
-              blurhash={blurhash}
-              style={[styles.image, { position: 'absolute' }]}
-            />
-          )} */}
           {!!imageURI && (
             <FasterImageView
               source={{
                 url: !!imageFallback ? imageURI : image,
                 resizeMode: 'cover',
+                blurhash: blurhash,
               }}
               style={[styles.image, { position: 'absolute' }]}
               onError={() => {

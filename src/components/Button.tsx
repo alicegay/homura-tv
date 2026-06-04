@@ -13,7 +13,8 @@ import { Icon, IconFilled } from './Icon'
 
 interface Props {
   children?: ReactNode
-  type?: 'primary'
+  small?: boolean
+  transparent?: boolean
   icon?: string
   filled?: boolean
   onPress?: (e: GestureResponderEvent) => void
@@ -29,7 +30,8 @@ interface Props {
 
 const Button = ({
   children,
-  type = 'primary',
+  small = false,
+  transparent = false,
   icon,
   filled = false,
   onPress,
@@ -53,31 +55,31 @@ const Button = ({
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: 20,
-      minHeight: 36,
-      backgroundColor: theme.background,
+      minHeight: small ? 32 : 36,
+      backgroundColor: transparent ? '#00000000' : '#000000A0',
     },
     rootFocus: {
       backgroundColor: theme.foreground,
     },
     rootWithLabel: {
-      minWidth: 96,
+      minWidth: small ? 64 : 96,
     },
     icon: {
-      fontSize: 14,
+      fontSize: small ? 11 : 14,
       color: theme.foreground,
     },
     iconFocus: {
       color: theme.background,
     },
     iconWithLabel: {
-      marginLeft: 16,
-      marginRight: -16,
+      marginLeft: small ? 12 : 16,
+      marginRight: small ? -12 : -16,
     },
     label: {
-      fontSize: 14,
+      fontSize: small ? 11 : 14,
       textAlign: 'center',
-      marginVertical: 8,
-      marginHorizontal: 24,
+      marginVertical: small ? 4 : 8,
+      marginHorizontal: small ? 16 : 24,
       color: theme.foreground,
     },
     labelFocus: {

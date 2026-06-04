@@ -185,17 +185,12 @@ const ItemCard = ({
             },
           ]}
         >
-          {/* {!!blurhash && (
-            <Blurhash
-              blurhash={blurhash}
-              style={[styles.image, { position: 'absolute' }]}
-            />
-          )} */}
           {!!imageURI && (
             <FasterImageView
               source={{
                 url: !!imageFallback ? imageURI : image,
                 resizeMode: 'cover',
+                blurhash: blurhash,
               }}
               style={[styles.image, { position: 'absolute' }]}
               onError={() => {

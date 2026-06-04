@@ -22,6 +22,7 @@ import CenterLoading from 'components/CenterLoading'
 import { useQueryClient } from '@tanstack/react-query'
 import Button from 'components/Button'
 import ListButton from 'components/ListButton'
+import BlurView from '@sbaiahmed1/react-native-blur'
 
 const Folder = ({
   navigation,
@@ -106,7 +107,7 @@ const Folder = ({
                   : navigation.push('Details', { item })
               }}
               width={width / columns - 32}
-              style={[index < columns && { paddingTop: 48 }]}
+              style={[index < columns && { paddingTop: 64 }]}
               hasTVPreferredFocus={index === 0}
               nextFocusUp={index < columns ? sortButtonNode : undefined}
             />
@@ -117,10 +118,12 @@ const Folder = ({
           // estimatedItemSize={columns === 4 ? 178 : 253}
         />
       )}
-      <View
+      <BlurView
+        blurType="dark"
+        blurAmount={10}
         style={{
           width: width,
-          paddingTop: 12,
+          paddingVertical: 12,
           paddingHorizontal: 32,
           position: 'absolute',
           flex: 1,
@@ -141,7 +144,7 @@ const Folder = ({
         >
           Sort by {sortNames[sortBy]}
         </Button>
-      </View>
+      </BlurView>
       {isLoading && <CenterLoading />}
       <Modal
         visible={showSortMenu}

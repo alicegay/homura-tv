@@ -14,7 +14,9 @@ import { Icon, IconFilled } from './Icon'
 interface Props {
   title: string
   subtitle?: string
+  transparent?: boolean
   icon?: string
+  iconRight?: string
   filled?: boolean
   right?: () => ReactNode
   onPress?: (e: GestureResponderEvent) => void
@@ -33,7 +35,9 @@ interface Props {
 const ListButton = ({
   title,
   subtitle,
+  transparent = false,
   icon,
+  iconRight,
   filled = false,
   right,
   onPress,
@@ -53,7 +57,7 @@ const ListButton = ({
 
   const styles = StyleSheet.create({
     root: {
-      backgroundColor: theme.background,
+      backgroundColor: transparent ? '#00000000' : '#000000A0',
       overflow: 'hidden',
       borderRadius: 38,
       flex: 1,
@@ -66,17 +70,22 @@ const ListButton = ({
       backgroundColor: theme.foreground,
     },
     icon: {
-      fontSize: 16,
+      fontSize: 20,
       color: theme.foreground,
       paddingRight: 12,
     },
+    iconRight: {
+      fontSize: 20,
+      color: theme.foreground,
+      paddingLeft: 12,
+    },
     title: {
-      fontSize: 16,
+      fontSize: 14,
       fontFamily: theme.font700,
       color: theme.foreground,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: 11,
       color: theme.foreground,
     },
     labelFocus: {
@@ -104,7 +113,7 @@ const ListButton = ({
       nextFocusLeft={nextFocusLeft}
       nextFocusRight={nextFocusRight}
     >
-      {!!icon &&
+      {icon &&
         (filled ? (
           <IconFilled
             name={icon}
@@ -126,6 +135,18 @@ const ListButton = ({
           </Text>
         )}
       </View>
+      {iconRight &&
+        (filled ? (
+          <IconFilled
+            name={iconRight}
+            style={[styles.iconRight, focus && styles.labelFocus]}
+          />
+        ) : (
+          <Icon
+            name={iconRight}
+            style={[styles.iconRight, focus && styles.labelFocus]}
+          />
+        ))}
       {!!right && right()}
     </Pressable>
   )

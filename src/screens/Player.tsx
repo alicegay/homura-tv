@@ -664,16 +664,21 @@ const Player = ({
         >
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <View style={{ flex: 1, flexGrow: 1 }}>
-              <Text style={{ fontSize: 32 }} fontWeight={700}>
+              <Text style={{ fontSize: 24 }} fontWeight={700}>
                 {item.Name}
               </Text>
               {'SeriesName' in item && (
-                <Text style={{ fontSize: 20 }} fontWeight={500}>
+                <Text style={{ fontSize: 26 }} fontWeight={500}>
                   {item.SeriesName +
                     ' ' +
                     (item.ParentIndexNumber === 0
                       ? 'Special'
-                      : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)}
+                      : 'S' +
+                        item.ParentIndexNumber +
+                        ':E' +
+                        (item.IndexNumberEnd
+                          ? item.IndexNumber + '-' + item.IndexNumberEnd
+                          : item.IndexNumber))}
                 </Text>
               )}
               {item.Type === 'MusicVideo' &&

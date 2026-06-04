@@ -19,6 +19,8 @@ import useSeasons from 'api/useSeasons'
 import usePlayedItem from 'api/usePlayedItem'
 import { FasterImageView } from '@candlefinance/faster-image'
 import useLocalTrailers from 'api/useLocalTrailers'
+import BlurView from '@sbaiahmed1/react-native-blur'
+import { Icon } from 'components/Icon'
 
 const Details = ({
   navigation,
@@ -142,7 +144,12 @@ const Details = ({
                     ' ' +
                     (item.ParentIndexNumber === 0
                       ? 'Special'
-                      : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)}
+                      : 'S' +
+                        item.ParentIndexNumber +
+                        ':E' +
+                        (item.IndexNumberEnd
+                          ? item.IndexNumber + '-' + item.IndexNumberEnd
+                          : item.IndexNumber))}
                 </Text>
               )}
               {item.Type === 'MusicVideo' &&
@@ -156,7 +163,7 @@ const Details = ({
                 style={{
                   flexDirection: 'row',
                   columnGap: 16,
-                  marginTop: 12,
+                  marginTop: 4,
                 }}
               >
                 {!!item.ProductionYear && <Text>{item.ProductionYear}</Text>}
@@ -179,30 +186,53 @@ const Details = ({
                   subtitleStream !== null && (
                     <>
                       <Text>{streams.videos[videoStream]?.title}</Text>
-                      {streams?.audios.length === 1 && (
-                        <Text>{streams.audios[audioStream]?.title}</Text>
-                      )}
                     </>
                   )}
               </View>
 
               {video ? (
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    columnGap: 8,
-                    marginTop: 16,
-                  }}
-                >
-                  {data.UserData.PlaybackPositionTicks > 0 && (
+                <>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      columnGap: 8,
+                      marginTop: 8,
+                    }}
+                  >
+                    {data.UserData.PlaybackPositionTicks > 0 && (
+                      <Button
+                        icon="resume"
+                        filled
+                        hasTVPreferredFocus={true}
+                        onPress={() => {
+                          navigation.push('Player', {
+                            item: data,
+                            startFrom: data.UserData.PlaybackPositionTicks,
+                            streams: {
+                              video: videoStream,
+                              audio: audioStream,
+                              subtitle: subtitleStream,
+                            },
+                          })
+                        }}
+                      >
+                        Resume from{' '}
+                        {ticksToTime(data.UserData.PlaybackPositionTicks)}
+                      </Button>
+                    )}
                     <Button
-                      icon="resume"
+                      icon={
+                        data.UserData.PlaybackPositionTicks > 0
+                          ? 'replay'
+                          : 'play_arrow'
+                      }
                       filled
-                      hasTVPreferredFocus={true}
+                      hasTVPreferredFocus={
+                        data.UserData.PlaybackPositionTicks > 0 ? false : true
+                      }
                       onPress={() => {
                         navigation.push('Player', {
                           item: data,
-                          startFrom: data.UserData.PlaybackPositionTicks,
                           streams: {
                             video: videoStream,
                             audio: audioStream,
@@ -211,110 +241,106 @@ const Details = ({
                         })
                       }}
                     >
-                      Resume from{' '}
-                      {ticksToTime(data.UserData.PlaybackPositionTicks)}
+                      Play
                     </Button>
-                  )}
-                  <Button
-                    icon={
-                      data.UserData.PlaybackPositionTicks > 0
-                        ? 'replay'
-                        : 'play_arrow'
-                    }
-                    filled
-                    hasTVPreferredFocus={
-                      data.UserData.PlaybackPositionTicks > 0 ? false : true
-                    }
-                    onPress={() => {
-                      navigation.push('Player', {
-                        item: data,
-                        streams: {
-                          video: videoStream,
-                          audio: audioStream,
-                          subtitle: subtitleStream,
-                        },
-                      })
-                    }}
-                  >
-                    Play
-                  </Button>
-                  {/* <Button icon="information" /> */}
-                  {data?.LocalTrailerCount > 0 && trailers.data && (
+                    {/* <Button icon="information" /> */}
+                    {data?.LocalTrailerCount > 0 && trailers.data && (
+                      <Button
+                        icon="theaters"
+                        filled
+                        onPress={() => {
+                          const s = sortStreams(trailers.data[0].MediaStreams)
+                          navigation.push('Player', {
+                            item: trailers.data[0],
+                            streams: {
+                              video: s.defaults.video,
+                              audio: s.defaults.audio,
+                              subtitle: s.defaults.subtitle,
+                            },
+                          })
+                        }}
+                      >
+                        Trailer
+                      </Button>
+                    )}
+                    {data?.SpecialFeatureCount > 0 && (
+                      <Button
+                        icon="star"
+                        filled
+                        onPress={() => {
+                          navigation.push('Episodes', {
+                            series: data,
+                            special: true,
+                          })
+                        }}
+                      >
+                        Special Features
+                      </Button>
+                    )}
                     <Button
-                      icon="theaters"
-                      filled
+                      icon={data?.UserData.Played ? 'done_all' : 'check'}
                       onPress={() => {
-                        const s = sortStreams(trailers.data[0].MediaStreams)
-                        navigation.push('Player', {
-                          item: trailers.data[0],
-                          streams: {
-                            video: s.defaults.video,
-                            audio: s.defaults.audio,
-                            subtitle: s.defaults.subtitle,
-                          },
-                        })
-                      }}
-                    >
-                      Trailer
-                    </Button>
-                  )}
-                  {data?.SpecialFeatureCount > 0 && (
-                    <Button
-                      icon="star"
-                      filled
-                      onPress={() => {
-                        navigation.push('Episodes', {
-                          series: data,
-                          special: true,
-                        })
-                      }}
-                    >
-                      Special Features
-                    </Button>
-                  )}
-                  <Button
-                    icon={data?.UserData.Played ? 'done_all' : 'check'}
-                    onPress={() => {
-                      played.mutate(data.UserData.Played)
-                    }}
-                  />
-                  {streams?.videos.length > 1 && (
-                    <Button
-                      icon="movie"
-                      onPress={() => {
-                        showMenu('Video')
+                        played.mutate(data.UserData.Played)
                       }}
                     />
-                  )}
-                  {streams?.audios.length > 1 && (
-                    <Button
-                      icon="volume_up"
-                      onPress={() => {
-                        showMenu('Audio')
-                      }}
-                    >
-                      {streams.audios[audioStream]?.title}
-                    </Button>
-                  )}
-                  {streams?.subtitles.length > 0 && (
-                    <Button
-                      icon="subtitles"
-                      onPress={() => {
-                        showMenu('Subtitle')
-                      }}
-                    >
-                      {subtitleStream === -1
-                        ? 'None'
-                        : streams.subtitles[subtitleStream]?.title}
-                    </Button>
-                  )}
-                </View>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      columnGap: 8,
+                      marginTop: 4,
+                    }}
+                  >
+                    {streams?.videos.length > 1 && (
+                      <Button
+                        icon="movie"
+                        small
+                        transparent
+                        onPress={() => {
+                          showMenu('Video')
+                        }}
+                      />
+                    )}
+                    {streams?.audios.length > 0 && (
+                      <Button
+                        icon="volume_up"
+                        small
+                        transparent
+                        filled
+                        onPress={() => {
+                          showMenu('Audio')
+                        }}
+                      >
+                        {streams.audios[audioStream]?.title}
+                      </Button>
+                    )}
+                    {streams?.subtitles.length > 0 && (
+                      <Button
+                        icon={
+                          streams.subtitles[subtitleStream]?.sdh
+                            ? 'closed_caption'
+                            : 'subtitles'
+                        }
+                        small
+                        transparent
+                        filled
+                        onPress={() => {
+                          showMenu('Subtitle')
+                        }}
+                      >
+                        {subtitleStream === -1
+                          ? 'None'
+                          : streams.subtitles[subtitleStream]?.title}
+                      </Button>
+                    )}
+                  </View>
+                </>
               ) : (
                 <View
                   style={{
                     flexDirection: 'row',
                     columnGap: 8,
-                    marginTop: 16,
+                    marginTop: 8,
                   }}
                 >
                   {data?.ChildCount > 1 ? (
@@ -357,7 +383,7 @@ const Details = ({
                       Special Features
                     </Button>
                   )}
-                  <Button icon="info" filled />
+                  {/*<Button icon="info" filled />*/}
                 </View>
               )}
             </LinearGradient>
@@ -375,12 +401,14 @@ const Details = ({
           style={{
             flex: 1,
             flexDirection: 'row-reverse',
-            backgroundColor: '#00000080',
+            backgroundColor: '#00000040',
           }}
         >
-          <View
+          <BlurView
+            blurAmount={10}
+            blurType="dark"
             style={{
-              backgroundColor: theme.background,
+              // backgroundColor: theme.background,
               width: 400,
               paddingHorizontal: 16,
             }}
@@ -411,6 +439,9 @@ const Details = ({
                     {menu === 'Subtitle' && (
                       <ListButton
                         title="None"
+                        iconRight="subtitles_off"
+                        filled
+                        transparent
                         hasTVPreferredFocus={subtitleStream === -1}
                         onPress={() => {
                           setSubtitleStream(-1)
@@ -425,6 +456,15 @@ const Details = ({
                   <ListButton
                     title={item.title}
                     subtitle={item.name}
+                    iconRight={
+                      item.sdh
+                        ? 'closed_caption'
+                        : item.forced
+                          ? 'language'
+                          : null
+                    }
+                    filled
+                    transparent
                     hasTVPreferredFocus={
                       (menu === 'Video' && item.index === videoStream) ||
                       (menu === 'Audio' && item.index === audioStream) ||
@@ -449,7 +489,7 @@ const Details = ({
                 showsVerticalScrollIndicator={false}
               />
             )}
-          </View>
+          </BlurView>
         </View>
       </Modal>
     </>
@@ -477,15 +517,15 @@ const styles = StyleSheet.create({
   },
   detailsGradient: {
     paddingHorizontal: 64,
-    paddingBottom: 24,
+    paddingBottom: 16,
     paddingTop: 64,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '600',
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '600',
   },
 })

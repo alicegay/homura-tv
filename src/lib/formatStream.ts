@@ -13,17 +13,16 @@ export interface formattedStream {
   framerate?: number
   layout?: string
   default: boolean
+  forced: boolean
+  sdh: boolean
   original: MediaStream
 }
 
 const formatStream = (stream: MediaStream): formattedStream => {
   if (stream.Type === 'Video') {
-    let title = [
-      getVideoSize(stream.Width, stream.Height, stream.IsInterlaced),
-      // stream.AspectRatio,
-      stream.Codec.toUpperCase(),
-    ]
+    let title = [getVideoSize(stream.Width, stream.Height, stream.IsInterlaced)]
     if (stream.VideoRange.toUpperCase() != 'SDR') title.push(stream.VideoRange)
+    title.push(stream.Codec.toUpperCase())
     return {
       id: stream.Index,
       index: stream.Index,
@@ -38,16 +37,21 @@ const formatStream = (stream: MediaStream): formattedStream => {
       ),
       framerate: Math.round(stream.RealFrameRate),
       default: stream.IsDefault,
+      forced: stream.IsForced,
+      sdh: stream.IsHearingImpaired,
       original: stream,
     }
   } else if (stream.Type === 'Audio') {
     const title = [
       getLanguageName(stream.Language),
       getAudioFormat(stream.Codec),
+    ]
+    if (stream.Profile?.includes('Dolby Atmos')) title.push('+ Dolby Atmos')
+    title.push(
       stream.ChannelLayout
         ? capitalize(stream.ChannelLayout)
         : getAudioLayout(stream.Channels),
-    ]
+    )
     return {
       id: stream.Index,
       index: stream.Index,
@@ -60,13 +64,15 @@ const formatStream = (stream: MediaStream): formattedStream => {
         ? capitalize(stream.ChannelLayout)
         : getAudioLayout(stream.Channels),
       default: stream.IsDefault,
+      forced: stream.IsForced,
+      sdh: stream.IsHearingImpaired,
       original: stream,
     }
   } else if (stream.Type === 'Subtitle') {
-    const title = [
-      getLanguageName(stream.Language),
-      getSubtitleFormat(stream.Codec),
-    ]
+    const title = [getLanguageName(stream.Language)]
+    if (stream.IsForced) title.push('Forced')
+    if (stream.IsHearingImpaired) title.push('SDH')
+    title.push(getSubtitleFormat(stream.Codec))
     return {
       id: stream.Index,
       index: stream.Index,
@@ -75,6 +81,8 @@ const formatStream = (stream: MediaStream): formattedStream => {
       name: stream.Title,
       codec: stream.Codec.toUpperCase(),
       default: stream.IsDefault,
+      forced: stream.IsForced,
+      sdh: stream.IsHearingImpaired,
       original: stream,
     }
   }
@@ -127,7 +135,7 @@ const getSubtitleFormat = (codec: string): string => {
 
 const getLanguageName = (lang: string): string => {
   if (!lang) return 'Unknown'
-  if (lang.toLowerCase() in language) return language[lang.toLowerCase()][0]
+  if (lang.toLowerCase() in language) return language[lang.toLowerCase()][1]
   return lang.toUpperCase()
 }
 

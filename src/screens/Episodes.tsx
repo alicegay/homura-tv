@@ -13,6 +13,7 @@ import CenterLoading from 'components/CenterLoading'
 import useItems from 'api/useItems'
 import ticksToTime from 'lib/ticksToTime'
 import { useQueryClient } from '@tanstack/react-query'
+import BlurView from '@sbaiahmed1/react-native-blur'
 
 const Episodes = ({
   navigation,
@@ -106,7 +107,11 @@ const Episodes = ({
                   special
                     ? item.Name
                     : item.ParentIndexNumber !== 0
-                      ? item.IndexNumber + '. ' + item.Name
+                      ? (item.IndexNumberEnd
+                          ? item.IndexNumber + '-' + item.IndexNumberEnd
+                          : item.IndexNumber) +
+                        '. ' +
+                        item.Name
                       : 'Special: ' + item.Name
                 }
                 description={!special && item.Overview}
@@ -147,8 +152,8 @@ const Episodes = ({
                 style={[
                   !special &&
                     seasonDetails.data?.SpecialFeatureCount === 0 &&
-                    index === 0 && { paddingTop: 48 },
-                  !!special && index === 0 && { paddingTop: 48 },
+                    index === 0 && { paddingTop: 64 },
+                  !!special && index === 0 && { paddingTop: 64 },
                   !special &&
                     index === episodes.data.Items.length - 1 && {
                       paddingBottom: 16,
@@ -164,21 +169,24 @@ const Episodes = ({
             // estimatedItemSize={138}
           />
         )}
-        <Text
+        <BlurView
+          blurType="dark"
+          blurAmount={10}
           style={{
-            fontSize: 28,
-            paddingTop: 12,
+            width: width,
+            paddingVertical: 12,
             paddingHorizontal: 32,
             position: 'absolute',
           }}
-          fontWeight={700}
         >
-          {!!special
-            ? 'Special Features'
-            : !!season
-              ? season.Name
-              : series.Name}
-        </Text>
+          <Text style={{ fontSize: 28 }} fontWeight={700}>
+            {!!special
+              ? 'Special Features'
+              : !!season
+                ? season.Name
+                : series.Name}
+          </Text>
+        </BlurView>
       </View>
 
       {((!special && episodes.isLoading) ||
