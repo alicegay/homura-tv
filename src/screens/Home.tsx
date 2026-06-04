@@ -159,133 +159,143 @@ const Home = ({
             </View>
           </View>
 
-          {'Items' in resume.data && resume.data.Items.length > 0 && (
-            <View onLayout={(event) => setReusmeY(event.nativeEvent.layout.y)}>
-              <TVFocusGuideView trapFocusLeft trapFocusRight>
-                <FlatList
-                  ref={resumeList}
-                  data={resume.data.Items}
-                  keyExtractor={(item: Item) => item.Id}
-                  renderItem={({
-                    item,
-                    index,
-                  }: {
-                    item: Item
-                    index: number
-                  }) => (
-                    <ItemCard
-                      id={item.Id}
-                      title={
-                        item.Type === 'Episode' ? item.SeriesName : item.Name
-                      }
-                      subtitle={cardSubtitle(item)}
-                      image={
-                        client.server +
-                        '/Items/' +
-                        item.Id +
-                        '/Images/Primary?maxWidth=384&maxHeight=384'
-                      }
-                      blurhash={
-                        !!item.ImageBlurHashes.Primary
-                          ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
-                          : undefined
-                      }
-                      length={ticksToTime(item.RunTimeTicks)}
-                      progressPercentage={item.UserData.PlayedPercentage}
-                      onFocus={() => {
-                        resumeList.current.scrollToIndex({
-                          index: index,
-                          viewPosition: 0.5,
-                        })
-                        scrollView.current.scrollTo({
-                          x: 0,
-                          y: resumeY - height / 4,
-                          animated: true,
-                        })
-                      }}
-                      onPress={() => navigation.push('Details', { item })}
-                    />
-                  )}
-                  horizontal={true}
-                  showsHorizontalScrollIndicator={false}
-                  initialNumToRender={4}
-                  style={{ paddingTop: 32 }}
-                />
-              </TVFocusGuideView>
-              <Text
-                style={{
-                  fontSize: 28,
-                  top: -4,
-                  paddingHorizontal: 32,
-                  position: 'absolute',
-                }}
-                fontWeight={700}
+          {resume.data &&
+            'Items' in resume.data &&
+            resume.data.Items.length > 0 && (
+              <View
+                onLayout={(event) => setReusmeY(event.nativeEvent.layout.y)}
               >
-                Continue Watching
-              </Text>
-            </View>
-          )}
+                <TVFocusGuideView trapFocusLeft trapFocusRight>
+                  <FlatList
+                    ref={resumeList}
+                    data={resume.data.Items}
+                    keyExtractor={(item: Item) => item.Id}
+                    renderItem={({
+                      item,
+                      index,
+                    }: {
+                      item: Item
+                      index: number
+                    }) => (
+                      <ItemCard
+                        id={item.Id}
+                        title={
+                          item.Type === 'Episode' ? item.SeriesName : item.Name
+                        }
+                        subtitle={cardSubtitle(item)}
+                        image={
+                          client.server +
+                          '/Items/' +
+                          item.Id +
+                          '/Images/Primary?maxWidth=384&maxHeight=384'
+                        }
+                        blurhash={
+                          !!item.ImageBlurHashes.Primary
+                            ? item.ImageBlurHashes.Primary[
+                                item.ImageTags.Primary
+                              ]
+                            : undefined
+                        }
+                        length={ticksToTime(item.RunTimeTicks)}
+                        progressPercentage={item.UserData.PlayedPercentage}
+                        onFocus={() => {
+                          resumeList.current.scrollToIndex({
+                            index: index,
+                            viewPosition: 0.5,
+                          })
+                          scrollView.current.scrollTo({
+                            x: 0,
+                            y: resumeY - height / 4,
+                            animated: true,
+                          })
+                        }}
+                        onPress={() => navigation.push('Details', { item })}
+                      />
+                    )}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    initialNumToRender={4}
+                    style={{ paddingTop: 32 }}
+                  />
+                </TVFocusGuideView>
+                <Text
+                  style={{
+                    fontSize: 28,
+                    top: -4,
+                    paddingHorizontal: 32,
+                    position: 'absolute',
+                  }}
+                  fontWeight={700}
+                >
+                  Continue Watching
+                </Text>
+              </View>
+            )}
 
-          {'Items' in nextup.data && nextup.data.Items.length > 0 && (
-            <View>
-              <TVFocusGuideView trapFocusLeft trapFocusRight>
-                <FlatList
-                  ref={nextupList}
-                  data={nextup.data.Items}
-                  keyExtractor={(item: Item) => item.Id}
-                  renderItem={({
-                    item,
-                    index,
-                  }: {
-                    item: Item
-                    index: number
-                  }) => (
-                    <ItemCard
-                      id={item.Id}
-                      title={item.SeriesName}
-                      subtitle={cardSubtitle(item)}
-                      image={
-                        client.server +
-                        '/Items/' +
-                        item.Id +
-                        '/Images/Primary?maxWidth=384&maxHeight=384'
-                      }
-                      blurhash={
-                        !!item.ImageBlurHashes.Primary
-                          ? item.ImageBlurHashes.Primary[item.ImageTags.Primary]
-                          : undefined
-                      }
-                      length={ticksToTime(item.RunTimeTicks)}
-                      progressPercentage={item.UserData.PlayedPercentage}
-                      onFocus={() => {
-                        nextupList.current.scrollToIndex({
-                          index: index,
-                          viewPosition: 0.5,
-                        })
-                        scrollView.current.scrollToEnd({ animated: true })
-                      }}
-                      onPress={() => navigation.push('Details', { item })}
-                    />
-                  )}
-                  horizontal={true}
-                  showsHorizontalScrollIndicator={false}
-                  initialNumToRender={4}
-                  style={{ paddingTop: 32 }}
-                />
-              </TVFocusGuideView>
-              <Text
-                style={{
-                  fontSize: 28,
-                  top: -4,
-                  paddingHorizontal: 32,
-                  position: 'absolute',
-                }}
-                fontWeight={700}
-              >
-                Next Up
-              </Text>
-            </View>
-          )}
+          {nextup.data &&
+            'Items' in nextup.data &&
+            nextup.data.Items.length > 0 && (
+              <View>
+                <TVFocusGuideView trapFocusLeft trapFocusRight>
+                  <FlatList
+                    ref={nextupList}
+                    data={nextup.data.Items}
+                    keyExtractor={(item: Item) => item.Id}
+                    renderItem={({
+                      item,
+                      index,
+                    }: {
+                      item: Item
+                      index: number
+                    }) => (
+                      <ItemCard
+                        id={item.Id}
+                        title={item.SeriesName}
+                        subtitle={cardSubtitle(item)}
+                        image={
+                          client.server +
+                          '/Items/' +
+                          item.Id +
+                          '/Images/Primary?maxWidth=384&maxHeight=384'
+                        }
+                        blurhash={
+                          !!item.ImageBlurHashes.Primary
+                            ? item.ImageBlurHashes.Primary[
+                                item.ImageTags.Primary
+                              ]
+                            : undefined
+                        }
+                        length={ticksToTime(item.RunTimeTicks)}
+                        progressPercentage={item.UserData.PlayedPercentage}
+                        onFocus={() => {
+                          nextupList.current.scrollToIndex({
+                            index: index,
+                            viewPosition: 0.5,
+                          })
+                          scrollView.current.scrollToEnd({ animated: true })
+                        }}
+                        onPress={() => navigation.push('Details', { item })}
+                      />
+                    )}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    initialNumToRender={4}
+                    style={{ paddingTop: 32 }}
+                  />
+                </TVFocusGuideView>
+                <Text
+                  style={{
+                    fontSize: 28,
+                    top: -4,
+                    paddingHorizontal: 32,
+                    position: 'absolute',
+                  }}
+                  fontWeight={700}
+                >
+                  Next Up
+                </Text>
+              </View>
+            )}
         </ScrollView>
       )}
 

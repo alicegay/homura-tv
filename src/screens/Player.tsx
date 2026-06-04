@@ -8,12 +8,6 @@ import {
 } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import RootStackParamList from 'types/RootStackParamList'
-import Video, {
-  SelectedTrackType,
-  SelectedVideoTrackType,
-  VideoRef,
-  ViewType,
-} from 'react-native-video'
 import { useBackHandler } from '@react-native-community/hooks'
 import { useQueryClient } from '@tanstack/react-query'
 import useClient from 'hooks/useClient'
@@ -50,6 +44,13 @@ import Animated, {
 import { IntroSegments } from 'jellyfin-api/lib/types/other/IntroTimestamps'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { AxiosError } from 'axios'
+import VideoMPV, { VideoMPVRef } from 'react-native-video-mpv'
+import Video, {
+  SelectedTrackType,
+  SelectedVideoTrackType,
+  VideoRef,
+  ViewType,
+} from 'react-native-video'
 
 let menuX = 0
 let menuY = 0
@@ -65,9 +66,9 @@ const Player = ({
     if (introVisibility || creditVisibility) {
       if (button == 'select') {
         if (creditVisibility) {
-          videoRef.current.seek(introSegments.Credits.IntroEnd)
+          seek(introSegments.Credits.IntroEnd)
         } else {
-          videoRef.current.seek(introSegments.Introduction.IntroEnd)
+          seek(introSegments.Introduction.IntroEnd)
         }
       } else if (button == 'up' || button == 'down') {
         setIntroVisibility(false)
@@ -151,7 +152,7 @@ const Player = ({
     }
     if (button == 'select' && seeking) {
       setSeeking(false)
-      videoRef.current.seek(seekTime)
+      seek(seekTime)
       resetControlsTimeout()
     }
 
@@ -174,8 +175,8 @@ const Player = ({
   }
   useTVEventHandler(TVEventHandler)
 
-  const [playPauseButton, setPlayPauseButton] = useState(true)
-  const [infoButton, setInfoButton] = useState(false)
+  const [playPauseButton, setPlayPauseButton] = useState<boolean>(true)
+  const [infoButton, setInfoButton] = useState<boolean>(false)
 
   const controlsTimeout = useRef(null)
   const setControlsTimeout = () => {
@@ -192,7 +193,7 @@ const Player = ({
     setControlsTimeout()
   }
 
-  const [controlsVisibility, setControlsVisibility] = useState(true)
+  const [controlsVisibility, setControlsVisibility] = useState<boolean>(true)
   const controlsAnim = useSharedValue(1)
   const controlsView = useAnimatedStyle(() => ({
     bottom: 0 - (1 - controlsAnim.value) * 32,
@@ -211,12 +212,16 @@ const Player = ({
     }
   }, [controlsVisibility])
 
-  const { item, startFrom, streams: initStreams } = route.params
+  const { item, startFrom, streams: initStreams, fallback } = route.params
+  const [fallbackPlayer, setFallbackPlayer] = useState<boolean>(
+    fallback ?? false,
+  )
   const client = useClient()
   const theme = useTheme()
   const settings = useSettings()
   const query = useQueryClient()
 
+  const mpvRef = useRef<VideoMPVRef>(null)
   const videoRef = useRef<VideoRef>(null)
   const [source, setSource] = useState<string>(null)
   const [buffering, setBuffering] = useState(true)
@@ -269,7 +274,7 @@ const Player = ({
     const playbackInfo: PlaybackInfoQuery = {
       DeviceProfile: settings.deviceProfile,
       MediaSourceId: item.Id,
-      MaxStreamingBitrate: 50000000,
+      MaxStreamingBitrate: 500_000_000,
       MaxAudioChannels: 8,
       AudioStreamIndex: s.audios[initStreams.audio].id,
       SubtitleStreamIndex:
@@ -285,6 +290,18 @@ const Player = ({
         //console.log('DIRECT PLAY')
         setPlayMethod('DirectPlay')
         setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
+        const stream = res.MediaSources[0].MediaStreams.filter(
+          (s) => s.Type === 'Video',
+        )[0]
+        if (stream.VideoRange === 'HDR' || stream.ColorPrimaries === 'bt2020') {
+          console.log('Using Fallback Player for HDR/BT2020')
+          setFallbackPlayer(true)
+        } else {
+          mpvRef.current.setSource({
+            uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
+            startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
+          })
+        }
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
           //console.log('DIRECT STREAM')
@@ -294,6 +311,10 @@ const Player = ({
           setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
+        mpvRef.current.setSource({
+          uri: client.server + res.MediaSources[0].TranscodingUrl,
+          startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
+        })
         // console.log(res)
         // console.log(res.MediaSources[0].MediaStreams)
       }
@@ -393,28 +414,140 @@ const Player = ({
     })
   }
 
+  const introSkipper = (current: number) => {
+    if (introSegments) {
+      if (introSegments.Introduction?.Valid) {
+        if (
+          !introVisibility &&
+          !controlsVisibility &&
+          current > introSegments.Introduction.ShowSkipPromptAt &&
+          current <
+            introSegments.Introduction.ShowSkipPromptAt +
+              settings.introSkipperPrompt
+        ) {
+          setIntroVisibility(true)
+        } else if (
+          (introVisibility &&
+            current < introSegments.Introduction.ShowSkipPromptAt) ||
+          (introVisibility &&
+            current >
+              introSegments.Introduction.ShowSkipPromptAt +
+                settings.introSkipperPrompt)
+        ) {
+          setIntroVisibility(false)
+        }
+      }
+      if (introSegments.Credits?.Valid) {
+        if (
+          !introVisibility &&
+          !controlsVisibility &&
+          current > introSegments.Credits.ShowSkipPromptAt &&
+          current <
+            introSegments.Credits.ShowSkipPromptAt + settings.introSkipperPrompt
+        ) {
+          setCreditVisibility(true)
+        } else if (
+          (creditVisibility &&
+            current < introSegments.Credits.ShowSkipPromptAt) ||
+          (creditVisibility &&
+            current >
+              introSegments.Credits.ShowSkipPromptAt +
+                settings.introSkipperPrompt)
+        ) {
+          setCreditVisibility(false)
+        }
+      }
+    }
+  }
+
+  const seek = (time: number) => {
+    if (fallbackPlayer) {
+      videoRef.current.seek(time)
+    } else {
+      mpvRef.current.seek(time)
+    }
+  }
+
   return (
     <View style={{ backgroundColor: '#000', width: '100%', height: '100%' }}>
       <Pressable style={{ width: 0, height: 0 }} hasTVPreferredFocus={true} />
 
-      {!!source && (
+      {!fallbackPlayer ? (
+        <VideoMPV
+          ref={mpvRef}
+          paused={seeking ? true : paused}
+          langsPref={{
+            subMatchingAudio: false,
+          }}
+          onBuffer={(e) => {
+            setBuffering(e.isBuffering)
+          }}
+          onProgress={(e) => {
+            console.log(e.currentTime + e.progress)
+            if (!seeking) {
+              setCurrentTime(e.currentTime)
+              introSkipper(e.currentTime)
+            }
+          }}
+          onLoadStart={() => {
+            // for HDR if MPV on Android ever supports HDR:
+            // mpvRef.current.setStringOption('vo', 'gpu-next')
+            // mpvRef.current.setStringOption('target-colorspace-hint', 'yes')
+            mpvRef.current.setStringOption('sub-use-margins', 'no')
+            mpvRef.current.setAudioTrackID(
+              playMethod !== 'DirectPlay' ? 1 : audioStream + 1,
+            )
+            mpvRef.current.setSubtitleTrackID(
+              subtitleStream === -1 ? -1 : subtitleStream + 1,
+            )
+          }}
+          onLoad={(e) => {
+            setCurrentTime(e.currentTime)
+            setDuration(e.duration)
+            sessions
+              .sessions(client, { deviceId: client.deviceID })
+              .then((r) => {
+                if (r.length > 0) {
+                  setSessionInfo(r[0])
+                  if (
+                    r[0].PlayState.PlayMethod !== 'DirectPlay' &&
+                    'TranscodingInfo' in r[0] &&
+                    r[0].TranscodingInfo.IsVideoDirect
+                  )
+                    setPlayMethod('DirectStream')
+                  if ('TranscodingInfo' in r[0])
+                    setBitrate(r[0].TranscodingInfo.Bitrate)
+                }
+              })
+          }}
+          onEndReached={() => {
+            playingStopped()
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          onStop={(e) => {
+            console.log('STOPPED', e.reason)
+          }}
+          onError={(e) => {
+            console.log('ERROR', e.error.errorString)
+            ToastAndroid.show(e.error.errorString, ToastAndroid.LONG)
+            playingStopped(true)
+            clearControlsTimeout()
+            navigation.pop()
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+          }}
+        />
+      ) : (
         <Video
           ref={videoRef}
           source={{
             uri: source,
-            metadata: {
-              title: item.Name,
-              subtitle:
-                'SeriesName' in item
-                  ? item.SeriesName +
-                    ' ' +
-                    (item.ParentIndexNumber === 0
-                      ? 'Special'
-                      : 'S' + item.ParentIndexNumber + ':E' + item.IndexNumber)
-                  : null,
-              artist: 'Artists' in item ? item.Artists.join(', ') : null,
-              imageUri: client.server + '/Items/' + item.Id + '/Images/Primary',
-            },
             startPosition: !!startFrom ? ticksToSecs(startFrom) * 1000 : 0,
           }}
           viewType={ViewType.SURFACE}
@@ -438,9 +571,6 @@ const Player = ({
                 : SelectedTrackType.DISABLED,
             value: subtitleStream,
           }}
-          bufferConfig={{
-            minBufferMs: 5000,
-          }}
           onBuffer={(e) => {
             setBuffering(e.isBuffering)
           }}
@@ -448,60 +578,16 @@ const Player = ({
             if (!seeking) {
               setCurrentTime(e.currentTime)
               setBufferTime(e.playableDuration)
-              if (!!introSegments && introSegments.Introduction?.Valid) {
-                if (
-                  e.currentTime > introSegments.Introduction.ShowSkipPromptAt &&
-                  e.currentTime <
-                    introSegments.Introduction.ShowSkipPromptAt +
-                      settings.introSkipperPrompt &&
-                  !introVisibility &&
-                  !controlsVisibility
-                ) {
-                  setIntroVisibility(true)
-                } else if (
-                  (e.currentTime <
-                    introSegments.Introduction.ShowSkipPromptAt &&
-                    introVisibility) ||
-                  (e.currentTime >
-                    introSegments.Introduction.ShowSkipPromptAt +
-                      settings.introSkipperPrompt &&
-                    introVisibility)
-                ) {
-                  setIntroVisibility(false)
-                }
-              }
-              if (!!introSegments && introSegments.Credits?.Valid) {
-                if (
-                  e.currentTime > introSegments.Credits.ShowSkipPromptAt &&
-                  e.currentTime <
-                    introSegments.Credits.ShowSkipPromptAt +
-                      settings.introSkipperPrompt &&
-                  !creditVisibility &&
-                  !controlsVisibility
-                ) {
-                  setCreditVisibility(true)
-                } else if (
-                  (e.currentTime < introSegments.Credits.ShowSkipPromptAt &&
-                    creditVisibility) ||
-                  (e.currentTime >
-                    introSegments.Credits.ShowSkipPromptAt +
-                      settings.introSkipperPrompt &&
-                    creditVisibility)
-                ) {
-                  setCreditVisibility(false)
-                }
-              }
+              introSkipper(e.currentTime)
             }
           }}
           onSeek={(e) => {
-            //console.log('SEEK: ' + secsToTime(e.currentTime))
             setCurrentTime(e.currentTime)
             playingProgress('timeupdate', e.currentTime)
           }}
           onLoad={(e) => {
             setDuration(e.duration)
             playingProgress(undefined, e.currentTime)
-            //if (!!startFrom) videoRef.current.seek(ticksToSecs(startFrom))
             sessions
               .sessions(client, { deviceId: client.deviceID })
               .then((r) => {
@@ -519,7 +605,6 @@ const Player = ({
               })
           }}
           onVideoTracks={(e) => {
-            //console.log(e)
             if (e.videoTracks.length > 0) {
               setCurrentVideoCodec(formatPlayerCodec(e.videoTracks[0].codecs))
               setCurrentVideoResolution(
@@ -528,11 +613,9 @@ const Player = ({
             }
           }}
           onAudioTracks={(e) => {
-            //console.log(e)
             setCurrentAudioCodec(formatPlayerCodec(e.audioTracks[0].type))
           }}
           onEnd={() => {
-            //console.log('PLAYBACK END: ' + secsToTime(currentTime))
             playingStopped()
             clearControlsTimeout()
             navigation.pop()

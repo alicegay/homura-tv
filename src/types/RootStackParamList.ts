@@ -11,6 +11,7 @@ type RootStackParamList = {
     item: Item
     startFrom?: number
     streams: { video: number; audio: number; subtitle: number }
+    fallback?: boolean
   }
   Settings: undefined
   SelectServer: undefined

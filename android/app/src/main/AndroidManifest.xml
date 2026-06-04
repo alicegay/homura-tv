@@ -13,7 +13,8 @@
       android:theme="@style/AppTheme"
       android:usesCleartextTraffic="true"
       android:supportsRtl="true"
-      android:screenOrientation="landscape">
+      android:screenOrientation="landscape"
+      android:enableOnBackInvokedCallback="false">
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -28,13 +29,5 @@
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
         </intent-filter>
       </activity>
-      <service
-        android:name="com.brentvatne.exoplayer.VideoPlaybackService"
-        android:exported="false"
-        android:foregroundServiceType="mediaPlayback">
-          <intent-filter>
-            <action android:name="androidx.media3.session.MediaSessionService" />
-          </intent-filter>
-      </service>
     </application>
 </manifest>

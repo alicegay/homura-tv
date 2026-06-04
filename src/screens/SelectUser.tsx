@@ -11,6 +11,7 @@ import TextInput from 'components/TextInput'
 import Button from 'components/Button'
 import CenterLoading from 'components/CenterLoading'
 import DeviceInfo from 'react-native-device-info'
+import { v4 as uuidv4 } from 'uuid'
 
 const SelectUser = ({
   navigation,
@@ -25,7 +26,7 @@ const SelectUser = ({
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const passwordRef = useRef<any>()
+  const passwordRef = useRef<any>(null)
 
   const styles = StyleSheet.create({
     view: {
@@ -41,10 +42,12 @@ const SelectUser = ({
   const submit = async () => {
     setIsLoading(true)
     setError('')
-    const clientName = DeviceInfo.getApplicationName()
-    const deviceName = await DeviceInfo.getDeviceName()
-    const deviceID = client.deviceID
-    const clientVer = DeviceInfo.getVersion()
+    const clientName = encodeURIComponent(DeviceInfo.getApplicationName())
+    const deviceName = encodeURIComponent(await DeviceInfo.getDeviceName())
+    const deviceID = encodeURIComponent(
+      client.deviceID ?? 'homura-tv  _' + uuidv4(),
+    )
+    const clientVer = encodeURIComponent(DeviceInfo.getVersion())
     users
       .authenticateByName(
         server,
@@ -81,9 +84,9 @@ const SelectUser = ({
   const submitError = (error: AxiosError) => {
     setIsLoading(false)
     console.log(error.message)
-    console.log(error.code)
-    if (error.code === 'ERR_BAD_REQUEST')
-      setError('Incorrect username and/or password')
+    console.log(error.status, error.code)
+    if (error.status === 400) setError('Request failed')
+    if (error.status === 401) setError('Incorrect username and/or password')
     if (error.code === 'ERR_NETWORK')
       setError('Could not connect to the server')
   }
