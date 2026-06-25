@@ -42,6 +42,8 @@ const Folder = ({
     SortOrder: sortOrder,
     Fields: 'OriginalTitle',
     EnableImageTypes: 'Primary,Backdrop,Logo',
+    Recursive: false,
+    IncludeItemTypes: 'Folder,Movie,Series',
   })
 
   const [showSortMenu, setShowSortMenu] = useState(false)

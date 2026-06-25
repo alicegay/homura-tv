@@ -369,6 +369,25 @@ const Details = ({
                       </Button>
                     )
                   )}
+                  {data?.LocalTrailerCount > 0 && trailers.data && (
+                    <Button
+                      icon="theaters"
+                      filled
+                      onPress={() => {
+                        const s = sortStreams(trailers.data[0].MediaStreams)
+                        navigation.push('Player', {
+                          item: trailers.data[0],
+                          streams: {
+                            video: s.defaults.video,
+                            audio: s.defaults.audio,
+                            subtitle: s.defaults.subtitle,
+                          },
+                        })
+                      }}
+                    >
+                      Trailer
+                    </Button>
+                  )}
                   {data?.SpecialFeatureCount > 0 && (
                     <Button
                       icon="star"
