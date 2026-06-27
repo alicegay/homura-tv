@@ -287,7 +287,6 @@ const Player = ({
       setPlaySession(res.PlaySessionId)
       setBitrate(res.MediaSources[0].Bitrate)
       if (res.MediaSources[0].SupportsDirectPlay) {
-        //console.log('DIRECT PLAY')
         setPlayMethod('DirectPlay')
         setSource(client.server + '/Videos/' + item.Id + '/stream?Static=true')
         const stream = res.MediaSources[0].MediaStreams.filter(
@@ -304,10 +303,8 @@ const Player = ({
         }
       } else {
         if (res.MediaSources[0].SupportsDirectStream) {
-          //console.log('DIRECT STREAM')
           setPlayMethod('DirectStream')
         } else {
-          //console.log('TRANSCODING')
           setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
@@ -315,8 +312,6 @@ const Player = ({
           uri: client.server + res.MediaSources[0].TranscodingUrl,
           startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
         })
-        // console.log(res)
-        // console.log(res.MediaSources[0].MediaStreams)
       }
     })
     if (item.Type === 'Episode' && settings.introSkipper) {
@@ -336,15 +331,13 @@ const Player = ({
     if (!firstPause) {
       setFirstPause(true)
     } else {
-      //console.log('PAUSE/UNPAUSE: ' + secsToTime(currentTime))
       playingProgress(paused ? 'pause' : 'unpause')
     }
   }, [paused])
 
   useInterval(() => {
-    //console.log('PROGRESS: ' + secsToTime(currentTime))
     playingProgress('timeupdate')
-  }, 10_0000)
+  }, 10_000)
 
   const playingProgress = (
     event: 'timeupdate' | 'pause' | 'unpause' | undefined,
@@ -386,22 +379,31 @@ const Player = ({
       resetControlsTimeout()
       return true
     } else {
-      //console.log('PLAYBACK END: ' + secsToTime(currentTime))
       playingStopped()
       clearControlsTimeout()
       return false
     }
   })
 
-  const playingStopped = (failed: boolean = false) => {
+  const playingStopped = (failed: boolean = false, pos?: number) => {
     const payload: ProgressStoppedQuery = {
+      IsPaused: true,
       ItemId: item.Id,
       MediaSourceId: item.Id,
-      SessionId: playSession,
       PlaySessionId: playSession,
-      PositionTicks:
-        currentTime === 0 && !!startFrom ? startFrom : secsToTicks(currentTime),
+      PositionTicks: pos
+        ? secsToTicks(pos)
+        : currentTime === 0 && !!startFrom
+          ? startFrom
+          : secsToTicks(currentTime),
       Failed: failed,
+      PlayMethod: playMethod,
+      RepeatMode: 'RepeatNone',
+      AudioStreamIndex: streams.audios[initStreams.audio].id,
+      SubtitleStreamIndex:
+        initStreams.subtitle === -1
+          ? -1
+          : streams.subtitles[initStreams.subtitle].id,
     }
     sessions.playingStopped(client, payload).then(() => {
       query.invalidateQueries({ queryKey: ['views'] })
@@ -483,10 +485,9 @@ const Player = ({
             setBuffering(e.isBuffering)
           }}
           onProgress={(e) => {
-            console.log(e.currentTime + e.progress)
             if (!seeking) {
-              setCurrentTime(e.currentTime)
-              introSkipper(e.currentTime)
+              setCurrentTime(e.currentTime + e.progress)
+              introSkipper(e.currentTime + e.progress)
             }
           }}
           onLoadStart={() => {
@@ -504,6 +505,7 @@ const Player = ({
           onLoad={(e) => {
             setCurrentTime(e.currentTime)
             setDuration(e.duration)
+            playingProgress(undefined, e.currentTime)
             sessions
               .sessions(client, { deviceId: client.deviceID })
               .then((r) => {
@@ -521,7 +523,7 @@ const Player = ({
               })
           }}
           onEndReached={() => {
-            playingStopped()
+            playingStopped(false, duration)
             clearControlsTimeout()
             navigation.pop()
           }}
