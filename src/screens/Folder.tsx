@@ -43,7 +43,7 @@ const Folder = ({
     Fields: 'OriginalTitle',
     EnableImageTypes: 'Primary,Backdrop,Logo',
     Recursive: false,
-    IncludeItemTypes: 'Folder,Movie,Series',
+    IncludeItemTypes: 'Folder,Movie,Series,MusicVideo',
   })
 
   const [showSortMenu, setShowSortMenu] = useState(false)
