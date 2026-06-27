@@ -670,7 +670,7 @@ const Player = ({
                 {item.Name}
               </Text>
               {'SeriesName' in item && (
-                <Text style={{ fontSize: 26 }} fontWeight={500}>
+                <Text style={{ fontSize: 16 }} fontWeight={500}>
                   {item.SeriesName +
                     ' ' +
                     (item.ParentIndexNumber === 0
@@ -686,13 +686,13 @@ const Player = ({
               {item.Type === 'MusicVideo' &&
                 'Artists' in item &&
                 item.Artists.length > 0 && (
-                  <Text style={{ fontSize: 20 }} fontWeight={500}>
+                  <Text style={{ fontSize: 16 }} fontWeight={500}>
                     {item.Artists.join(', ')}
                   </Text>
                 )}
             </View>
             <Clock
-              style={{ fontSize: 24, verticalAlign: 'bottom' }}
+              style={{ fontSize: 16, verticalAlign: 'bottom' }}
               fontWeight={500}
             />
           </View>
