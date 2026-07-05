@@ -13,7 +13,9 @@ import averageBlurhash from 'lib/averageBlurhash'
 import useTheme from 'hooks/useTheme'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { FasterImageView } from '@candlefinance/faster-image'
+import BlurView from '@sbaiahmed1/react-native-blur'
 import cardColor from 'lib/cardColor'
+import useSettings from 'hooks/useSettings'
 
 interface Props {
   id: string
@@ -64,6 +66,7 @@ const ItemCard = ({
   nextFocusLeft,
   nextFocusRight,
 }: Props) => {
+  const { reduceEffects } = useSettings()
   const theme = useTheme()
   const [focus, setFocus] = useState(hasTVPreferredFocus ? true : false)
   const colorAverage = !!blurhash ? averageBlurhash(blurhash) : theme.tint
@@ -126,13 +129,11 @@ const ItemCard = ({
       overflow: 'hidden',
     },
     length: {
-      flex: 0,
       position: 'absolute',
       bottom: 3,
       right: 6,
-      paddingHorizontal: 6,
-      borderRadius: 6,
-      backgroundColor: theme.background,
+      paddingHorizontal: 8,
+      borderRadius: 8,
     },
     progress: {
       position: 'absolute',
@@ -199,11 +200,16 @@ const ItemCard = ({
               }}
             />
           )}
-          {!!length && (
-            <View style={styles.length}>
-              <Text style={[styles.length]}>{length}</Text>
-            </View>
-          )}
+          {!!length &&
+            (reduceEffects ? (
+              <View style={[styles.length, { backgroundColor: '#000000A0' }]}>
+                <Text style={{ fontSize: 12 }}>{length}</Text>
+              </View>
+            ) : (
+              <BlurView blurType="dark" blurRounds={1} style={styles.length}>
+                <Text style={{ fontSize: 12 }}>{length}</Text>
+              </BlurView>
+            ))}
           {!!progressPercentage && <View style={styles.progress} />}
         </View>
         <Text

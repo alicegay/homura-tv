@@ -152,6 +152,7 @@ const Home = ({
               {/* <Button icon="update">Update</Button> */}
               <Button
                 icon="settings"
+                transparent
                 onPress={() => {
                   navigation.push('Settings')
                 }}

@@ -296,7 +296,7 @@ const Player = ({
           console.log('Using Fallback Player for HDR/BT2020')
           setFallbackPlayer(true)
         } else {
-          mpvRef.current.setSource({
+          mpvRef.current?.setSource({
             uri: client.server + '/Videos/' + item.Id + '/stream?Static=true',
             startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
           })
@@ -308,7 +308,7 @@ const Player = ({
           setPlayMethod('Transcode')
         }
         setSource(client.server + res.MediaSources[0].TranscodingUrl)
-        mpvRef.current.setSource({
+        mpvRef.current?.setSource({
           uri: client.server + res.MediaSources[0].TranscodingUrl,
           startPosition: !!startFrom ? ticksToSecs(startFrom) : 0,
         })

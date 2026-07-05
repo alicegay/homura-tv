@@ -20,7 +20,7 @@ import usePlayedItem from 'api/usePlayedItem'
 import { FasterImageView } from '@candlefinance/faster-image'
 import useLocalTrailers from 'api/useLocalTrailers'
 import BlurView from '@sbaiahmed1/react-native-blur'
-import { Icon } from 'components/Icon'
+import useSettings from 'hooks/useSettings'
 
 const Details = ({
   navigation,
@@ -35,6 +35,7 @@ const Details = ({
     item.Type === 'Video' ||
     item.Type === 'Audio'
 
+  const { preferFallback } = useSettings()
   const client = useClient()
   const theme = useTheme()
   const query = useQueryClient()
@@ -48,7 +49,8 @@ const Details = ({
   const [audioStream, setAudioStream] = useState<number>(null)
   const [subtitleStream, setSubtitleStream] = useState<number>(null)
   const [showStreamMenu, setShowStreamMenu] = useState(false)
-  const [menu, setMenu] = useState<'Video' | 'Audio' | 'Subtitle'>(null)
+  type menuTypes = 'Video' | 'Audio' | 'Subtitle' | 'Play' | 'Resume'
+  const [menu, setMenu] = useState<menuTypes>(null)
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -58,12 +60,12 @@ const Details = ({
     return unsubscribe
   }, [navigation])
 
-  const streamMenuList = useRef<FlashList<any>>()
+  const streamMenuList = useRef<FlashList<any>>(null)
 
   const dismissStreamMenu = () => {
     setShowStreamMenu(false)
   }
-  const showMenu = (menu: 'Video' | 'Audio' | 'Subtitle') => {
+  const showMenu = (menu: menuTypes) => {
     setMenu(menu)
     setShowStreamMenu(true)
   }
@@ -184,10 +186,15 @@ const Details = ({
                   videoStream !== null &&
                   audioStream !== null &&
                   subtitleStream !== null && (
-                    <>
-                      <Text>{streams.videos[videoStream]?.title}</Text>
-                    </>
+                    <Text>{streams.videos[videoStream]?.title}</Text>
                   )}
+                {'MediaSources' in data && (
+                  <Text>
+                    {(
+                      Math.round(data.MediaSources[0].Bitrate / 1000 / 100) / 10
+                    ).toString() + ' Mbps'}
+                  </Text>
+                )}
               </View>
 
               {video ? (
@@ -213,7 +220,11 @@ const Details = ({
                               audio: audioStream,
                               subtitle: subtitleStream,
                             },
+                            fallback: preferFallback,
                           })
+                        }}
+                        onLongPress={() => {
+                          showMenu('Resume')
                         }}
                       >
                         Resume from{' '}
@@ -238,6 +249,7 @@ const Details = ({
                             audio: audioStream,
                             subtitle: subtitleStream,
                           },
+                          fallback: preferFallback,
                         })
                       }}
                     >
@@ -257,6 +269,7 @@ const Details = ({
                               audio: s.defaults.audio,
                               subtitle: s.defaults.subtitle,
                             },
+                            fallback: preferFallback,
                           })
                         }}
                       >
@@ -424,89 +437,135 @@ const Details = ({
           }}
         >
           <BlurView
-            blurAmount={10}
+            blurRounds={15}
             blurType="dark"
             style={{
-              // backgroundColor: theme.background,
               width: 400,
               paddingHorizontal: 16,
             }}
           >
-            {!isLoading && !!streams && (
-              <FlashList
-                ref={streamMenuList}
-                data={
-                  menu === 'Video'
-                    ? streams.videos
-                    : menu === 'Audio'
-                      ? streams.audios
-                      : streams.subtitles
-                }
-                keyExtractor={(item) => item.id.toString()}
-                ListHeaderComponent={
-                  <>
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        paddingLeft: 24,
-                        paddingVertical: 16,
-                      }}
-                      fontWeight={700}
-                    >
-                      Select {menu}
-                    </Text>
-                    {menu === 'Subtitle' && (
+            {menu === 'Play' || menu === 'Resume' ? (
+              <>
+                <ListButton
+                  title={menu}
+                  icon="play_arrow"
+                  filled
+                  transparent
+                  hasTVPreferredFocus
+                  onPress={() => {
+                    navigation.push('Player', {
+                      item: data,
+                      streams: {
+                        video: videoStream,
+                        audio: audioStream,
+                        subtitle: subtitleStream,
+                      },
+                      fallback: preferFallback,
+                    })
+                  }}
+                />
+                <ListButton
+                  title={
+                    menu +
+                    ' with ' +
+                    (preferFallback ? 'Default' : 'Fallback') +
+                    ' Player'
+                  }
+                  icon="play_arrow"
+                  filled
+                  transparent
+                  onPress={() => {
+                    navigation.push('Player', {
+                      item: data,
+                      streams: {
+                        video: videoStream,
+                        audio: audioStream,
+                        subtitle: subtitleStream,
+                      },
+                      fallback: !preferFallback,
+                    })
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                {!isLoading && !!streams && (
+                  <FlashList
+                    ref={streamMenuList}
+                    data={
+                      menu === 'Video'
+                        ? streams.videos
+                        : menu === 'Audio'
+                          ? streams.audios
+                          : streams.subtitles
+                    }
+                    keyExtractor={(item) => item.id.toString()}
+                    ListHeaderComponent={
+                      <>
+                        <Text
+                          style={{
+                            fontSize: 24,
+                            paddingLeft: 24,
+                            paddingVertical: 16,
+                          }}
+                          fontWeight={700}
+                        >
+                          Select {menu}
+                        </Text>
+                        {menu === 'Subtitle' && (
+                          <ListButton
+                            title="None"
+                            iconRight="subtitles_off"
+                            filled
+                            transparent
+                            hasTVPreferredFocus={subtitleStream === -1}
+                            onPress={() => {
+                              setSubtitleStream(-1)
+                              dismissStreamMenu()
+                            }}
+                          />
+                        )}
+                      </>
+                    }
+                    ListFooterComponent={<View style={{ height: 16 }} />}
+                    renderItem={({ item, index }) => (
                       <ListButton
-                        title="None"
-                        iconRight="subtitles_off"
+                        title={item.title}
+                        subtitle={item.name}
+                        iconRight={
+                          item.sdh
+                            ? 'closed_caption'
+                            : item.forced
+                              ? 'language'
+                              : null
+                        }
                         filled
                         transparent
-                        hasTVPreferredFocus={subtitleStream === -1}
+                        hasTVPreferredFocus={
+                          (menu === 'Video' && item.index === videoStream) ||
+                          (menu === 'Audio' && item.index === audioStream) ||
+                          (menu === 'Subtitle' && item.index === subtitleStream)
+                        }
                         onPress={() => {
-                          setSubtitleStream(-1)
+                          if (menu === 'Video') setVideoStream(item.index)
+                          if (menu === 'Audio') setAudioStream(item.index)
+                          if (menu === 'Subtitle') setSubtitleStream(item.index)
                           dismissStreamMenu()
+                        }}
+                        onFocus={() => {
+                          streamMenuList.current.scrollToIndex({
+                            index: index,
+                            viewPosition: 0.5,
+                            animated: true,
+                          })
                         }}
                       />
                     )}
-                  </>
-                }
-                ListFooterComponent={<View style={{ height: 16 }} />}
-                renderItem={({ item, index }) => (
-                  <ListButton
-                    title={item.title}
-                    subtitle={item.name}
-                    iconRight={
-                      item.sdh
-                        ? 'closed_caption'
-                        : item.forced
-                          ? 'language'
-                          : null
-                    }
-                    filled
-                    transparent
-                    hasTVPreferredFocus={
-                      (menu === 'Video' && item.index === videoStream) ||
-                      (menu === 'Audio' && item.index === audioStream) ||
-                      (menu === 'Subtitle' && item.index === subtitleStream)
-                    }
-                    onPress={() => {
-                      if (menu === 'Video') setVideoStream(item.index)
-                      if (menu === 'Audio') setAudioStream(item.index)
-                      if (menu === 'Subtitle') setSubtitleStream(item.index)
-                      dismissStreamMenu()
-                    }}
-                    onFocus={() => {
-                      streamMenuList.current.scrollToIndex({
-                        index: index,
-                        viewPosition: 0.5,
-                        animated: true,
-                      })
-                    }}
+                    estimatedItemSize={76}
+                    showsVerticalScrollIndicator={false}
                   />
                 )}
-                estimatedItemSize={76}
-                showsVerticalScrollIndicator={false}
-              />
+              </>
             )}
           </BlurView>
         </View>

@@ -122,7 +122,6 @@ const Folder = ({
       )}
       <BlurView
         blurType="dark"
-        blurAmount={10}
         style={{
           width: width,
           paddingVertical: 12,
@@ -139,6 +138,7 @@ const Folder = ({
         <Button
           ref={sortButtonRef}
           icon={sortOrder === Order.Asc ? 'north' : 'south'}
+          transparent
           hasTVPreferredFocus={false}
           onPress={() => {
             setShowSortMenu(true)

@@ -1,17 +1,24 @@
 import { useEffect, useRef } from 'react'
-import { Linking, ToastAndroid, View } from 'react-native'
+import {
+  FlatList,
+  Linking,
+  ToastAndroid,
+  useWindowDimensions,
+  View,
+} from 'react-native'
 import useSettings from 'hooks/useSettings'
 import useTheme from 'hooks/useTheme'
-import { FlashList } from '@shopify/flash-list'
 import ListButton from 'components/ListButton'
 import Text from 'components/Text'
 import Switch from 'components/Switch'
 import { clearCache } from '@candlefinance/faster-image'
 import deviceProfile from 'lib/deviceProfile'
+import BlurView from '@sbaiahmed1/react-native-blur'
 
 const Settings = () => {
   const settings = useSettings()
   const theme = useTheme()
+  const { width } = useWindowDimensions()
 
   const setDeviceProfile = async () => {
     const profile = await deviceProfile()
@@ -30,6 +37,7 @@ const Settings = () => {
       title: 'Force Stereo',
       subtitle: 'Transcode surround sound into stereo',
       icon: 'volume_up',
+      filled: true,
       onPress: () => {
         settings.setForceStereo(!settings.forceStereo)
       },
@@ -47,8 +55,23 @@ const Settings = () => {
       right: () => <Switch state={settings.introSkipper} />,
     },
     {
-      title: 'Treat SSA/ASS as SRT',
-      subtitle: 'Attempt to render SSA/ASS subtitles as SRT subtitles',
+      title: 'Prefer Fallback Player',
+      subtitle:
+        'Use ExoPlayer instead of MPV. This is always used for HDR and BT2020 content',
+      icon: 'tv',
+      onPress: () => {
+        settings.setPreferFallback(!settings.preferFallback)
+      },
+      right: () => <Switch state={settings.preferFallback} />,
+    },
+    {
+      title: 'Subtitles',
+      separator: true,
+    },
+    {
+      title: 'Native SSA/ASS',
+      subtitle:
+        'Render SSA/AAS subtitles natively which can prevent transcoding',
       icon: 'subtitles',
       filled: true,
       onPress: () => {
@@ -57,9 +80,10 @@ const Settings = () => {
       right: () => <Switch state={settings.nativeAss} />,
     },
     {
-      title: 'Caption Settings',
-      subtitle: 'Only applies to SRT and VTT subtitles',
-      icon: 'subtitles',
+      title: 'Caption Settings (Fallback Player)',
+      subtitle: 'Style settings for subtitles when using the fallback player',
+      icon: 'closed_caption',
+      filled: true,
       onPress: () => {
         Linking.sendIntent('android.settings.CAPTIONING_SETTINGS')
       },
@@ -69,13 +93,22 @@ const Settings = () => {
       separator: true,
     },
     {
-      title: 'Clear Image Cache',
-      icon: 'clear_all',
-      onPress: async () => {
-        await clearCache()
-        ToastAndroid.show('Cleared Image Cache', ToastAndroid.SHORT)
+      title: 'Reduce Effects',
+      subtitle: 'Reduces some effects to improve performance',
+      icon: 'accessibility',
+      onPress: () => {
+        settings.setReduceEffects(!settings.reduceEffects)
       },
+      right: () => <Switch state={settings.reduceEffects} />,
     },
+    // {
+    //   title: 'Clear Image Cache',
+    //   icon: 'clear_all',
+    //   onPress: async () => {
+    //     await clearCache()
+    //     ToastAndroid.show('Cleared Image Cache', ToastAndroid.SHORT)
+    //   },
+    // },
     {
       title: 'User',
       separator: true,
@@ -87,7 +120,7 @@ const Settings = () => {
     },
   ]
 
-  const listRef = useRef<FlashList<any>>()
+  const listRef = useRef<FlatList<any>>(null)
 
   return (
     <View
@@ -99,7 +132,7 @@ const Settings = () => {
         paddingBottom: 16,
       }}
     >
-      <FlashList
+      <FlatList
         ref={listRef}
         data={data}
         renderItem={({ item, index }) =>
@@ -121,6 +154,7 @@ const Settings = () => {
               subtitle={item.subtitle}
               icon={item.icon}
               filled={item.filled}
+              transparent
               onPress={item.onPress}
               right={item.right}
               onFocus={() => {
@@ -134,20 +168,24 @@ const Settings = () => {
             />
           )
         }
-        estimatedItemSize={88}
         showsVerticalScrollIndicator={false}
       />
-      <Text
+      <BlurView
+        blurType="dark"
         style={{
-          fontSize: 28,
-          paddingTop: 12,
+          width: width,
+          paddingVertical: 12,
           paddingHorizontal: 32,
           position: 'absolute',
+          flex: 1,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
         }}
-        fontWeight={700}
       >
-        Settings
-      </Text>
+        <Text style={{ fontSize: 28 }} fontWeight={700}>
+          Settings
+        </Text>
+      </BlurView>
     </View>
   )
 }

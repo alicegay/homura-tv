@@ -11,7 +11,7 @@ interface ThemeStore {
 }
 
 const useTheme = create<ThemeStore>()(() => ({
-  background: '#1a1a1a',
+  background: '#121212',
   foreground: '#eee',
   tint: '#A00000',
   green: '#00A000',
