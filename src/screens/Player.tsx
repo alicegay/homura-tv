@@ -41,7 +41,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
-import { IntroSegments } from 'jellyfin-api/lib/types/other/IntroTimestamps'
+import { MediaSegments } from 'jellyfin-api/lib/types/other/IntroTimestamps'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { AxiosError } from 'axios'
 import VideoMPV, { VideoMPVRef } from 'react-native-video-mpv'
@@ -63,16 +63,11 @@ const Player = ({
   route,
 }: NativeStackScreenProps<RootStackParamList, 'Player'>) => {
   const TVEventHandler = ({ eventType: button }: HWEvent) => {
-    if (introVisibility || creditVisibility) {
+    if (segmentVisibility) {
       if (button == 'select') {
-        if (creditVisibility) {
-          seek(introSegments.Credits.IntroEnd)
-        } else {
-          seek(introSegments.Introduction.IntroEnd)
-        }
+        seek(ticksToSecs(mediaSegments.Items[segmentID].EndTicks))
       } else if (button == 'up' || button == 'down') {
-        setIntroVisibility(false)
-        setCreditVisibility(false)
+        setSegmentVisibility(false)
         menuY += 1
         resetControlsTimeout()
       }
@@ -193,6 +188,12 @@ const Player = ({
     setControlsTimeout()
   }
 
+  const [mediaSegments, setMediaSegments] = useState<MediaSegments>(null)
+  const [segmentActive, setSegmentActive] = useState(false)
+  const [segmentVisibility, setSegmentVisibility] = useState(false)
+  const [segmentLabel, setSegmentLabel] = useState('Skip')
+  const [segmentID, setSegmentID] = useState(0)
+
   const [controlsVisibility, setControlsVisibility] = useState<boolean>(true)
   const controlsAnim = useSharedValue(1)
   const controlsView = useAnimatedStyle(() => ({
@@ -210,7 +211,8 @@ const Player = ({
         easing: Easing.in(Easing.quad),
       })
     }
-  }, [controlsVisibility])
+    if (segmentActive && !controlsVisibility) setSegmentVisibility(true)
+  }, [controlsVisibility, segmentActive])
 
   const { item, startFrom, streams: initStreams, fallback } = route.params
   const [fallbackPlayer, setFallbackPlayer] = useState<boolean>(
@@ -249,20 +251,6 @@ const Player = ({
   const [bitrate, setBitrate] = useState<number>(null)
   const [sessionInfo, setSessionInfo] = useState<Session>(null)
   const [showSessionInfo, setShowSessionInfo] = useState(false)
-
-  const [introSegments, setIntroSegments] = useState<IntroSegments>(null)
-  const [introVisibility, setIntroVisibility] = useState(false)
-  const [creditVisibility, setCreditVisibility] = useState(false)
-  const [introLabel, setIntroLabel] = useState('Skip Opening')
-  useEffect(() => {
-    if (introVisibility || creditVisibility) {
-      if (introVisibility) {
-        setIntroLabel('Skip Opening')
-      } else {
-        setIntroLabel('Skip Ending')
-      }
-    }
-  }, [introVisibility, creditVisibility])
 
   useEffect(() => {
     menuX = 0
@@ -315,12 +303,12 @@ const Player = ({
       }
     })
     if (item.Type === 'Episode' && settings.introSkipper) {
-      other.introTimestamps(client, item.Id).then(
+      other.mediaSegments(client, item.Id).then(
         (res) => {
-          setIntroSegments(res)
+          setMediaSegments(res)
         },
         (error: AxiosError) => {
-          console.log('No Intro Skipper data')
+          console.log('No Media Segment data')
         },
       )
     }
@@ -416,48 +404,32 @@ const Player = ({
     })
   }
 
-  const introSkipper = (current: number) => {
-    if (introSegments) {
-      if (introSegments.Introduction?.Valid) {
-        if (
-          !introVisibility &&
-          !controlsVisibility &&
-          current > introSegments.Introduction.ShowSkipPromptAt &&
-          current <
-            introSegments.Introduction.ShowSkipPromptAt +
-              settings.introSkipperPrompt
-        ) {
-          setIntroVisibility(true)
-        } else if (
-          (introVisibility &&
-            current < introSegments.Introduction.ShowSkipPromptAt) ||
-          (introVisibility &&
-            current >
-              introSegments.Introduction.ShowSkipPromptAt +
-                settings.introSkipperPrompt)
-        ) {
-          setIntroVisibility(false)
+  const introSkipper = (secs: number) => {
+    if (mediaSegments) {
+      let inSegment = false
+      const ticks = secsToTicks(secs)
+      const prompt = secsToTicks(settings.introSkipperPrompt)
+      for (let i = 0; i < mediaSegments.Items.length; i++) {
+        const segment = mediaSegments.Items[i]
+        if (ticks > segment.StartTicks && ticks < segment.StartTicks + prompt) {
+          setSegmentID(i)
+          setSegmentActive(true)
+          inSegment = true
+          const label =
+            'Skip ' +
+            (segment.Type === 'Intro'
+              ? 'Opening'
+              : segment.Type === 'Outro'
+                ? 'Ending'
+                : segment.Type)
+          if (segmentLabel !== label) setSegmentLabel(label)
+          if (!segmentVisibility && !controlsVisibility)
+            setSegmentVisibility(true)
         }
       }
-      if (introSegments.Credits?.Valid) {
-        if (
-          !introVisibility &&
-          !controlsVisibility &&
-          current > introSegments.Credits.ShowSkipPromptAt &&
-          current <
-            introSegments.Credits.ShowSkipPromptAt + settings.introSkipperPrompt
-        ) {
-          setCreditVisibility(true)
-        } else if (
-          (creditVisibility &&
-            current < introSegments.Credits.ShowSkipPromptAt) ||
-          (creditVisibility &&
-            current >
-              introSegments.Credits.ShowSkipPromptAt +
-                settings.introSkipperPrompt)
-        ) {
-          setCreditVisibility(false)
-        }
+      if (segmentVisibility && !inSegment) {
+        setSegmentActive(false)
+        setSegmentVisibility(false)
       }
     }
   }
@@ -777,7 +749,7 @@ const Player = ({
         </LinearGradient>
       </Animated.View>
 
-      {(introVisibility || creditVisibility) && (
+      {segmentVisibility && (
         <Animated.View
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(200)}
@@ -803,7 +775,7 @@ const Player = ({
             style={{ fontSize: 14, color: theme.background }}
             fontWeight={700}
           >
-            {introLabel}
+            {segmentLabel}
           </Text>
         </Animated.View>
       )}
